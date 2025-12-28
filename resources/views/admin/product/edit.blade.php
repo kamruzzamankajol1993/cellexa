@@ -1,250 +1,259 @@
 @extends('admin.master.master')
 @section('title', 'Edit Product')
 @section('css')
-<style>
-    /* --- Font & Layout Adjustments --- */
-    .main-content {
-        font-size: 0.9rem; /* Reduced base font size */
-    }
-    .main-content h2 { font-size: 1.6rem; }
-    .main-content h5 { font-size: 1.1rem; }
-    .main-content h6 { font-size: 0.95rem; }
-    .form-control, .form-select, .btn, .custom-select-display {
-        font-size: 0.875rem; /* Consistent font size for form elements */
-    }
-    .form-control-sm { font-size: 0.8rem; }
-    .card-body, .card-header, .card-footer { padding: 1rem; }
-
-    /* --- Beautiful Label Style --- */
-    .form-label {
-        font-weight: 500;
-        color: #4a5568; /* A softer, more modern dark gray */
-        margin-bottom: 0.35rem;
-        font-size: 0.85rem;
-        text-transform: capitalize;
-    }
-
-    /* --- Existing Custom Select --- */
-    .custom-select-container { position: relative; }
-    .custom-select-display { display: block; width: 100%; padding: 0.375rem 0.75rem; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.25rem; cursor: pointer; position: relative; }
-    .custom-select-display::after { content: ''; position: absolute; top: 50%; right: 15px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #333; transform: translateY(-50%); }
-    .custom-select-options { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; border-top: 0; z-index: 1051; max-height: 200px; overflow-y: auto; }
-    .custom-select-search-input { width: 100%; padding: 8px; border: none; border-bottom: 1px solid #ddd; }
-    .custom-select-option { padding: 10px; cursor: pointer; }
-    .custom-select-option:hover { background-color: #f0f0f0; }
-    .custom-select-option.is-hidden { display: none; }
-
-     /* --- NEW: Styles for the Category Tree --- */
-        .category-tree-container {
-            border: 1px solid #dee2e6;
-            padding: 1rem;
-            border-radius: .25rem;
-            max-height: 250px;
-            overflow-y: auto;
+    <style>
+        /* --- Modern Root Variables --- *
+        /* --- Global Layout --- */
+        .main-content {
+            font-size: 0.925rem;
+            background-color: #f9fafb;
+            min-height: 100vh;
         }
-        .category-tree-item .form-check-label {
+        .main-content h2 { 
+            font-size: 1.75rem; 
+            font-weight: 700; 
+            color: #111827; 
+            letter-spacing: -0.025em;
+        }
+        
+        /* --- Modern Cards --- */
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+            background: #fff;
+            transition: transform 0.2s ease;
+        }
+        .card-body { padding: 1.5rem; }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+            border-bottom: 2px solid #f9fafb;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* --- Modern Inputs --- */
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.4rem;
+            font-size: 0.875rem;
+        }
+        .form-control, .form-select, .custom-select-display {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            background-color: #fff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: 0;
+        }
+
+        /* --- Upload Zone Style --- */
+        .upload-zone-wrapper {
+            position: relative;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .upload-zone-wrapper:hover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .upload-zone-wrapper input[type="file"] {
+            position: absolute;
+            top: 0; left: 0; w-100; h-100;
+            opacity: 0;
             cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
+        .upload-placeholder {
+            pointer-events: none;
+            color: #6b7280;
+        }
+        .upload-placeholder i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        
+        /* --- Category Tree Modernized --- */
+        .category-tree-container {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .category-tree-item { margin-bottom: 0.25rem; }
         .category-tree-child {
-            padding-left: 1.5rem;
-            border-left: 1px dashed #ced4da;
-            margin-left: 7px;
+            padding-left: 1.25rem;
+            border-left: 2px solid #f3f4f6;
+            margin-left: 0.6rem;
+            margin-top: 0.25rem;
         }
         .toggle-icon {
             cursor: pointer;
-            color: #6c757d;
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            transition: color 0.2s;
         }
-</style>
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+        .toggle-icon:hover { color: #4f46e5; }
+        .form-check-label { font-size: 0.9rem; cursor: pointer; user-select: none; }
+
+        /* --- Buttons --- */
+        .btn-primary {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+            border-color: #4338ca;
+        }
+
+        /* --- Existing Custom Select (Kept functional) --- */
+        .custom-select-container { position: relative; }
+        .custom-select-display { cursor: pointer; position: relative; }
+        .custom-select-display::after { content: '\f078'; font-family: 'FontAwesome'; position: absolute; top: 50%; right: 15px; font-size: 0.75rem; color: #9ca3af; transform: translateY(-50%); }
+        .custom-select-options { display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb;; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 1051; max-height: 200px; overflow-y: auto; }
+        .custom-select-search-input { width: 100%; padding: 10px; border: none; border-bottom: 1px solid #e5e7eb;; outline: none; }
+        .custom-select-option { padding: 10px 15px; cursor: pointer; transition: background 0.15s; }
+        .custom-select-option:hover { background-color: #f3f4f6; }
+        .custom-select-option.is-hidden { display: none; }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 @endsection
+
 @section('body')
 <main class="main-content">
-    <div class="container-fluid">
+    <div class="container-fluid py-3">
         <div class="mb-4">
-            <h2>Edit Product: {{ $product->name }}</h2>
+            <h2>Edit Product: <span class="text-primary">{{ $product->name }}</span></h2>
             @include('flash_message')
         </div>
         <form action="{{ route('product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-8">
                     {{-- Main Product Fields --}}
-                    <div class="card mb-4">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title mb-4">Main Information <br>   <span class="text-danger" style="font-size: 12px;">image width: 600px and height: 600px , image type webp</span></h5>
-                           <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                                <h5 class="card-title mb-0 border-0 p-0">Main Information</h5>
+                                <span class="badge bg-light text-danger border border-danger">
+                                    <i class="fas fa-info-circle me-1"></i> WebP format required
+                                </span>
+                            </div>
+
+                           <div class="mb-4">
                                 <label class="form-label">Thumbnail Images</label>
-                                <input type="file" accept="image/webp" name="thumbnail_image[]" class="form-control" id="thumbnailInput" multiple>
-                                <div id="thumbnail-preview-container" class="mt-2 d-flex flex-wrap gap-2">
+                                <div class="upload-zone-wrapper mb-3">
+                                    <div class="text-muted"><i class="fas fa-plus-circle me-2"></i>Add more images</div>
+                                    <input type="file" accept="image/webp" name="thumbnail_image[]" class="form-control" id="thumbnailInput" multiple>
+                                </div>
+                                
+                                <div id="thumbnail-preview-container" class="d-flex flex-wrap gap-3">
                                     @if(is_array($product->thumbnail_image))
                                         @foreach($product->thumbnail_image as $image)
-                                        <div class="existing-image-wrapper" style="position: relative;">
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;">
-                                            <button type="button" class="btn btn-danger btn-sm delete-image-btn" style="position: absolute; top: 0; right: 0; padding: 2px 5px;">&times;</button>
+                                        <div class="existing-image-wrapper position-relative" style="width: 80px; height: 80px;">
+                                            <img src="{{ asset('public/uploads/'.$image) }}" class="w-100 h-100 object-fit-cover">
+                                            <button type="button" class="btn btn-danger btn-sm delete-image-btn rounded-circle d-flex align-items-center justify-content-center" 
+                                                style="position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; padding: 0; font-size: 10px;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
                                             <input type="hidden" name="delete_images[]" value="{{ $image }}" disabled>
                                         </div>
                                         @endforeach
                                     @endif
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Real Images</label>
-                                <input type="file" accept="image/*" name="real_image[]" class="form-control" id="realImageInput" multiple>
-                                <div id="real-image-preview-container" class="mt-2 d-flex flex-wrap gap-2">
-                                    @if(is_array($product->real_image))
-                                        @foreach($product->real_image as $image)
-                                        <div class="existing-real-image-wrapper" style="position: relative;">
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;">
-                                            <button type="button" class="btn btn-danger btn-sm delete-real-image-btn" style="position: absolute; top: 0; right: 0; padding: 2px 5px;">&times;</button>
-                                            <input type="hidden" name="delete_real_images[]" value="{{ $image }}" disabled>
-                                        </div>
-                                        @endforeach
-                                    @endif
+                           
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Product Name</label>
+                                    <input type="text" name="name" class="form-control" value="{{ old('name', $product->name) }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Product Code</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-barcode"></i></span>
+                                        <input type="text" name="product_code" id="product_code" class="form-control" value="{{ old('product_code', $product->product_code) }}">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Product Name</label>
-                                <input type="text" name="name" class="form-control" value="{{ old('name', $product->name) }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Product Code</label>
-                                <input type="text" name="product_code" id="product_code" class="form-control" value="{{ old('product_code', $product->product_code) }}">
-                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Description</label>
                                 <textarea name="description" id="summernote" class="form-control" rows="4">{{ old('description', $product->description) }}</textarea>
                             </div>
-                        </div>
-                    </div>
 
-                    {{-- Size Chart Section --}}
-                    <div class="card mb-4">
-                        <div class="card-header"><h5 class="mb-0">Size Chart</h5></div>
-                        <div class="card-body">
+                            {{-- NEW SPECIFICATION FIELD WITH SUMMERNOTE --}}
                             <div class="mb-3">
-                                <label class="form-label">Select Default Size Chart</label>
-                                <select name="size_chart_id" id="sizeChartSelect" class="form-select">
-                                    <option value="">None</option>
-                                    @foreach($size_charts as $chart)
-                                    <option value="{{ $chart->id }}" @selected($product->assignChart && $product->assignChart->size_chart_id == $chart->id)>
-                                        {{ $chart->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label">Specification</label>
+                                <textarea name="specification" id="summernote2" class="form-control" rows="4">{{ old('specification', $product->specification) }}</textarea>
                             </div>
-                            <div id="size-chart-entries-container">
-                                @if($product->assignChart)
-                                <h6 class="mt-3">Edit Entries for this product:</h6>
-                                <table class="table table-bordered table-sm">
-                                    <thead><tr><th>Size</th><th>Length</th><th>Width</th><th>Shoulder</th><th>Sleeve</th></tr></thead>
-                                    <tbody>
-                                        @foreach($product->assignChart->entries as $index => $entry)
-                                        <tr>
-                                            <td><input type="text" name="chart_entries[{{$index}}][size]" class="form-control form-control-sm" value="{{$entry->size}}"></td>
-                                            <td><input type="text" name="chart_entries[{{$index}}][length]" class="form-control form-control-sm" value="{{$entry->length}}"></td>
-                                            <td><input type="text" name="chart_entries[{{$index}}][width]" class="form-control form-control-sm" value="{{$entry->width}}"></td>
-                                            <td><input type="text" name="chart_entries[{{$index}}][shoulder]" class="form-control form-control-sm" value="{{$entry->shoulder}}"></td>
-                                            <td><input type="text" name="chart_entries[{{$index}}][sleeve]" class="form-control form-control-sm" value="{{$entry->sleeve}}"></td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Product Variations --}}
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Product Variations (Color & Size)</h5>
-                          
-                        </div>
-                        <div class="card-body">
-                            <div id="variant-container">
-                                @foreach($product->variants as $variantIndex => $variant)
-                                <div class="variant-section border rounded p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0">Color Variation</h6>
-                                        <button type="button" class="btn-close remove-variant-btn"></button>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Color</label>
-                                            <select name="variants[{{ $variantIndex }}][color_id]" class="form-select variant-color-select select2-like">
-                                                @foreach($colors as $color)
-                                                <option value="{{ $color->id }}" @selected($variant->color_id == $color->id)>{{ $color->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Variant Image</label>
-                                            <input type="file" accept="image/webp" name="variants[{{ $variantIndex }}][image]" class="form-control variant-image-input">
-                                            @if($variant->variant_image)
-                                            <img src="{{ asset('public/uploads/'.$variant->variant_image) }}" height="50" class="mt-2 rounded variant-image-preview">
-                                            <input type="hidden" name="variants[{{$variantIndex}}][existing_image]" value="{{$variant->variant_image}}">
-                                            @endif
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Variant SKU</label>
-                                            <input type="text" name="variants[{{ $variantIndex }}][variant_sku]" class="form-control variant-sku-input" value="{{ $variant->variant_sku }}">
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Additional Price (Optional)</label>
-                                            <input type="number" name="variants[{{ $variantIndex }}][additional_price]" class="form-control" step="0.01" value="{{ $variant->additional_price }}">
-                                        </div>
-                                    </div>
-                                    <h6>Sizes & Quantity</h6>
-                                    <div class="p-2 border rounded bg-light">
-                                        @php
-                                            $variantSizes = collect($variant->sizes)->keyBy('size_id');
-                                        @endphp
-                                        @foreach($sizes as $sizeIndex => $size)
-                                        <div class="row align-items-center mb-2">
-                                            <div class="col-5"><label class="form-label-sm">{{ $size->code }}</label></div>
-                                            <div class="col-7">
-                                                <input type="hidden" name="variants[{{ $variantIndex }}][sizes][{{ $sizeIndex }}][size_id]" value="{{ $size->id }}">
-                                                <input type="number" name="variants[{{ $variantIndex }}][sizes][{{ $sizeIndex }}][quantity]" class="form-control form-control-sm" placeholder="Quantity" value="{{ $variantSizes[$size->id]['quantity'] ?? '' }}">
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"></h5>
-                            <button type="button" id="add-variant-btn" class="btn btn-sm btn-success">Add Color Variation</button>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-4">
                     {{-- Pricing & Organization --}}
                     <div class="card mb-4">
                         <div class="card-body">
-                             <h5 class="card-title mb-4">Pricing & Organization</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                             <h5 class="card-title"><i class="fas fa-tags me-2 text-primary"></i>Pricing & Organization</h5>
+                            <div class="row g-2">
+                                <div class="col-6 mb-3">
                                     <label class="form-label">Purchase Price</label>
-                                    <input type="number" name="purchase_price" class="form-control" value="{{ old('purchase_price', $product->purchase_price) }}" required step="0.01">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="purchase_price" class="form-control" value="{{ old('purchase_price', $product->purchase_price) }}" required step="0.01">
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-6 mb-3">
                                     <label class="form-label">Base Price</label>
-                                    <input type="number" name="base_price" class="form-control" value="{{ old('base_price', $product->base_price) }}" required step="0.01">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="base_price" class="form-control" value="{{ old('base_price', $product->base_price) }}" required step="0.01">
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Discount Price</label>
-                                <input type="number" name="discount_price" class="form-control" value="{{ old('discount_price', $product->discount_price) }}" step="0.01">
+                                <div class="input-group">
+                                    <span class="input-group-text text-success">$</span>
+                                    <input type="number" name="discount_price" class="form-control" value="{{ old('discount_price', $product->discount_price) }}" step="0.01">
+                                </div>
                             </div>
-                            <hr>
-                             {{-- --- MODIFIED: Category Selection --- --}}
+                            
+                            <hr class="my-4 dashed">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Company</label>
+                                <select name="brand_id" class="form-select select2-like">
+                                    <option value="">Select Company</option>
+                                    @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" @selected($product->brand_id == $brand->id)>{{ $brand->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Product Categories</label>
                                 <div class="category-tree-container">
-                                    <ul class="list-unstyled">
+                                    <ul class="list-unstyled mb-0">
                                         {{-- Pass the $assignedCategoryIds from the controller --}}
                                         @include('admin.product._partials.category-tree-checkbox', [
                                             'categories' => $categories, 
@@ -253,155 +262,68 @@
                                     </ul>
                                 </div>
                                 @error('category_ids')
-                                    <div class="text-danger mt-1" style="font-size: .8rem;">{{ $message }}</div>
+                                    <div class="text-danger mt-1 small">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Brand</label>
-                                <select name="brand_id" class="form-select ">
-                                    <option value="">Select Brand</option>
-                                    @foreach($brands as $brand)
-                                    <option value="{{ $brand->id }}" @selected($product->brand_id == $brand->id)>{{ $brand->name }}</option>
-                                    @endforeach
-                                </select>
+                         
+                            <hr class="my-4 dashed">
+                            
+                            <div class="form-check form-switch p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label fw-bold mb-0" for="status">Active Status</label>
+                                <input class="form-check-input ms-0" type="checkbox" name="status" value="1" id="status" @if($product->status) checked @endif style="width: 3em; height: 1.5em; cursor: pointer;">
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Material</label>
-                                <select name="fabric_id" class="form-select ">
-                                     <option value="">Select Material</option>
-                                    @foreach($fabrics as $fabric)
-                                    <option value="{{ $fabric->id }}" @selected($product->fabric_id == $fabric->id)>{{ $fabric->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Unit</label>
-                                <select name="unit_id" class="form-select " required>
-                                     @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}" @selected($product->unit_id == $unit->id)>{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- START: ADDED TOGGLES --}}
-                            <hr>
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" name="status" value="1" id="status" @if($product->status) checked @endif>
-                                <label class="form-check-label" for="status">Status (Active)</label>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_free_delivery" value="1" id="is_free_delivery" @if($product->is_free_delivery) checked @endif>
-                                <label class="form-check-label" for="is_free_delivery">Free Delivery</label>
-                            </div>
-                            {{-- END: ADDED TOGGLES --}}
-                            {{-- নতুন Pre Order সেকশন --}}
-<div class="form-check form-switch mt-2">
-    <input class="form-check-input" type="checkbox" name="is_pre_order" value="1" id="is_pre_order" @if($product->is_pre_order) checked @endif>
-    <label class="form-check-label" for="is_pre_order">Pre Order Product</label>
-</div>
-
-{{-- যদি is_pre_order true হয়, তাহলে স্টাইল display: block হবে, নাহলে none --}}
-<div class="mb-3 mt-2" id="preOrderMsgContainer" style="{{ $product->is_pre_order ? '' : 'display: none;' }}">
-    <label class="form-label">Pre Order Message</label>
-    <textarea name="pre_order_msg" class="form-control" rows="3">{{ old('pre_order_msg', $product->pre_order_msg) }}</textarea>
-</div>
+                       
                         </div>
                     </div>
-
-                     @php
-                        $assignedAnimCategories = $product->assigns->where('type', 'animation')->pluck('category_id')->toArray();
-                         $assignedExtraCategoryIds = $product->assigns->where('type', 'other')->pluck('category_id')->toArray();
-                    @endphp
-                      {{-- Animation Category --}}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Animation Category</h5>
-                    @foreach($animation_categories as $category)
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="animation_category_ids[]" value="{{ $category->id }}" id="anim_cat_{{ $category->id }}"
-                            @if(in_array($category->id, $assignedAnimCategories)) checked @endif>
-                        <label class="form-check-label" for="anim_cat_{{ $category->id }}">
-                            {{ $category->name }}
-                        </label>
-                    </div>
-                    @endforeach
                 </div>
             </div>
-
-            {{-- Other Category --}}
-           <div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title mb-3">Other Category</h5>
-        {{-- Loop through extra_categories and check if it's in the assigned list --}}
-        @foreach($extra_categories as $category)
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="extra_category_ids[]" value="{{ $category->id }}" id="extra_cat_{{ $category->id }}"
-                @if(in_array($category->id, $assignedExtraCategoryIds)) checked @endif>
-            <label class="form-check-label" for="extra_cat_{{ $category->id }}">
-                {{ $category->name }}
-            </label>
-        </div>
-        @endforeach
-    </div>
-</div>
-                     
-                </div>
+            
+            <div class="d-flex justify-content-end mt-4 pb-5">
+                <a href="{{ route('product.index') }}" class="btn btn-light border me-2">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm"><i class="fas fa-save me-2"></i> Update Product</button>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Update Product</button>
         </form>
     </div>
 </main>
 @endsection
-@section('script')
 
+@section('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // --- Pre Order Logic ---
+    const preOrderCheck = document.getElementById('is_pre_order');
+    const preOrderContainer = document.getElementById('preOrderMsgContainer');
+    if(preOrderCheck && preOrderContainer) {
+        preOrderCheck.addEventListener('change', function() {
+            this.checked ? $(preOrderContainer).slideDown() : $(preOrderContainer).slideUp();
+        });
+    }
 
-    // --- Pre Order Toggle Logic ---
-const preOrderCheck = document.getElementById('is_pre_order');
-const preOrderContainer = document.getElementById('preOrderMsgContainer');
-
-if(preOrderCheck && preOrderContainer) {
-    preOrderCheck.addEventListener('change', function() {
-        if(this.checked) {
-            $(preOrderContainer).slideDown();
-        } else {
-            $(preOrderContainer).slideUp();
-        }
-    });
-}
-
-      // --- NEW: JavaScript for Category Tree Toggle ---
+    // --- Category Tree Logic ---
     $('.category-tree-container').on('click', '.toggle-icon', function(e) {
         e.preventDefault();
         $(this).toggleClass('fa-plus-square fa-minus-square');
         $(this).closest('.category-tree-item').children('.category-tree-child').slideToggle('fast');
     });
 
-     // --- NEW: Function to auto-expand parent categories on page load ---
     function expandSelectedCategories() {
-        // Find all checked checkboxes within the tree
         $('.category-tree-container input[type="checkbox"]:checked').each(function() {
-            // For each checked box, find all its parent <ul> elements in the tree
             $(this).parents('ul.category-tree-child').each(function() {
-                // Show the parent <ul>
                 $(this).show();
-                // Find the corresponding toggle icon and set it to the "minus" (expanded) state
                 $(this).closest('.category-tree-item').find('.toggle-icon').first()
-                    .removeClass('fa-plus-square')
-                    .addClass('fa-minus-square');
+                    .removeClass('fa-plus-square').addClass('fa-minus-square');
             });
         });
     }
-
-    // Call the new function right after the page loads
     expandSelectedCategories();
-    // --- Custom Searchable Select Plugin ---
+
+    // --- Custom Select2-like ---
     function createSearchableSelect(originalSelect) {
         const $originalSelect = $(originalSelect);
         if ($originalSelect.next('.custom-select-container').length) return;
         $originalSelect.hide();
         const $container = $('<div class="custom-select-container" />');
-        const $display = $('<div class="custom-select-display" />').text($originalSelect.find('option:selected').text() || 'Select an option');
+        const $display = $('<div class="custom-select-display form-select" />').text($originalSelect.find('option:selected').text() || 'Select an option');
         const $optionsContainer = $('<div class="custom-select-options" />');
         const $searchInput = $('<input type="text" class="custom-select-search-input" placeholder="Search...">');
         $optionsContainer.append($searchInput);
@@ -429,174 +351,7 @@ if(preOrderCheck && preOrderContainer) {
     $('.select2-like').each(function() { createSearchableSelect(this); });
     $(document).on('click', () => $('.custom-select-options').hide());
 
-    // --- Route Definitions ---
-    var routes = {
-        getSubcategories: id => `{{ route('get_subcategories', ':id') }}`.replace(':id', id),
-        getSubSubcategories: id => `{{ url('get-sub-subcategories') }}/${id}`,
-        getSizeChartEntries: id => `{{ route('get.size-chart.entries', ':id') }}`.replace(':id', id)
-    };
-
-     // --- Auto-generate Product Code ---
-    $('input[name="name"]').on('keyup change', function() {
-        const productName = $(this).val();
-        const productCodeInput = $('#product_code'); // Make sure your product code input has id="product_code"
-        
-        if (productName.length > 2) {
-            const prefix = productName.substring(0, 4).toUpperCase().replace(/\s+/g, '');
-            const timestamp = Date.now().toString().slice(-5);
-            productCodeInput.val(`${prefix}-${timestamp}`);
-        }
-    });
-
-    // --- Dependent Category Dropdowns ---
-    function fetchSubcategories(categoryId, selectedSubcategoryId = null) {
-        const $subcategorySelect = $('#subcategoryId');
-        $subcategorySelect.empty().append('<option value=""></option>').next('.custom-select-container').remove();
-        createSearchableSelect($subcategorySelect);
-        if (categoryId) {
-            $.get(routes.getSubcategories(categoryId), function(data) {
-                let options = '<option value="">Select Subcategory</option>';
-                data.forEach(sub => {
-                    options += `<option value="${sub.id}" ${selectedSubcategoryId == sub.id ? 'selected' : ''}>${sub.name}</option>`;
-                });
-                $subcategorySelect.html(options).next('.custom-select-container').remove();
-                createSearchableSelect($subcategorySelect);
-                if (selectedSubcategoryId) {
-                    $subcategorySelect.trigger('change');
-                }
-            });
-        }
-    }
-    function fetchSubSubcategories(subcategoryId, selectedSubSubcategoryId = null) {
-        const $subSubcategorySelect = $('#subSubcategoryId');
-        $subSubcategorySelect.empty().append('<option value=""></option>').next('.custom-select-container').remove();
-        createSearchableSelect($subSubcategorySelect);
-        if (subcategoryId) {
-            $.get(routes.getSubSubcategories(subcategoryId), function(data) {
-                let options = '<option value="">Select Sub-Subcategory</option>';
-                data.forEach(sub => {
-                    options += `<option value="${sub.id}" ${selectedSubSubcategoryId == sub.id ? 'selected' : ''}>${sub.name}</option>`;
-                });
-                $subSubcategorySelect.html(options).next('.custom-select-container').remove();
-                createSearchableSelect($subSubcategorySelect);
-            });
-        }
-    }
-
-    $('#categoryId').on('change', function() { fetchSubcategories($(this).val()); });
-    $('#subcategoryId').on('change', function() { fetchSubSubcategories($(this).val(), '{{ $product->sub_subcategory_id }}'); });
-
-    // Initial load for edit page
-    fetchSubcategories('{{ $product->category_id }}', '{{ $product->subcategory_id }}');
-
-
-    // --- Size Chart, Variation, and Image Preview Logic ---
-   // --- Size Chart Logic ---
-    $('#sizeChartSelect').on('change', function() {
-        let chartId = $(this).val();
-        const container = $('#size-chart-entries-container');
-        container.empty();
-        if (chartId) {
-            $.get(routes.getSizeChartEntries(chartId), function(data) {
-                if(data.entries) {
-                    let table = `<h6 class="mt-3">Edit Entries for this product:</h6><table class="table table-bordered table-sm"><thead><tr><th>Size</th><th>Length</th><th>Width</th><th>Shoulder</th><th>Sleeve</th></tr></thead><tbody>`;
-                    data.entries.forEach((entry, index) => {
-                        table += `<tr>
-                            <td><input type="text" name="chart_entries[${index}][size]" class="form-control form-control-sm" value="${entry.size}"></td>
-                            <td><input type="text" name="chart_entries[${index}][length]" class="form-control form-control-sm" value="${entry.length || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][width]" class="form-control form-control-sm" value="${entry.width || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][shoulder]" class="form-control form-control-sm" value="${entry.shoulder || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][sleeve]" class="form-control form-control-sm" value="${entry.sleeve || ''}"></td>
-                        </tr>`;
-                    });
-                    table += `</tbody></table>`;
-                    container.html(table);
-                }
-            });
-        }
-    });
-
-    // --- Variation Logic ---
-    let variantIndex = {{ count($product->variants) }};
-    const colors = @json($colors);
-    const sizes = @json($sizes);
-    $('#add-variant-btn').on('click', function() {
-        const container = $('#variant-container');
-        let colorOptions = colors.map(color => `<option value="${color.id}">${color.name}</option>`).join('');
-        let sizeFields = sizes.map((size, sizeIndex) => `
-            <div class="row align-items-center mb-2">
-                <div class="col-5"><label class="form-label-sm">${size.code}</label></div>
-                <div class="col-7">
-                    <input type="hidden" name="variants[${variantIndex}][sizes][${sizeIndex}][size_id]" value="${size.id}">
-                    <input type="number" name="variants[${variantIndex}][sizes][${sizeIndex}][quantity]" class="form-control form-control-sm" placeholder="Quantity">
-                </div>
-            </div>
-        `).join('');
-        const variantHtml = `
-            <div class="variant-section border rounded p-3 mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">New Color Variation</h6>
-                    <button type="button" class="btn-close remove-variant-btn"></button>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Color</label>
-                        <select name="variants[${variantIndex}][color_id]" class="form-select variant-color-select"><option>select color</option>${colorOptions}</select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Variant Image</label>
-                        <input type="file" accept="image/webp" name="variants[${variantIndex}][image]" class="form-control variant-image-input">
-                        <img class="variant-image-preview img-thumbnail mt-2" style="display: none; height: 80px; width: 80px; object-fit: cover;">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Variant SKU</label>
-                        <input type="text" name="variants[${variantIndex}][variant_sku]" class="form-control variant-sku-input" placeholder="Auto-generated SKU">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Additional Price (Optional)</label>
-                        <input type="number" name="variants[${variantIndex}][additional_price]" class="form-control" step="0.01" placeholder="e.g., 5.00">
-                    </div>
-                </div>
-                <h6>Sizes & Quantity</h6>
-                <div class="p-2 border rounded bg-light">${sizeFields}</div>
-            </div>
-        `;
-        container.append(variantHtml);
-        variantIndex++;
-    });
-    $('#variant-container').on('click', '.remove-variant-btn', function() {
-        $(this).closest('.variant-section').remove();
-    });
-
-    // Delegated event listener for variant image preview
-    $('#variant-container').on('change', '.variant-image-input', function(event) {
-        const preview = $(this).siblings('.variant-image-preview')[0];
-        const file = event.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Delegated event listener for auto-generating SKU
-    $('#variant-container').on('change', '.variant-color-select', function() {
-        const selectedColorText = $(this).find('option:selected').text().toUpperCase().replace(/\s+/g, ''); // Remove spaces
-        const productCode = $('#product_code').val().toUpperCase();
-        const variantSection = $(this).closest('.variant-section');
-        const skuInput = variantSection.find('.variant-sku-input');
-
-        if (productCode && selectedColorText) {
-            skuInput.val(`${productCode}-${selectedColorText}`);
-        }
-    });
-
-    // --- Corrected Multiple Thumbnail Image Preview Logic ---
-
-  // --- Generic Image Preview & Delete Handler ---
+    // --- Image Manager (New & Existing) ---
     function setupImageManager(inputId, containerId, deleteBtnClass, existingWrapperClass, newWrapperClass, removePreviewBtnClass) {
         const inputElement = document.getElementById(inputId);
         const previewContainer = document.getElementById(containerId);
@@ -612,18 +367,20 @@ if(preOrderCheck && preOrderContainer) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const wrapper = document.createElement('div');
-                    wrapper.classList.add(newWrapperClass);
-                    wrapper.style.position = 'relative';
+                    wrapper.classList.add(newWrapperClass, 'position-relative', 'shadow-sm', 'rounded', 'overflow-hidden');
+                    wrapper.style.cssText = 'width: 80px; height: 80px;';
+                    
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.classList.add('img-thumbnail');
-                    img.style.cssText = 'height: 80px; width: 80px; object-fit: cover;';
+                    img.className = 'w-100 h-100 object-fit-cover';
+                    
                     const removeBtn = document.createElement('button');
                     removeBtn.type = 'button';
-                    removeBtn.innerHTML = '&times;';
-                    removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', removePreviewBtnClass);
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', removePreviewBtnClass, 'd-flex', 'align-items-center', 'justify-content-center');
                     removeBtn.dataset.index = index;
-                    removeBtn.style.cssText = 'position: absolute; top: 0; right: 0; padding: 0px 5px; line-height: 1;';
+                    removeBtn.style.cssText = 'position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; padding: 0; border-radius: 50%; font-size: 10px;';
+                    
                     wrapper.appendChild(img);
                     wrapper.appendChild(removeBtn);
                     previewContainer.appendChild(wrapper);
@@ -639,8 +396,10 @@ if(preOrderCheck && preOrderContainer) {
         });
 
         previewContainer.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains(removePreviewBtnClass)) {
-                const indexToRemove = parseInt(e.target.dataset.index, 10);
+            // Handle removing NEW previews
+            if (e.target.closest('.' + removePreviewBtnClass)) {
+                const btn = e.target.closest('.' + removePreviewBtnClass);
+                const indexToRemove = parseInt(btn.dataset.index, 10);
                 const newFiles = new DataTransfer();
                 const currentFiles = Array.from(dataTransfer.files);
                 currentFiles.forEach((file, index) => {
@@ -651,8 +410,10 @@ if(preOrderCheck && preOrderContainer) {
                 renderPreviews();
             }
 
-            if (e.target && e.target.classList.contains(deleteBtnClass)) {
-                const wrapper = e.target.closest('.' + existingWrapperClass);
+            // Handle removing EXISTING images
+            if (e.target.closest('.' + deleteBtnClass)) {
+                const btn = e.target.closest('.' + deleteBtnClass);
+                const wrapper = btn.closest('.' + existingWrapperClass);
                 if (wrapper) {
                     wrapper.style.display = 'none';
                     const hiddenInput = wrapper.querySelector('input[type="hidden"]');
@@ -662,29 +423,38 @@ if(preOrderCheck && preOrderContainer) {
         });
     }
 
-    // Initialize for both thumbnail and real images
     setupImageManager('thumbnailInput', 'thumbnail-preview-container', 'delete-image-btn', 'existing-image-wrapper', 'new-thumbnail-wrapper', 'remove-preview-btn');
-    setupImageManager('realImageInput', 'real-image-preview-container', 'delete-real-image-btn', 'existing-real-image-wrapper', 'new-real-image-wrapper', 'remove-real-preview-btn');
 });
 </script>
- <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script>
     $(document).ready(function() {
         $('#summernote').summernote({
-            height: 200,
+            height: 250,
             toolbar: [
                 ['style', ['style']],
                 ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['fontname', ['fontname']],
                 ['color', ['color']],
                 ['para', ['ul', 'ol', 'paragraph']],
-                ['height', ['height']],
                 ['table', ['table']],
-                ['insert', ['link', 'picture', 'hr']],
-                ['view', ['fullscreen', 'codeview']],
-                ['help', ['help']]
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
             ]
         });
+        // Specification Editor
+        $('#summernote2').summernote({
+            height: 250,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            styleTags: ['p', 'h4', 'h5', 'h6'],
+        });
     });
-    </script>
+</script>
 @endsection

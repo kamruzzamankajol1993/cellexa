@@ -18,12 +18,7 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <h2 class="mb-0">Customer List</h2>
             <div class="d-flex align-items-center">
-                <select id="filterType" class="form-select me-2" style="width: 150px;">
-                    <option value="">All Types</option>
-                    <option value="normal">Normal</option>
-                    <option value="silver">Silver</option>
-                    <option value="platinum">Platinum</option>
-                </select>
+                
                 
                 <form class="d-flex me-2" role="search">
                     <input class="form-control" id="searchInput" type="search" placeholder="Search customers..." aria-label="Search">
@@ -42,8 +37,7 @@
                                 <th class="sortable" data-column="name">Name</th>
                                 <th>Contact</th>
                                 <th>Address</th>
-                                <th>Total Buy</th>
-                                <th class="sortable" data-column="type">Type</th>
+                                <th>Total Requests</th> 
                                 <th class="sortable" data-column="status">Status</th>
                                 <th>Source</th>
                                 <th class="sortable" data-column="created_at">Created At</th>
@@ -88,9 +82,8 @@ $(document).ready(function() {
     `;
 
     function fetchData() {
-        $('#tableBody').html(loaderRow); // Show loader before fetching
+        $('#tableBody').html(loaderRow);
 
-        // Get the value from the type filter dropdown
         let typeFilter = $('#filterType').val();
 
         $.get(routes.fetch, {
@@ -98,7 +91,7 @@ $(document).ready(function() {
             search: searchTerm, 
             sort: sortColumn, 
             direction: sortDirection,
-            type: typeFilter // <--- Added: Send type filter to controller
+            type: typeFilter
         }, function (res) {
             let rows = '';
             if (res.data.length === 0) {
@@ -127,7 +120,8 @@ $(document).ready(function() {
                         sourceBadge = '<span class="badge bg-secondary">Website</span>';
                     }
 
-                    const totalBuy = customer.orders_sum_total_amount ? parseFloat(customer.orders_sum_total_amount).toFixed(2) : '0.00';
+                    // MODIFIED: Use orders_count instead of orders_sum_total_amount
+                    const totalRequests = customer.orders_count || 0;
                     
                     const createdAt = new Date(customer.created_at);
                     const formattedDate = `${String(createdAt.getDate()).padStart(2, '0')}/${String(createdAt.getMonth() + 1).padStart(2, '0')}/${createdAt.getFullYear()}`;
@@ -137,8 +131,7 @@ $(document).ready(function() {
                         <td>${customer.name}</td>
                         <td>${contactHtml}</td>
                         <td>${addressHtml}</td>
-                        <td>৳${totalBuy}</td>
-                        <td>${typeText}</td>
+                        <td><span class="badge bg-primary rounded-pill">${totalRequests}</span></td> 
                         <td>${statusBadge}</td>
                         <td>${sourceBadge}</td>
                         <td>${formattedDate}</td>
@@ -172,9 +165,8 @@ $(document).ready(function() {
         });
     }
 
-    // --- Added: Event Listener for Type Filter ---
     $('#filterType').on('change', function() {
-        currentPage = 1; // Reset to first page
+        currentPage = 1; 
         fetchData();
     });
 

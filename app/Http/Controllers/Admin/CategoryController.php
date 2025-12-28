@@ -52,6 +52,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:categories,name',
+            'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id', // Validate parent_id
         ]);
 
@@ -73,6 +74,7 @@ class CategoryController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'parent_id' => $request->parent_id, // Save parent_id
+            'description' => $request->description,
             'image' => $path,
         ]);
 
@@ -86,6 +88,7 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|unique:categories,name,' . $category->id,
             'parent_id' => 'nullable|exists:categories,id', // Validate parent_id
+            'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -109,6 +112,7 @@ class CategoryController extends Controller
         $category->update([
             'name' => $request->name,
             'parent_id' => $request->parent_id, // Update parent_id
+            'description' => $request->description,
             'status' => $request->status,
             'image' => $path,
         ]);

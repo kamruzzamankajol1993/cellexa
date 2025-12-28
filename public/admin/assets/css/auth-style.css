@@ -129,8 +129,8 @@ body {
    Main Action Button
 ================================================== */
 .auth-btn {
-    background-color: #ffd66b; /* Accent Color */
-    color: black; /* Primary Color Text */
+    background-color: #a1573c; /* Accent Color */
+    color: white; /* Primary Color Text */
     border: none;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -141,8 +141,8 @@ body {
     box-shadow: 0 4px 15px rgba(255, 214, 107, 0.4);
 }
 .auth-btn:hover {
-    background-color: #f0c354;
-    color: #22635c;
+    background-color: #a1573c;
+    color: white;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 214, 107, 0.5);
 }

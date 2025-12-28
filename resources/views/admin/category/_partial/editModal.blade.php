@@ -23,7 +23,10 @@
                         @endforeach
                     </select>
                 </div>
-
+<div class="mb-3">
+    <label for="editDescription" class="form-label">Description</label>
+    <textarea id="editDescription" name="description" class="form-control" rows="3"></textarea>
+</div>
                 <div class="mb-3">
                     <label for="editImage" class="form-label">Image</label>
                     <input type="file" id="editImage" name="image" class="form-control">

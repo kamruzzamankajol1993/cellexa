@@ -1,7 +1,7 @@
 @extends('admin.master.master')
 
 @section('title')
-Brand Management | {{ $ins_name }}
+Company Management | {{ $front_ins_name }}
 @endsection
 
 @section('css')
@@ -44,14 +44,14 @@ Brand Management | {{ $ins_name }}
 <main class="main-content">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-            <h2 class="mb-0">Brand List</h2>
+            <h2 class="mb-0">Company List</h2>
             <div class="d-flex align-items-center">
                 <form class="d-flex me-2" role="search">
-                    <input class="form-control" id="searchInput" type="search" placeholder="Search brands..." aria-label="Search">
+                    <input class="form-control" id="searchInput" type="search" placeholder="Search Companies..." aria-label="Search">
                 </form>
-                {{-- @if (Auth::user()->can('brandAdd')) --}}
+                {{-- @if (Auth::user()->can('CompanyAdd')) --}}
                 <a type="button" data-bs-toggle="modal" data-bs-target="#addModal" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
-                    <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Brand
+                    <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Company
                 </a>
                 {{-- @endif --}}
             </div>
@@ -66,7 +66,8 @@ Brand Management | {{ $ins_name }}
                             <tr>
                                 <th>Sl</th>
                                 <th>Logo</th>
-                                <th class="sortable" data-column="name">Brand Name</th>
+                                <th class="sortable" data-column="name">Company Name</th>
+                                <th>Description</th>
                                 <th class="sortable" data-column="status">Status</th>
                                 <th>Action</th>
                             </tr>

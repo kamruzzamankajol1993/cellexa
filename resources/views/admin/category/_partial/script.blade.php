@@ -36,6 +36,7 @@
                         <td><img src="${imageUrl}" alt="${item.name}" width="50" class="img-thumbnail"></td>
                         <td>${item.name}</td>
                         <td>${parentName}</td>
+                        <td>${item.description ? item.description : ''}</td>
                         <td>${statusBadge}</td>
                         <td class="d-flex gap-2">
                             <button class="btn btn-sm btn-info btn-edit" data-id="${item.id}"><i class="fa fa-edit"></i></button>
@@ -79,6 +80,7 @@
             $.get(routes.show(id), function (item) {
                 $('#editId').val(item.id);
                 $('#editName').val(item.name);
+                $('#editDescription').val(item.description);
                 $('#editStatus').val(item.status);
                 
                 // --- MODIFIED: Set Select2 value and trigger change ---

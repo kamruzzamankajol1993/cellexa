@@ -30,7 +30,7 @@
                     ? `{{ asset('/') }}${item.image}` 
                     : '{{ asset('/') }}public/No_Image_Available.jpg';
 
-                const roles = item.roles.map(role => `<span class="badge bg-success">${role}</span>`).join(' ');
+              
 
                 const statusBadge = item.status == 1 
                     ? `<span class="badge bg-success">Active</span>` 
@@ -44,23 +44,17 @@
                 rows += `
                     <tr>
                         <td>${sl}</td>
-                        <td>${item.branch_name ?? ''}</td>
                         <td><img src="${profile}" style="height:30px;" onerror="this.src='{{ asset('/') }}public/No_Image_Available.jpg';"></td>
                         <td>${item.name}</td>
-                        <td>${item.designation_name ?? ''}</td>
                         <td>${item.phone}</td>
                         <td>${item.email}</td>
-                        <td>${item.address}</td>
-                        <td>${roles}</td>
-                            <td>${shareholderStatus}</td>
                         <td>${statusBadge}</td>
-                        <td>${item.viewpassword}</td>
                         <td>
- ${res.can_show ? `<a href="${routes.show(item.id)}" class="btn btn-sm btn-info btn-custom-sm"><i class="fa fa-eye"></i></a>` : ''}
-                             ${res.can_edit ? `<a href="${routes.edit(item.id)}" class="btn btn-sm btn-primary btn-custom-sm"><i class="fa fa-edit"></i></a>` : ''}
+<a href="${routes.show(item.id)}" class="btn btn-sm btn-info btn-custom-sm"><i class="fa fa-eye"></i></a>
+                            <a href="${routes.edit(item.id)}" class="btn btn-sm btn-primary btn-custom-sm"><i class="fa fa-edit"></i></a>
 
 
-                ${res.can_delete ? `<button class="btn btn-sm btn-danger btn-delete btn-custom-sm" data-id="${item.id}"><i class="fa fa-trash"></i></button>` : ''}
+               <button class="btn btn-sm btn-danger btn-delete btn-custom-sm" data-id="${item.id}"><i class="fa fa-trash"></i></button>
 
                             </td>
                     </tr>`;

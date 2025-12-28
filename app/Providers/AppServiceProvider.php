@@ -91,7 +91,7 @@ class AppServiceProvider extends ServiceProvider
             if (Auth::check()) {
 
                 //auth check code start
-                $data = DB::table('system_information')->where('branch_id',Auth::user()->branch_id)->first();
+                $data = DB::table('system_information')->first();
                 if (!$data) {
                     $icon_name = '';
                     $logo_name ='';

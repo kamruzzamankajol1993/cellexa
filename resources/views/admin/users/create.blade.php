@@ -28,7 +28,7 @@ User Management | {{ $ins_name }}
             @csrf
         <div class="row">
 
-            <div class="col-xl-4 col-xxl-4 col-sm-4 mb-3">
+            {{-- <div class="col-xl-4 col-xxl-4 col-sm-4 mb-3">
                 <label class="form-label">Branch Name<span class="text-red font-w900">*</span>  </label>
                 <select name="branch_id" class="form-control" required>
                         <option value="">--select brnach--</option>
@@ -36,16 +36,16 @@ User Management | {{ $ins_name }}
                         <option value="{{ $branchInfos->id }}">{{ $branchInfos->name }}</option>
                         @endforeach
                 </select>
-            </div>
+            </div> --}}
 
 
-            <div class="col-xl-4 col-xxl-4 col-sm-4 mb-3">
+            <div class="col-xl-12 col-xxl-12 col-sm-12 mb-3">
                 <label class="form-label">Name<span class="text-red font-w900">*</span>  </label>
                 <input type="text" name="name" class="form-control" id="" placeholder="Name" required>
             </div>
 
 
-            <div class="col-xl-4 col-xxl-4 col-sm-4 mb-3">
+            {{-- <div class="col-xl-4 col-xxl-4 col-sm-4 mb-3">
                 <label class="form-label">Designation Name<span class="text-red font-w900">*</span>  </label>
                 <select name="designation_id" class="form-control" required>
                         <option value="">--select Designation--</option>
@@ -53,7 +53,7 @@ User Management | {{ $ins_name }}
                         <option value="{{ $branchInfos->id }}">{{ $branchInfos->name }}</option>
                         @endforeach
                 </select>
-            </div>
+            </div> --}}
 
           
 
@@ -67,7 +67,7 @@ User Management | {{ $ins_name }}
                 <label class="form-label">Email<span class="text-red font-w900">*</span>  </label>
                 <input type="email" class="form-control" name="email" id="" placeholder="Email" required>
             </div>
-            <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
+            {{-- <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
                 <label class="form-label">Role<span class="text-red font-w900">*</span>  </label>
                 <select name="roles[]" class="form-control" required>
                     <option value="">--select brnach--</option>
@@ -90,7 +90,7 @@ User Management | {{ $ins_name }}
             <label class="form-check-label" for="shareholder_no">No</label>
         </div>
     </div>
-</div>
+</div> --}}
             <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
                 <label class="form-label">Profile Image<span class="text-red font-w900">*</span>  </label>
                 <input type="file" class="form-control" name="image" id="" placeholder="Profile Image" required>

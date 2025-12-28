@@ -24,7 +24,10 @@
                             @endforeach
                         </select>
                     </div>
-
+<div class="mb-3">
+    <label class="form-label text-dark">Description</label>
+    <textarea name="description" class="form-control" placeholder="Enter Category Description" rows="3"></textarea>
+</div>
                     <div class="mb-3">
                         <label class="form-label text-dark">Image</label>
                         <input type="file" accept="image/webp" name="image" class="form-control">

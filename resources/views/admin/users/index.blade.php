@@ -44,11 +44,11 @@ User Management | {{ $ins_name }}
                             <form class="d-flex me-2" role="search">
                                 <input class="form-control" id="searchInput" type="search" placeholder="Search users..." aria-label="Search">
                             </form>
-                            @if (Auth::user()->can('userAdd'))
+                         
                             <a href="{{ route('users.create') }}" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
                                 <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New User
                             </a>
-                            @endif
+                         
                         </div>
                     </div>
 
@@ -60,17 +60,15 @@ User Management | {{ $ins_name }}
                                     <thead>
                                         <tr>
                                      <th class="sortable" style="width:3%">SL</th>
-    <th style="width:10%" class="sortable" data-column="branch_id">Branch <span class="sort-icon"></span></th>
+  
     <th style="width:5%" class="sortable">Image</th>
     <th  style="width:10%"class="sortable" data-column="name">Name <span class="sort-icon"></span></th>
-    <th style="width:10%" class="sortable" data-column="designation_id">Designation <span class="sort-icon"></span></th>
+   
     <th style="width:10%" class="sortable" data-column="phone">Phone <span class="sort-icon"></span></th>
     <th style="width:10%" class="sortable" data-column="email">Email <span class="sort-icon"></span></th>
-    <th style="width:10%" class="sortable" data-column="address">Address <span class="sort-icon"></span></th>
-    <th style="width:10%" class="sortable">Roles</th>
-     <th style="width:5%">Shareholder</th>
+  
     <th style="width:10%" class="sortable" data-column="status">Status <span class="sort-icon"></span></th>
-    <th style="width:5%" class="sortable" data-column="status">Password <span class="sort-icon"></span></th>
+  
     <th style="width:7%" class="sortable">Actions</th>
                                         </tr>
                                     </thead>

@@ -7,191 +7,95 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
-use App\Models\Expense; // <-- IMPORTED
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-      /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-     public function index(Request $request)
+    public function index(Request $request)
     {
-        $filter = $request->get('filter', 'this_month'); // Default to 'this_month'
-        $now = Carbon::now();
-
-        // --- Summary Cards Data ---
-        $totalSalesQuery = Order::where('status', 'delivered');
-        $newOrdersQuery = Order::query();
-        $newCustomersQuery = Customer::query();
-        
-        $totalProductionCostQuery = OrderDetail::join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->join('products', 'order_details.product_id', '=', 'products.id')
-            ->where('orders.status', 'delivered');
-
-        // --- START: NEW Expense Query ---
-        $totalExpenseQuery = Expense::query();
-        // --- END: NEW Expense Query ---
-
-        switch ($filter) {
-            case 'today':
-                $totalSalesQuery->whereDate('orders.created_at', $now->today());
-                $newOrdersQuery->whereDate('created_at', $now->today());
-                $newCustomersQuery->whereDate('created_at', $now->today());
-                $totalProductionCostQuery->whereDate('orders.created_at', $now->today());
-                $totalExpenseQuery->whereDate('expense_date', $now->today()); // <-- ADDED
-                break;
-            case 'this_year':
-                $totalSalesQuery->whereYear('orders.created_at', $now->year);
-                $newOrdersQuery->whereYear('created_at', $now->year);
-                $newCustomersQuery->whereYear('created_at', $now->year);
-                $totalProductionCostQuery->whereYear('orders.created_at', $now->year);
-                $totalExpenseQuery->whereYear('expense_date', $now->year); // <-- ADDED
-                break;
-            case 'this_month':
-            default:
-                $totalSalesQuery->whereMonth('orders.created_at', $now->month)->whereYear('orders.created_at', $now->year);
-                $newOrdersQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year);
-                $newCustomersQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year);
-                $totalProductionCostQuery->whereMonth('orders.created_at', $now->month)->whereYear('orders.created_at', $now->year);
-                $totalExpenseQuery->whereMonth('expense_date', $now->month)->whereYear('expense_date', $now->year); // <-- ADDED
-                break;
-        }
-
-        // --- START: MODIFIED Calculations ---
-        $totalSales = $totalSalesQuery->sum(DB::raw('subtotal - IFNULL(discount, 0)'));
-        
-        $totalProductionCost = $totalProductionCostQuery->sum(DB::raw('IFNULL(products.purchase_price, 0) * order_details.quantity'));
-        
-        $totalGrossProfit = $totalSales - $totalProductionCost; // <-- RENAMED
-        
-        $totalExpense = $totalExpenseQuery->sum('amount'); // <-- CALCULATED
-        
-        $totalNetIncome = $totalGrossProfit - $totalExpense; // <-- CALCULATED
-
-        $newOrdersCount = $newOrdersQuery->count();
-        $newCustomersCount = $newCustomersQuery->count();
+        // 1. General Counts
         $totalProducts = Product::count();
-        // --- END: MODIFIED Calculations ---
+        $pendingRequests = Order::where('status', 'pending')->count();
+        $acceptedRequests = Order::where('status', 'accepted')->count();
+        $cancelledRequests = Order::where('status', 'cancelled')->count();
+        $totalCustomers = Customer::count();
 
-
-        // --- Recent Orders Table ---
-        $recentOrders = Order::with('customer')->latest()->take(5)->get();
-
-        // --- Sales Overview Chart Data ---
-        $salesQuery = Order::select(
-            DB::raw("DATE_FORMAT(created_at, '%b') as month"),
-            DB::raw("SUM(subtotal - IFNULL(discount, 0)) as total")
-        )->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
-        ->where('status', 'delivered')
-         ->groupBy('month')->orderByRaw("MONTH(created_at) DESC");
-
-        $salesData = $salesQuery->get();
-        $salesChartData = [['Month', 'Sales']];
-        foreach ($salesData as $row) {
-            $salesChartData[] = [$row->month, (int)$row->total];
-        }
-
-        // --- Sales by Category Chart Data ---
-        $categorySales = OrderDetail::join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->join('products', 'order_details.product_id', '=', 'products.id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->where('orders.status', 'delivered')
-            ->select(
-                'categories.name as category_name',
-                DB::raw("SUM(
-                    CASE 
-                        WHEN orders.subtotal > 0 THEN order_details.subtotal - (order_details.subtotal / orders.subtotal) * IFNULL(orders.discount, 0)
-                        ELSE order_details.subtotal 
-                    END
-                ) as total_sales")
-            )
-            ->groupBy('categories.name')->orderBy('total_sales', 'desc')->take(5)->get();
-            
-        $categoryChartData = [['Category', 'Sales']];
-        foreach ($categorySales as $row) {
-            $categoryChartData[] = [$row->category_name, (int)$row->total_sales];
-        }
-
-        // --- Monthly Comparison Data ---
-        $currentMonthSales = Order::where('status', 'delivered')
-            ->whereYear('created_at', $now->year)
-            ->whereMonth('created_at', $now->month)
-            ->sum(DB::raw('subtotal - IFNULL(discount, 0)'));
-
-        $previousMonth = $now->copy()->subMonthNoOverflow();
-        $previousMonthSales = Order::where('status', 'delivered')
-            ->whereYear('created_at', $previousMonth->year)
-            ->whereMonth('created_at', $previousMonth->month)
-            ->sum(DB::raw('subtotal - IFNULL(discount, 0)'));
-
-        $salesPercentageChange = 0;
-        if ($previousMonthSales > 0) {
-            $salesPercentageChange = (($currentMonthSales - $previousMonthSales) / $previousMonthSales) * 100;
-        } elseif ($currentMonthSales > 0) {
-            $salesPercentageChange = 100.0; // 100% increase if previous was 0
-        }
-
-        $monthComparisonChartData = [
-            ['Month', 'Sales', ['role' => 'style']],
-            ['This Month', (int)$currentMonthSales, 'color: #0d6efd'],
-            ['Previous Month', (int)$previousMonthSales, 'color: #6c757d']
-        ];
+        // 2. Request History Graph Data (Last 30 Days)
+        $last30DaysData = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
         
-        // --- Top Selling Products Query ---
-        $topSellingProducts = OrderDetail::join('products', 'order_details.product_id', '=', 'products.id')
-            ->join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->where('orders.status', 'delivered')
-            ->select(
-                'products.id',
-                'products.name',
-                'products.thumbnail_image',
-                DB::raw('SUM(order_details.quantity) as total_sold')
-            )
-            ->groupBy('products.id', 'products.name', 'products.thumbnail_image')
-            ->orderBy('total_sold', 'DESC')
-            ->take(6)
+        $dates = $last30DaysData->pluck('date');
+        $counts = $last30DaysData->pluck('count');
+
+        // 3. Top 10 Products Data
+        $topProducts = OrderDetail::select('product_id', DB::raw('count(*) as total_requests'))
+            ->with('product')
+            ->groupBy('product_id')
+            ->orderByDesc('total_requests')
+            ->take(10)
             ->get();
 
-        // --- Top Viewed Products Query ---
-        $topViewedProducts = Product::select('id', 'name', 'thumbnail_image', 'view_count')
-            ->orderBy('view_count', 'DESC')
-            ->take(6)
+        // Prepare arrays for Product Chart
+        $topProductNames = $topProducts->map(function($item) {
+            return $item->product->name ?? 'Unknown Product';
+        });
+        $topProductRequests = $topProducts->pluck('total_requests');
+
+        // 4. Top 10 Brands Data
+        $topBrands = DB::table('order_details')
+            ->join('products', 'order_details.product_id', '=', 'products.id')
+            ->join('brands', 'products.brand_id', '=', 'brands.id')
+            ->select('brands.name', DB::raw('count(order_details.id) as total_requests'))
+            ->groupBy('brands.id', 'brands.name')
+            ->orderByDesc('total_requests')
+            ->take(10)
+            ->get();
+        
+        $brandNames = $topBrands->pluck('name');
+        $brandRequests = $topBrands->pluck('total_requests');
+
+        // 5. Latest 10 Orders
+        $latestRequests = Order::with('customer')->latest()->take(10)->get();
+
+        // 6. Top 10 Customers Data
+        $topCustomers = Order::select('customer_id', DB::raw('count(*) as total_requests'))
+            ->with('customer')
+            ->whereNotNull('customer_id')
+            ->groupBy('customer_id')
+            ->orderByDesc('total_requests')
+            ->take(10)
             ->get();
 
+        // Prepare arrays for Customer Chart
+        $topCustomerNames = $topCustomers->map(function($item) {
+            return $item->customer->name ?? 'Unknown Customer';
+        });
+        $topCustomerRequests = $topCustomers->pluck('total_requests');
 
         return view('admin.dashboard.index', compact(
-            'totalSales',
-            'newOrdersCount',
             'totalProducts',
-            'newCustomersCount',
-            'recentOrders',
-            'salesChartData',
-            'categoryChartData',
-            'filter',
-            'monthComparisonChartData',
-            'salesPercentageChange',
-            'currentMonthSales',
-            'previousMonthSales',
-            'topSellingProducts',
-            'topViewedProducts',
-            'totalProductionCost',
-            'totalGrossProfit',     // <-- RENAMED
-            'totalExpense',         // <-- ADDED
-            'totalNetIncome'        // <-- ADDED
+            'pendingRequests',
+            'acceptedRequests',
+            'cancelledRequests',
+            'totalCustomers',
+            'dates',
+            'counts',
+            'topProductNames', // Sent for chart
+            'topProductRequests', // Sent for chart
+            'brandNames',
+            'brandRequests',
+            'latestRequests',
+            'topCustomerNames', // Sent for chart
+            'topCustomerRequests' // Sent for chart
         ));
     }
 }

@@ -3,14 +3,18 @@
         <form id="editBrandForm" class="modal-content">
             <input type="hidden" id="editBrandId">
             <div class="modal-header">
-                <h5 class="modal-title">Edit Brand</h5>
+                <h5 class="modal-title">Edit Company</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="editName" class="form-label">Brand Name</label>
+                    <label for="editName" class="form-label">Company Name</label>
                     <input type="text" id="editName" name="name" class="form-control">
                 </div>
+                <div class="mb-3">
+    <label for="editDescription" class="form-label">Description</label>
+    <textarea id="editDescription" name="description" class="form-control" rows="3"></textarea>
+</div>
                 <div class="mb-3">
                     <label for="editLogo" class="form-label">Logo</label>
                     <input type="file" id="editLogo" name="logo" class="form-control">

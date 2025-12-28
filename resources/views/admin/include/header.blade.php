@@ -22,11 +22,7 @@
                             <i data-feather="refresh-cw" style="width:16px; height:16px;"></i>
                             <span class="d-none d-sm-inline ms-1">Clear Cache</span>
                         </a>
-@if ($usr->can('posView'))
-                        <a class="btn btn-sm btn-success text-white me-3" href="{{route('pos.index')}}">
-                            <i data-feather="monitor" style="width:16px; height:16px;"></i> Pos
-                        </a>
-                        @endif
+
 
                         <!-- Profile Dropdown -->
                         <div class="dropdown">
@@ -42,12 +38,12 @@
                                
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom" aria-labelledby="navbarDropdown">
-                               @if ($usr->can('profileView'))
+                              
                                 <li><a class="dropdown-item" href="{{ route('profileView') }}"><i data-feather="user"></i>Profile</a></li>
-                               @endif
-                               @if ($usr->can('profileSetting'))
+                             
+                              
                                 <li><a class="dropdown-item" href="{{ route('profileSetting') }}"><i data-feather="settings"></i>Settings</a></li>
-                                 @endif
+                                
 
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{{ route('logout') }}"  onclick="event.preventDefault();

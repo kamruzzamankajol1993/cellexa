@@ -79,6 +79,7 @@ Category Management | {{ $ins_name }}
                                 <th>Image</th>
                                 <th class="sortable" data-column="name">Category Name</th>
                                 <th>Parent Category</th>
+                                <th>Description</th>
                                 <th class="sortable" data-column="status">Status</th>
                                 <th>Action</th>
                             </tr>

@@ -26,6 +26,7 @@
                     <td>${(res.current_page - 1) * 10 + i + 1}</td>
                     <td><img src="${logoUrl}" alt="${brand.name}" width="50" class="img-thumbnail"></td>
                     <td>${brand.name}</td>
+                    <td>${brand.description ? brand.description : ''}</td>
                     <td>${statusBadge}</td>
                     <td class="d-flex gap-2">
                         <button class="btn btn-sm btn-info btn-edit btn-custom-sm" data-id="${brand.id}"><i class="fa fa-edit"></i></button>
@@ -81,6 +82,7 @@
         $.get(routes.show(id), function (brand) {
             $('#editBrandId').val(brand.id);
             $('#editName').val(brand.name);
+            $('#editDescription').val(brand.description);
             $('#editStatus').val(brand.status);
             if (brand.logo) {
                 $('#logoPreview').attr('src', `{{ asset('public') }}/${brand.logo}`).show();
@@ -109,7 +111,7 @@
             processData: false,
             contentType: false,
             success() {
-                Swal.fire({ toast: true, icon: 'success', title: 'Brand updated successfully', showConfirmButton: false, timer: 3000 });
+                Swal.fire({ toast: true, icon: 'success', title: 'Company updated successfully', showConfirmButton: false, timer: 3000 });
                 editModal.hide();
                 fetchData();
             },

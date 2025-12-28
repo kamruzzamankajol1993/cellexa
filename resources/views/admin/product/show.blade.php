@@ -2,249 +2,185 @@
 @section('title', 'Product Details')
 @section('css')
 <style>
-    /* --- Font & Layout Adjustments --- */
+    /* --- Modern Reset --- */
+    :root {
+        --text-dark: #1f2937;
+        --text-muted: #6b7280;
+        --bg-light: #f9fafb;
+    }
     .main-content {
-        font-size: 0.9rem; /* Reduced base font size */
+        font-size: 0.95rem;
+        background-color: var(--bg-light);
+        min-height: 100vh;
     }
-    .main-content h2 { font-size: 1.6rem; }
-    .main-content h5 { font-size: 1.1rem; }
-    .main-content h6 { font-size: 0.95rem; }
-    .btn { font-size: 0.875rem; }
-
-    /* Cards */
-    .card-body, .card-header {
-        padding: 1rem;
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        background: #fff;
+        margin-bottom: 1.5rem;
     }
-
-    /* Tables */
-    .table {
-        font-size: 0.875rem;
+    .card-body { padding: 2rem; }
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
     }
-    .table th, .table td {
-        padding: 0.6rem 0.5rem; /* Reduce padding for a tighter look */
+    .card-title i { margin-right: 0.5rem; color: #4f46e5; }
+    
+    /* --- Data Labels --- */
+    .data-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
     }
-
-    /* Specific to Show Page */
-    .list-group-item {
-        padding: 0.6rem 0.2rem; /* Adjust padding for list items */
-        font-size: 0.875rem;
-    }
-    .list-group-flush>.list-group-item {
-        border-width: 0 0 1px;
-    }
-    .variant-item p {
-        margin-bottom: 0.5rem;
-    }
-    .list-group-item .badge {
-        font-size: 0.8em;
+    .data-value {
+        font-size: 1rem;
+        color: var(--text-dark);
         font-weight: 500;
     }
+    
+    /* --- List Group Customization --- */
+    .list-group-flush > .list-group-item {
+        border-color: #f3f4f6;
+        padding: 1rem 0;
+    }
+    .list-group-item:first-child { border-top: none; padding-top: 0; }
+    .list-group-item:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    .img-thumbnail {
+        border-radius: 8px;
+        border-color: #e5e7eb;
+    }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 @endsection
 @section('body')
 <main class="main-content">
-    <div class="container-fluid">
+    <div class="container-fluid py-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-            <h2 class="mb-0">Product: {{ $product->name }}</h2>
             <div>
-                <a href="{{ route('product.index') }}" class="btn btn-secondary">Back to List</a>
-                <a href="{{ route('product.edit', $product->id) }}" class="btn btn-info">Edit Product</a>
+                <h2 class="mb-1 fw-bold text-dark">{{ $product->name }}</h2>
+                <div class="text-muted small">
+                    <i class="fas fa-barcode me-1"></i> {{ $product->product_code ?? 'N/A' }}
+                </div>
+            </div>
+            <div>
+                <a href="{{ route('product.index') }}" class="btn btn-light border shadow-sm me-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
+                <a href="{{ route('product.edit', $product->id) }}" class="btn btn-primary shadow-sm">
+                    <i class="fas fa-edit me-1"></i> Edit Product
+                </a>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row g-4">
             <div class="col-md-8">
                 {{-- Main Product Details --}}
-                <div class="card mb-4">
+                <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">Product Details</h5>
-                        <div class="row">
-                            <div class="col-md-4"><strong>Product Code:</strong></div>
-                            <div class="col-md-8">{{ $product->product_code ?? 'N/A' }}</div>
+                        <h5 class="card-title"><i class="fas fa-info-circle"></i> Product Information</h5>
+                        
+                        <div class="mb-4">
+                            <div class="data-label">Description</div>
+                            <div class="data-value mt-2 lh-base">
+                                {!! $product->description ?? '<span class="text-muted fst-italic">No description provided.</span>' !!}
+                            </div>
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-md-4"><strong>Description:</strong></div>
-                            <div class="col-md-8">{!! $product->description ?? 'No description provided.' !!}</div>
+{{-- NEW SPECIFICATION SECTION --}}
+                        <div class="mb-4">
+                            <div class="data-label">Specification</div>
+                            <div class="data-value rich-text mt-2 lh-base">
+                                {!! $product->specification ?? '<span class="text-muted fst-italic">No specification provided.</span>' !!}
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Assigned Size Chart --}}
-                @if($product->assignChart)
-                <div class="card mb-4">
-                    <div class="card-header"><h5 class="mb-0">Assigned Size Chart</h5></div>
-                    <div class="card-body">
-                        <p class="text-muted">Based on default chart: {{ $product->assignChart->originalSizeChart->name ?? 'N/A' }}</p>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Size</th>
-                                        <th>Length</th>
-                                        <th>Width</th>
-                                        <th>Shoulder</th>
-                                        <th>Sleeve</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($product->assignChart->entries as $entry)
-                                    <tr>
-                                        <td>{{ $entry->size }}</td>
-                                        <td>{{ $entry->length }}</td>
-                                        <td>{{ $entry->width }}</td>
-                                        <td>{{ $entry->shoulder }}</td>
-                                        <td>{{ $entry->sleeve }}</td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-
-                {{-- Variations Details --}}
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Color & Size Variations</h5>
-                    </div>
-                    <div class="card-body">
-                        @forelse($product->variants as $variant)
-                            <div class="variant-item border rounded p-3 {{ !$loop->last ? 'mb-3' : '' }}">
-                                <div class="row align-items-center">
-                                    <div class="col-md-2">
-                                        <img src="{{ $variant->variant_image ? asset('public/uploads/'.$variant->variant_image) : 'https://placehold.co/100x100' }}"
-                                             class="img-fluid rounded" alt="Variant Image">
-                                    </div>
-                                    <div class="col-md-10">
-                                        <h6><strong>Color:</strong> {{ $variant->color->name ?? 'N/A' }}</h6>
-                                         <p class="mb-1"><strong>SKU:</strong> {{ $variant->variant_sku ?? 'N/A' }}</p>
-                                        <p class="mb-2"><strong>Additional Price:</strong> {{ $variant->additional_price }}</p>
-                                        <table class="table table-sm table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Size</th>
-                                                    <th>Quantity</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @php
-                                                    $sizes = collect($variant->sizes)->keyBy('size_id');
-                                                    $sizeModels = \App\Models\Size::whereIn('id', $sizes->keys())->get()->keyBy('id');
-                                                @endphp
-                                                @foreach($sizes as $sizeId => $sizeInfo)
-                                                <tr>
-                                                    <td>{{ $sizeModels[$sizeId]->name ?? 'Unknown Size' }}</td>
-                                                    <td>{{ $sizeInfo['quantity'] }}</td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
+                        {{-- END NEW SPECIFICATION SECTION --}}
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="data-label">Product Code</div>
+                                    <div class="data-value font-monospace">{{ $product->product_code ?? 'N/A' }}</div>
                                 </div>
                             </div>
-                        @empty
-                            <p class="text-muted">This product has no color or size variations.</p>
-                        @endforelse
+                             <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="data-label">Company</div>
+                                    <div class="data-value">{{ $product->brand->name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="col-md-4">
                 {{-- Pricing & Organization --}}
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">Media</h5>
-                        <div>
-                            {{-- Thumbnail Images Section --}}
-                            <div class="mb-3">
-                                <h6 class="mb-2">Thumbnail Images</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if(!empty($product->thumbnail_image) && is_array($product->thumbnail_image))
-                                        @foreach($product->thumbnail_image as $image)
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;" alt="Thumbnail">
-                                        @endforeach
-                                    @else
-                                        <p class="text-muted">No thumbnail images found.</p>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Main Images Section --}}
-                            <div class="mb-3">
-                                <h6 class="mb-2">Main Images</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if(!empty($product->main_image) && is_array($product->main_image))
-                                        @foreach($product->main_image as $image)
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;" alt="Main Image">
-                                        @endforeach
-                                    @else
-                                        <p class="text-muted">No main images found.</p>
-                                    @endif
-                                </div>
-                            </div>
-
-                             {{-- Real Images Section --}}
-                            <div>
-                                <h6 class="mb-2">Real Images</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    {{-- ▼▼▼ THIS SECTION HAS BEEN UPDATED ▼▼▼ --}}
-                                    @if(!empty($product->real_image) && is_array($product->real_image))
-                                        @foreach($product->real_image as $image)
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;" alt="Real Image">
-                                        @endforeach
-                                    @else
-                                        <p class="text-muted">No real images found.</p>
-                                    @endif
-                                    {{-- ▲▲▲ THIS SECTION HAS BEEN UPDATED ▲▲▲ --}}
-                                </div>
+                        <h5 class="card-title"><i class="fas fa-images"></i> Media Gallery</h5>
+                        
+                        <div class="mb-4">
+                            <div class="data-label mb-2">Thumbnail Images</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if(!empty($product->thumbnail_image) && is_array($product->thumbnail_image))
+                                    @foreach($product->thumbnail_image as $image)
+                                        <a href="{{ asset('public/uploads/'.$image) }}" target="_blank">
+                                            <img src="{{ asset('public/uploads/'.$image) }}" class="img-thumbnail shadow-sm" style="height: 70px; width: 70px; object-fit: cover;" alt="Thumbnail">
+                                        </a>
+                                    @endforeach
+                                @else
+                                    <span class="text-muted small fst-italic">No thumbnails available</span>
+                                @endif
                             </div>
                         </div>
-                        <hr>
-                        <h5 class="card-title mb-3">Pricing & Organization</h5>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-tag"></i> Pricing & Status</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><strong>Purchase Price:</strong> <span>{{ $product->purchase_price }}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><strong>Base Price:</strong> <span>{{ $product->base_price }}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><strong>Discount Price:</strong> <span>{{ $product->discount_price ?? 'N/A' }}</span></li>
-                              {{-- --- MODIFIED: Display Multiple Categories --- --}}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Purchase Price</span>
+                                <span class="fw-bold">${{ number_format($product->purchase_price, 2) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Base Price</span>
+                                <span class="fw-bold">${{ number_format($product->base_price, 2) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Discount Price</span>
+                                <span class="text-success fw-bold">
+                                    {{ $product->discount_price ? '$'.number_format($product->discount_price, 2) : 'N/A' }}
+                                </span>
+                            </li>
                             <li class="list-group-item">
-                                <strong class="d-block mb-2">Categories:</strong>
+                                <div class="mb-2 text-muted small">Categories</div>
                                 <div class="d-flex flex-wrap gap-1">
                                     @forelse($product->assigns->where('type', 'product_category') as $assign)
                                         @if($assign->category)
-                                            <span class="badge bg-secondary">{{ $assign->category->name }}</span>
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fw-normal">
+                                                {{ $assign->category->name }}
+                                            </span>
                                         @endif
                                     @empty
-                                        <span>N/A</span>
+                                        <span class="text-muted small">Uncategorized</span>
                                     @endforelse
                                 </div>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between"><strong>Brand:</strong> <span>{{ $product->brand->name ?? 'N/A' }}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><strong>Unit:</strong> <span>{{ $product->unit->name ?? 'N/A' }}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><strong>Fabric:</strong> <span>{{ $product->fabric->name ?? 'N/A' }}</span></li>
-                            {{-- নতুন আইটেম --}}
-    <li class="list-group-item d-flex justify-content-between">
-        <strong>Pre Order:</strong>
-        @if($product->is_pre_order)
-            <span class="badge bg-warning text-dark">Yes</span>
-        @else
-            <span class="badge bg-secondary">No</span>
-        @endif
-    </li>
-
-    {{-- মেসেজ দেখান যদি থাকে --}}
-    @if($product->is_pre_order && $product->pre_order_msg)
-    <li class="list-group-item">
-        <strong>Pre Order Message:</strong>
-        <p class="mt-1 text-muted">{{ $product->pre_order_msg }}</p>
-    </li>
-    @endif
-                            <li class="list-group-item d-flex justify-content-between"><strong>Status:</strong>
+                            <li class="list-group-item d-flex justify-content-between align-items-center pt-3">
+                                <span class="text-muted">Status</span>
                                 @if($product->status)
-                                    <span class="badge bg-success">Active</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">Active</span>
                                 @else
-                                    <span class="badge bg-danger">Inactive</span>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill">Inactive</span>
                                 @endif
                             </li>
                         </ul>

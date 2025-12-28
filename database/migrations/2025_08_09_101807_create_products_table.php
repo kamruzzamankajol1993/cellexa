@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('fabric_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable();
+            $table->text('specification')->nullable();
             $table->decimal('base_price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->decimal('purchase_price', 10, 2);

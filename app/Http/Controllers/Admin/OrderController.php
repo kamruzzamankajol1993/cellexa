@@ -378,80 +378,43 @@ class OrderController extends Controller
         try {
             $request->validate(['status' => 'required|string']);
 
-            // Define status groups for stock management
+            // --- UPDATED STATUS LOGIC ---
             $nonDeductingStatuses = ['pending', 'waiting'];
-            $deductingStatuses = ['ready to ship', 'shipping', 'delivered'];
-            $returnStockStatuses = ['cancelled', 'failed to delivery', 'refund only'];
+            $deductingStatuses = ['accepted']; // Deduct stock when Accepted
+            $returnStockStatuses = ['cancelled']; // Return stock when Cancelled
 
-            $oldStatus = $order->status;
-            $newStatus = $request->status;
+            $oldStatus = strtolower($order->status);
+            $newStatus = strtolower($request->status);
 
-            // Only proceed if status is actually changing
             if ($oldStatus === $newStatus) {
                 return response()->json(['message' => 'Order status is already set to ' . $newStatus . '.']);
             }
 
             DB::transaction(function () use ($request, $order, $oldStatus, $newStatus, $nonDeductingStatuses, $deductingStatuses, $returnStockStatuses) {
-                // Eager load order details needed for stock adjustment
                 $order->load('orderDetails');
 
-                // --- STOCK ADJUSTMENT LOGIC ---
-                // Case 1: Deduct stock when moving from a non-deducting state to a deducting one.
-                if (in_array($oldStatus, $nonDeductingStatuses) && in_array($newStatus, $deductingStatuses)) {
-                    $this->adjustStockForOrder($order, 'deduct');
-                }
-                // Case 2: Add stock back when moving from a deducting state back to a non-deducting one.
-                elseif (in_array($oldStatus, $deductingStatuses) && in_array($newStatus, $nonDeductingStatuses)) {
-                    $this->adjustStockForOrder($order, 'add');
-                }
-                // Case 3: Add stock back when moving from a deducting state to a cancelled/failed state.
-                elseif (in_array($oldStatus, $deductingStatuses) && in_array($newStatus, $returnStockStatuses)) {
-                    $this->adjustStockForOrder($order, 'add');
-                }
-                // --- END STOCK ADJUSTMENT LOGIC ---
+          
 
-                // 1. Update the order status
                 $order->update(['status' => $newStatus]);
 
-                // 2. Create a new tracking record
                 OrderTracking::create([
                     'order_id' => $order->id,
                     'invoice_no' => $order->invoice_no,
                     'status' => $newStatus,
                 ]);
 
-                // 3. Update payment status if order is delivered
-                if ($newStatus == 'delivered') {
-                    $order->update([
-                        'total_pay' => $order->total_amount,
-                        'due' => 0,
-                        'cod' => 0,
-                        'payment_status' => 'paid'
-                    ]);
+                if ($newStatus == 'delivered') { // If you ever add delivered back
+                     $order->update(['total_pay' => $order->total_amount, 'due' => 0, 'cod' => 0, 'payment_status' => 'paid']);
                 }
             });
 
-            // Recalculate all status counts to send back to the frontend
-            $statusCounts = Order::select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status');
-
-            $statusCounts['all'] = $statusCounts->sum();
-
-            return response()->json([
-                'message' => 'Order status updated successfully.',
-                'statusCounts' => $statusCounts
-            ]);
+            return response()->json(['message' => 'Order status updated successfully.']);
         } catch (\Exception $e) {
             Log::error('Error updating order status: ' . $e->getMessage());
             return response()->json(['error' => 'Could not update order status.'], 500);
         }
     }
 
-    /**
-     * MODIFIED: bulkUpdateStatus
-     * This method now includes logic to adjust stock for each order in the bulk request.
-     */
     public function bulkUpdateStatus(Request $request)
     {
         try {
@@ -462,74 +425,36 @@ class OrderController extends Controller
             ]);
 
             $orderIds = $request->ids;
-            $newStatus = $request->status;
+            $newStatus = strtolower($request->status);
 
-            // Define status groups for stock management
+            // --- UPDATED STATUS LOGIC ---
             $nonDeductingStatuses = ['pending', 'waiting'];
-            $deductingStatuses = ['ready to ship', 'shipping', 'delivered'];
-            $returnStockStatuses = ['cancelled', 'failed to delivery', 'refund only'];
+            $deductingStatuses = ['accepted'];
+            $returnStockStatuses = ['cancelled'];
 
             DB::transaction(function () use ($orderIds, $newStatus, $nonDeductingStatuses, $deductingStatuses, $returnStockStatuses) {
                 $ordersToUpdate = Order::whereIn('id', $orderIds)->with('orderDetails')->get();
 
-                $trackingData = [];
                 foreach ($ordersToUpdate as $order) {
-                    $oldStatus = $order->status;
+                    $oldStatus = strtolower($order->status);
 
-                    if ($oldStatus !== $newStatus) {
-                        // --- STOCK ADJUSTMENT LOGIC ---
-                        if (in_array($oldStatus, $nonDeductingStatuses) && in_array($newStatus, $deductingStatuses)) {
-                            $this->adjustStockForOrder($order, 'deduct');
-                        } elseif (in_array($oldStatus, $deductingStatuses) && in_array($newStatus, $nonDeductingStatuses)) {
-                            $this->adjustStockForOrder($order, 'add');
-                        } elseif (in_array($oldStatus, $deductingStatuses) && in_array($newStatus, $returnStockStatuses)) {
-                            $this->adjustStockForOrder($order, 'add');
-                        }
-                        // --- END STOCK ADJUSTMENT LOGIC ---
-                    }
-
-                    // Prepare tracking data
-                    $trackingData[] = [
+                  
+                    OrderTracking::create([
                         'order_id'   => $order->id,
                         'invoice_no' => $order->invoice_no,
                         'status'     => $newStatus,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                    ]);
 
-                    // Prepare update data for each order
-                    $updateData = ['status' => $newStatus];
-                    if ($newStatus == 'delivered') {
-                        $updateData['total_pay'] = $order->total_amount;
-                        $updateData['due'] = 0;
-                        $updateData['cod'] = 0;
-                        $updateData['payment_status'] = 'paid';
-                    }
-                    $order->update($updateData);
-                }
-
-                // Bulk insert tracking records for efficiency
-                if (!empty($trackingData)) {
-                    OrderTracking::insert($trackingData);
+                    $order->update(['status' => $newStatus]);
                 }
             });
 
-            // Recalculate and return all status counts
-            $statusCounts = Order::select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status');
-            $statusCounts['all'] = $statusCounts->sum();
-
-            return response()->json([
-                'message'      => 'Selected orders have been updated.',
-                'statusCounts' => $statusCounts,
-            ]);
+            return response()->json(['message' => 'Selected orders have been updated.']);
         } catch (\Exception $e) {
             Log::error('Error during bulk status update: ' . $e->getMessage());
             return response()->json(['error' => 'Could not update selected orders.'], 500);
         }
     }
-
     /**
      * Fetch details for the order detail modal.
      */

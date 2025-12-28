@@ -2,165 +2,246 @@
 @section('title', 'Create Product')
 @section('css')
     <style>
-        /* --- Font & Layout Adjustments --- */
+        /* --- Modern Root Variables --- *
+        /* --- Global Layout --- */
         .main-content {
-            font-size: 0.9rem; /* Reduced base font size */
+            font-size: 0.925rem;
+            background-color: #f9fafb;
+            min-height: 100vh;
         }
-        .main-content h2 { font-size: 1.6rem; }
-        .main-content h5 { font-size: 1.1rem; }
-        .main-content h6 { font-size: 0.95rem; }
-        .form-control, .form-select, .btn, .custom-select-display {
-            font-size: 0.875rem; /* Consistent font size for form elements */
+        .main-content h2 { 
+            font-size: 1.75rem; 
+            font-weight: 700; 
+            color: #111827; 
+            letter-spacing: -0.025em;
         }
-        .form-control-sm { font-size: 0.8rem; }
-        .card-body, .card-header, .card-footer { padding: 1rem; }
+        
+        /* --- Modern Cards --- */
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+            background: #fff;
+            transition: transform 0.2s ease;
+        }
+        .card-body { padding: 1.5rem; }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+            border-bottom: 2px solid #f9fafb;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
 
-        /* --- Beautiful Label Style --- */
+        /* --- Modern Inputs --- */
         .form-label {
             font-weight: 500;
-            color: #4a5568; /* A softer, more modern dark gray */
-            margin-bottom: 0.35rem;
-            font-size: 0.85rem;
-            text-transform: capitalize;
+            color: #374151;
+            margin-bottom: 0.4rem;
+            font-size: 0.875rem;
+        }
+        .form-control, .form-select, .custom-select-display {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            background-color: #fff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: 0;
         }
 
-        /* --- Existing Custom Select --- */
-        .custom-select-container { position: relative; }
-        .custom-select-display { display: block; width: 100%; padding: 0.375rem 0.75rem; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.25rem; cursor: pointer; position: relative; }
-        .custom-select-display::after { content: ''; position: absolute; top: 50%; right: 15px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #333; transform: translateY(-50%); }
-        .custom-select-options { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; border-top: 0; z-index: 1051; max-height: 200px; overflow-y: auto; }
-        .custom-select-search-input { width: 100%; padding: 8px; border: none; border-bottom: 1px solid #ddd; }
-        .custom-select-option { padding: 10px; cursor: pointer; }
-        .custom-select-option:hover { background-color: #f0f0f0; }
-        .custom-select-option.is-hidden { display: none; }
-
-          /* --- NEW: Styles for the Category Tree --- */
-        .category-tree-container {
-            border: 1px solid #dee2e6;
-            padding: 1rem;
-            border-radius: .25rem;
-            max-height: 250px;
-            overflow-y: auto;
+        /* --- Upload Zone Style --- */
+        .upload-zone-wrapper {
+            position: relative;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s;
         }
-        .category-tree-item .form-check-label {
+        .upload-zone-wrapper:hover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .upload-zone-wrapper input[type="file"] {
+            position: absolute;
+            top: 0; left: 0; w-100; h-100;
+            opacity: 0;
             cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
+        .upload-placeholder {
+            pointer-events: none;
+            color: #6b7280;
+        }
+        .upload-placeholder i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        
+        /* --- Category Tree Modernized --- */
+        .category-tree-container {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .category-tree-item { margin-bottom: 0.25rem; }
         .category-tree-child {
-            padding-left: 1.5rem;
-            border-left: 1px dashed #ced4da;
-            margin-left: 7px;
+            padding-left: 1.25rem;
+            border-left: 2px solid #f3f4f6;
+            margin-left: 0.6rem;
+            margin-top: 0.25rem;
         }
         .toggle-icon {
             cursor: pointer;
-            color: #6c757d;
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            transition: color 0.2s;
         }
+        .toggle-icon:hover { color: #4f46e5; }
+        .form-check-label { font-size: 0.9rem; cursor: pointer; user-select: none; }
+
+        /* --- Buttons --- */
+        .btn-primary {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+            border-color: #4338ca;
+        }
+
+        /* --- Existing Custom Select (Kept functional) --- */
+        .custom-select-container { position: relative; }
+        .custom-select-display { cursor: pointer; position: relative; }
+        .custom-select-display::after { content: '\f078'; font-family: 'FontAwesome'; position: absolute; top: 50%; right: 15px; font-size: 0.75rem; color: #9ca3af; transform: translateY(-50%); }
+        .custom-select-options { display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb;; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 1051; max-height: 200px; overflow-y: auto; }
+        .custom-select-search-input { width: 100%; padding: 10px; border: none; border-bottom: 1px solid #e5e7eb;; outline: none; }
+        .custom-select-option { padding: 10px 15px; cursor: pointer; transition: background 0.15s; }
+        .custom-select-option:hover { background-color: #f3f4f6; }
+        .custom-select-option.is-hidden { display: none; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 @endsection
 @section('body')
 <main class="main-content">
-    <div class="container-fluid">
-        <div class="mb-4">
+    <div class="container-fluid py-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Create New Product</h2>
         </div>
         <form action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-8">
                     {{-- Main Product Fields --}}
-                    <div class="card mb-4">
+                    <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title mb-4">Main Information <br> <span class="text-danger" style="font-size: 12px;">image width: 600px and height: 600px , image type webp</span></h5>
+                            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                                <h5 class="card-title mb-0 border-0 p-0">Main Information</h5>
+                                <span class="badge bg-light text-danger border border-danger">
+                                    <i class="fas fa-info-circle me-1"></i> 600x600px (WebP)
+                                </span>
+                            </div>
                             
-                         
-                             <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label">Thumbnail Images</label>
-                                <input type="file" accept="image/webp" name="thumbnail_image[]" class="form-control" id="thumbnailInput" multiple>
-                                <div id="thumbnail-preview-container" class="mt-2 d-flex flex-wrap gap-2"></div>
+                                <div class="upload-zone-wrapper">
+                                    <div class="upload-placeholder">
+                                        <i class="fas fa-cloud-upload-alt text-primary"></i>
+                                        <span>Click or Drop images here</span>
+                                    </div>
+                                    <input type="file" accept="image/webp" name="thumbnail_image[]" id="thumbnailInput" multiple>
+                                </div>
+                                <div id="thumbnail-preview-container" class="mt-3 d-flex flex-wrap gap-3"></div>
                             </div>
 
-                             <div class="mb-3">
-                                <label class="form-label">Real Images</label>
-                                <input type="file" accept="image/*" name="real_image[]" class="form-control" id="realImageInput" multiple>
-                                <div id="real-image-preview-container" class="mt-2 d-flex flex-wrap gap-2"></div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="e.g. Premium Cotton Shirt" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Product Code</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-barcode text-muted"></i></span>
+                                        <input type="text" name="product_code" id="product_code" class="form-control border-start-0 ps-0" value="{{ old('product_code') }}" placeholder="Auto-generated">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Product Name</label>
-                                <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
-                            </div>
-                             <div class="mb-3">
-                                <label class="form-label">Product Code</label>
-                                <input type="text" name="product_code" id="product_code" class="form-control" value="{{ old('product_code') }}">
-                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Description</label>
                                 <textarea name="description" id="summernote" class="form-control" rows="4">{{ old('description') }}</textarea>
                             </div>
-                        </div>
-                    </div>
 
-                    {{-- Size Chart Section --}}
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Size Chart</h5>
-                        </div>
-                        <div class="card-body">
+                            {{-- NEW SPECIFICATION FIELD WITH SUMMERNOTE --}}
                             <div class="mb-3">
-                                <label class="form-label">Select Default Size Chart (Optional)</label>
-                                <select name="size_chart_id" id="sizeChartSelect" class="form-select">
-                                    <option value="">None</option>
-                                    @foreach($size_charts as $chart)
-                                    <option value="{{ $chart->id }}">{{ $chart->name }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label">Specification</label>
+                                <textarea name="specification" id="summernote2" class="form-control" rows="4">{{ old('specification') }}</textarea>
                             </div>
-                            <div id="size-chart-entries-container">
-                                </div>
-                        </div>
-                    </div>
-
-                    {{-- Product Variations --}}
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Product Variations (Color & Size)</h5>
-                            {{-- <button type="button" id="add-variant-btn" class="btn btn-sm btn-success">Add Color Variation</button> --}}
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted">Add color-wise variations. You can specify different images, prices, and stock quantities for each color and size.</p>
-                            <div id="variant-container">
-                                </div>
-                        </div>
-                        <div class="card-footer d-flex justify-content-between align-items-center">
-                             <h5 class="mb-0"></h5>
-                            <button type="button" id="add-variant-btn" class="btn btn-sm btn-success">Add Color Variation</button>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-4">
                     {{-- Pricing & Organization --}}
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h5 class="card-title mb-4">Pricing & Organization</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                            <h5 class="card-title"><i class="fas fa-tags me-2 text-primary"></i>Pricing & Details</h5>
+                            
+                            <div class="row g-2">
+                                <div class="col-6 mb-3">
                                     <label class="form-label">Purchase Price</label>
-                                    <input type="number" name="purchase_price" class="form-control" value="{{ old('purchase_price') }}" required step="0.01">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="purchase_price" class="form-control" value="{{ old('purchase_price') }}" required step="0.01">
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-6 mb-3">
                                     <label class="form-label">Base Price</label>
-                                    <input type="number" name="base_price" class="form-control" value="{{ old('base_price') }}" required step="0.01">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="base_price" class="form-control" value="{{ old('base_price') }}" required step="0.01">
+                                    </div>
                                 </div>
                             </div>
+                            
                             <div class="mb-3">
                                 <label class="form-label">Discount Price</label>
-                                <input type="number" name="discount_price" class="form-control" value="{{ old('discount_price') }}" step="0.01">
+                                <div class="input-group">
+                                    <span class="input-group-text text-success">$</span>
+                                    <input type="number" name="discount_price" class="form-control" value="{{ old('discount_price') }}" step="0.01">
+                                </div>
                             </div>
-                            <hr>
-                                                        {{-- --- MODIFIED: Category Selection --- --}}
+                            
+                            <hr class="my-4" style="border-top-style: dashed;">
+
+                            <div class="mb-3">
+                                <label class="form-label">Company</label>
+                                <select name="brand_id" class="form-select select2-like">
+                                    <option value="">Select Company</option>
+                                    @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{$brand->id == 1 ? 'selected' : ''}}>{{ $brand->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Product Categories</label>
                                 <div class="category-tree-container">
-                                    <ul class="list-unstyled">
+                                    <ul class="list-unstyled mb-0">
                                         @include('admin.product._partials.category-tree-checkbox', [
                                             'categories' => $categories, 
                                             'assignedCategoryIds' => old('category_ids', [])
@@ -168,93 +249,26 @@
                                     </ul>
                                 </div>
                                 @error('category_ids')
-                                    <div class="text-danger mt-1" style="font-size: .8rem;">{{ $message }}</div>
+                                    <div class="text-danger mt-1 small"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Brand</label>
-                                <select name="brand_id" class="form-select ">
-                                    <option value="">Select Brand</option>
-                                    @foreach($brands as $brand)
-                                    <option value="{{ $brand->id }}" {{$brand->id == 1 ? 'selected' : ''}}>{{ $brand->name }}</option>
-                                    @endforeach
-                                </select>
+                           
+                            <hr class="my-4" style="border-top-style: dashed;">
+                            
+                            <div class="form-check form-switch p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label fw-bold mb-0" for="status">Active Status</label>
+                                <input class="form-check-input ms-0" type="checkbox" name="status" value="1" id="status" checked style="width: 3em; height: 1.5em; cursor: pointer;">
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Material</label>
-                                <select name="fabric_id" class="form-select ">
-                                     <option value="">Select Material</option>
-                                    @foreach($fabrics as $fabric)
-                                    <option value="{{ $fabric->id }}">{{ $fabric->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Unit</label>
-                                <select name="unit_id" class="form-select " required>
-                                     @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- START: ADDED TOGGLES --}}
-                            <hr>
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" name="status" value="1" id="status" checked>
-                                <label class="form-check-label" for="status">Status (Active)</label>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_free_delivery" value="1" id="is_free_delivery">
-                                <label class="form-check-label" for="is_free_delivery">Free Delivery</label>
-                            </div>
-                            {{-- END: ADDED TOGGLES --}}
-                            {{-- নতুন Pre Order সেকশন --}}
-<div class="form-check form-switch mt-2">
-    <input class="form-check-input" type="checkbox" name="is_pre_order" value="1" id="is_pre_order">
-    <label class="form-check-label" for="is_pre_order">Pre Order Product</label>
-</div>
-
-<div class="mb-3 mt-2" id="preOrderMsgContainer" style="display: none;">
-    <label class="form-label">Pre Order Message</label>
-    <textarea name="pre_order_msg" class="form-control" rows="3" placeholder="Enter pre-order details...">{{ old('pre_order_msg') }}</textarea>
-</div>
+              
                         </div>
                     </div>
-                      {{-- Animation Category --}}
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Animation Category</h5>
-                            @foreach($animation_categories as $category)
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="animation_category_ids[]" value="{{ $category->id }}" id="anim_cat_{{ $category->id }}">
-                                <label class="form-check-label" for="anim_cat_{{ $category->id }}">
-                                    {{ $category->name }}
-                                </label>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    {{-- Other Category --}}
-                    <div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title mb-3">Other Category</h5>
-        {{-- Loop through the new extra_categories variable --}}
-        @foreach($extra_categories as $category)
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="extra_category_ids[]" value="{{ $category->id }}" id="extra_cat_{{ $category->id }}">
-            <label class="form-check-label" for="extra_cat_{{ $category->id }}">
-                {{ $category->name }}
-            </label>
-        </div>
-        @endforeach
-    </div>
-</div>
-                   
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Save Product</button>
+            
+            <div class="d-flex justify-content-end mt-4 pb-5">
+                <a href="{{ url()->previous() }}" class="btn btn-light border me-2">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm"><i class="fas fa-save me-2"></i>Save Product</button>
+            </div>
         </form>
     </div>
 </main>
@@ -264,20 +278,20 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // --- Pre Order Toggle Logic ---
-const preOrderCheck = document.getElementById('is_pre_order');
-const preOrderContainer = document.getElementById('preOrderMsgContainer');
+    const preOrderCheck = document.getElementById('is_pre_order');
+    const preOrderContainer = document.getElementById('preOrderMsgContainer');
 
-if(preOrderCheck && preOrderContainer) {
-    preOrderCheck.addEventListener('change', function() {
-        if(this.checked) {
-            $(preOrderContainer).slideDown();
-        } else {
-            $(preOrderContainer).slideUp();
-        }
-    });
-}
+    if(preOrderCheck && preOrderContainer) {
+        preOrderCheck.addEventListener('change', function() {
+            if(this.checked) {
+                $(preOrderContainer).slideDown();
+            } else {
+                $(preOrderContainer).slideUp();
+            }
+        });
+    }
 
-     // --- NEW: JavaScript for Category Tree Toggle ---
+     // --- Category Tree Toggle (Icons) ---
     $('.category-tree-container').on('click', '.toggle-icon', function(e) {
         e.preventDefault();
         $(this).toggleClass('fa-plus-square fa-minus-square');
@@ -290,9 +304,9 @@ if(preOrderCheck && preOrderContainer) {
         if ($originalSelect.next('.custom-select-container').length) return;
         $originalSelect.hide();
         const $container = $('<div class="custom-select-container" />');
-        const $display = $('<div class="custom-select-display" />').text($originalSelect.find('option:selected').text() || 'Select an option');
+        const $display = $('<div class="custom-select-display form-select" />').text($originalSelect.find('option:selected').text() || 'Select an option');
         const $optionsContainer = $('<div class="custom-select-options" />');
-        const $searchInput = $('<input type="text" class="custom-select-search-input" placeholder="Search...">');
+        const $searchInput = $('<input type="text" class="custom-select-search-input" placeholder="Search options...">');
         $optionsContainer.append($searchInput);
         $originalSelect.find('option').each(function() {
             const $option = $(this);
@@ -320,156 +334,23 @@ if(preOrderCheck && preOrderContainer) {
 
     var routes = {
         getSubcategories: id => `{{ route('get_subcategories', ':id') }}`.replace(':id', id),
-        getSubSubcategories: id => `{{ url('get-sub-subcategories') }}/${id}`, // Assuming you have this route
+        getSubSubcategories: id => `{{ url('get-sub-subcategories') }}/${id}`, 
         getSizeChartEntries: id => `{{ route('get.size-chart.entries', ':id') }}`.replace(':id', id)
     };
 
-  // --- Auto-generate Product Code ---
+    // --- Auto-generate Product Code ---
     $('input[name="name"]').on('keyup change', function() {
         const productName = $(this).val();
-        const productCodeInput = $('#product_code'); // Make sure your product code input has id="product_code"
+        const productCodeInput = $('#product_code'); 
         
-        if (productName.length > 2) {
+        if (productName.length > 2 && !productCodeInput.val()) {
             const prefix = productName.substring(0, 4).toUpperCase().replace(/\s+/g, '');
             const timestamp = Date.now().toString().slice(-5);
             productCodeInput.val(`${prefix}-${timestamp}`);
         }
     });
 
-    // --- Dependent Category Dropdowns ---
-    $('#categoryId').on('change', function() {
-        let categoryId = $(this).val();
-        $('#subcategoryId, #subSubcategoryId').empty().append('<option value=""></option>').next('.custom-select-container').remove();
-        createSearchableSelect($('#subcategoryId'));
-        createSearchableSelect($('#subSubcategoryId'));
-        if (categoryId) {
-            $.get(routes.getSubcategories(categoryId), function(data) {
-                let options = '<option value="">Select Subcategory</option>';
-                data.forEach(sub => options += `<option value="${sub.id}">${sub.name}</option>`);
-                $('#subcategoryId').html(options).next('.custom-select-container').remove();
-                createSearchableSelect($('#subcategoryId'));
-            });
-        }
-    });
-    
-    $('#subcategoryId').on('change', function() {
-        let subcategoryId = $(this).val();
-        $('#subSubcategoryId').empty().append('<option value=""></option>').next('.custom-select-container').remove();
-        createSearchableSelect($('#subSubcategoryId'));
-        if (subcategoryId) {
-            $.get(routes.getSubSubcategories(subcategoryId), function(data) {
-                let options = '<option value="">Select Sub-Subcategory</option>';
-                data.forEach(sub => options += `<option value="${sub.id}">${sub.name}</option>`);
-                $('#subSubcategoryId').html(options).next('.custom-select-container').remove();
-                createSearchableSelect($('#subSubcategoryId'));
-            });
-        }
-    });
-
-    // --- Size Chart Logic ---
-    $('#sizeChartSelect').on('change', function() {
-        let chartId = $(this).val();
-        const container = $('#size-chart-entries-container');
-        container.empty();
-        if (chartId) {
-            $.get(routes.getSizeChartEntries(chartId), function(data) {
-                if(data.entries) {
-                    let table = `<h6 class="mt-3">Edit Entries for this product:</h6><table class="table table-bordered table-sm"><thead><tr><th>Size</th><th>Length</th><th>Width</th><th>Shoulder</th><th>Sleeve</th></tr></thead><tbody>`;
-                    data.entries.forEach((entry, index) => {
-                        table += `<tr>
-                            <td><input type="text" name="chart_entries[${index}][size]" class="form-control form-control-sm" value="${entry.size}"></td>
-                            <td><input type="text" name="chart_entries[${index}][length]" class="form-control form-control-sm" value="${entry.length || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][width]" class="form-control form-control-sm" value="${entry.width || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][shoulder]" class="form-control form-control-sm" value="${entry.shoulder || ''}"></td>
-                            <td><input type="text" name="chart_entries[${index}][sleeve]" class="form-control form-control-sm" value="${entry.sleeve || ''}"></td>
-                        </tr>`;
-                    });
-                    table += `</tbody></table>`;
-                    container.html(table);
-                }
-            });
-        }
-    });
-
-    // --- Variation Logic ---
-    let variantIndex = 0;
-    const colors = @json($colors);
-    const sizes = @json($sizes);
-    $('#add-variant-btn').on('click', function() {
-        const container = $('#variant-container');
-        let colorOptions = colors.map(color => `<option value="${color.id}">${color.name}</option>`).join('');
-        let sizeFields = sizes.map((size, sizeIndex) => `
-            <div class="row align-items-center mb-2">
-                <div class="col-5"><label class="form-label-sm">${size.code}</label></div>
-                <div class="col-7">
-                    <input type="hidden" name="variants[${variantIndex}][sizes][${sizeIndex}][size_id]" value="${size.id}">
-                    <input type="number" name="variants[${variantIndex}][sizes][${sizeIndex}][quantity]" class="form-control form-control-sm" placeholder="Quantity">
-                </div>
-            </div>
-        `).join('');
-        const variantHtml = `
-            <div class="variant-section border rounded p-3 mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">New Color Variation</h6>
-                    <button type="button" class="btn-close remove-variant-btn"></button>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Color</label>
-                        <select name="variants[${variantIndex}][color_id]" class="form-select variant-color-select"><option>select color</option>${colorOptions}</select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Variant Image</label>
-                        <input type="file" accept="image/webp" name="variants[${variantIndex}][image]" class="form-control variant-image-input">
-                        <img class="variant-image-preview img-thumbnail mt-2" style="display: none; height: 80px; width: 80px; object-fit: cover;">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Variant SKU</label>
-                        <input type="text" name="variants[${variantIndex}][variant_sku]" class="form-control variant-sku-input" placeholder="Auto-generated SKU">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Additional Price (Optional)</label>
-                        <input type="number" name="variants[${variantIndex}][additional_price]" class="form-control" step="0.01" placeholder="e.g., 5.00">
-                    </div>
-                </div>
-                <h6>Sizes & Quantity</h6>
-                <div class="p-2 border rounded bg-light">${sizeFields}</div>
-            </div>
-        `;
-        container.append(variantHtml);
-        variantIndex++;
-    });
-    $('#variant-container').on('click', '.remove-variant-btn', function() {
-        $(this).closest('.variant-section').remove();
-    });
-
-    // Delegated event listener for variant image preview
-    $('#variant-container').on('change', '.variant-image-input', function(event) {
-        const preview = $(this).siblings('.variant-image-preview')[0];
-        const file = event.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Delegated event listener for auto-generating SKU
-    $('#variant-container').on('change', '.variant-color-select', function() {
-        const selectedColorText = $(this).find('option:selected').text().toUpperCase().replace(/\s+/g, ''); // Remove spaces
-        const productCode = $('#product_code').val().toUpperCase();
-        const variantSection = $(this).closest('.variant-section');
-        const skuInput = variantSection.find('.variant-sku-input');
-
-        if (productCode && selectedColorText) {
-            skuInput.val(`${productCode}-${selectedColorText}`);
-        }
-    });
-
-     // --- Generic Image Preview Logic ---
+     // --- Generic Image Preview Logic with Modern Styling ---
     function createImagePreviewer(inputId, containerId) {
         const inputElement = document.getElementById(inputId);
         const previewContainer = document.getElementById(containerId);
@@ -484,25 +365,20 @@ if(preOrderCheck && preOrderContainer) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const wrapper = document.createElement('div');
-                    wrapper.style.position = 'relative';
+                    wrapper.className = 'position-relative shadow-sm rounded overflow-hidden';
+                    wrapper.style.width = '80px';
+                    wrapper.style.height = '80px';
                     
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.classList.add('img-thumbnail');
-                    img.style.height = '80px';
-                    img.style.width = '80px';
-                    img.style.objectFit = 'cover';
+                    img.className = 'w-100 h-100 object-fit-cover';
 
                     const removeBtn = document.createElement('button');
                     removeBtn.type = 'button';
-                    removeBtn.innerHTML = '&times;';
-                    removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'remove-preview-btn');
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'remove-preview-btn', 'p-0', 'd-flex', 'align-items-center', 'justify-content-center');
                     removeBtn.dataset.index = index;
-                    removeBtn.style.position = 'absolute';
-                    removeBtn.style.top = '0';
-                    removeBtn.style.right = '0';
-                    removeBtn.style.padding = '0px 5px';
-                    removeBtn.style.lineHeight = '1';
+                    removeBtn.style.cssText = 'position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; font-size: 10px;';
 
                     wrapper.appendChild(img);
                     wrapper.appendChild(removeBtn);
@@ -521,8 +397,9 @@ if(preOrderCheck && preOrderContainer) {
         });
 
         previewContainer.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('remove-preview-btn')) {
-                const indexToRemove = parseInt(e.target.dataset.index, 10);
+            if (e.target.closest('.remove-preview-btn')) {
+                const btn = e.target.closest('.remove-preview-btn');
+                const indexToRemove = parseInt(btn.dataset.index, 10);
                 const newFiles = new DataTransfer();
                 const currentFiles = Array.from(inputElement.files);
                 
@@ -541,29 +418,41 @@ if(preOrderCheck && preOrderContainer) {
         });
     }
 
-    // Initialize previewers for both inputs
     createImagePreviewer('thumbnailInput', 'thumbnail-preview-container');
-    createImagePreviewer('realImageInput', 'real-image-preview-container');
+    // createImagePreviewer('realImageInput', 'real-image-preview-container'); // If needed
 });
 </script>
- <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script>
     $(document).ready(function() {
         $('#summernote').summernote({
-            height: 200,
+            height: 250,
             toolbar: [
                 ['style', ['style']],
                 ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['fontname', ['fontname']],
                 ['color', ['color']],
                 ['para', ['ul', 'ol', 'paragraph']],
-                ['height', ['height']],
                 ['table', ['table']],
-                ['insert', ['link', 'picture', 'hr']],
-                ['view', ['fullscreen', 'codeview']],
-                ['help', ['help']]
-            ]
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            styleTags: ['p', 'h4', 'h5', 'h6'],
+        });
+
+        // Specification Editor
+        $('#summernote2').summernote({
+            height: 250,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            styleTags: ['p', 'h4', 'h5', 'h6'],
         });
     });
-    </script>
+</script>
 @endsection

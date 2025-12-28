@@ -80,7 +80,7 @@ class UserController extends Controller
             'is_shareholder' => $user->is_shareholder, 
             'branch_name' => \App\Models\Branch::where('id', $user->branch_id)->value('name'),
             'designation_name' => \App\Models\Designation::where('id', $user->designation_id)->value('name'),
-            'roles' => $user->getRoleNames(), // from Spatie
+            'roles' => '', // from Spatie
         ];
     });
 
@@ -163,7 +163,7 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|same:confirm-password',
-            'roles' => 'required'
+           
         ]);
 
         CommonController::addToLog('user store');
@@ -201,7 +201,7 @@ class UserController extends Controller
         $input['user_type'] = 2;
     
         $user = User::create($input);
-        $user->assignRole($request->input('roles'));
+        // $user->assignRole($request->input('roles'));
     
         return redirect()->route('users.index')
                         ->with('success','User created successfully');
@@ -233,14 +233,13 @@ class UserController extends Controller
 
         $user = User::find($id);
         $roles = Role::pluck('name','name')->all();
-        $userRole = $user->roles->pluck('name','name')->all();
         $designationList = Designation::latest()->get();
     
 
             $branchList = Branch::latest()->get();
 
        
-        return view('admin.users.edit',compact('user','roles','userRole','designationList','branchList'));
+        return view('admin.users.edit',compact('user','roles','designationList','branchList'));
     }
     
     /**
@@ -256,7 +255,7 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$id,
             'password' => 'same:confirm-password',
-            'roles' => 'required'
+          
         ]);
 
         CommonController::addToLog('user update');
@@ -303,9 +302,9 @@ $time_dy = time().date("Ymd");
     
         $user = User::find($id);
         $user->update($input);
-        DB::table('model_has_roles')->where('model_id',$id)->delete();
+        // DB::table('model_has_roles')->where('model_id',$id)->delete();
     
-        $user->assignRole($request->input('roles'));
+        // $user->assignRole($request->input('roles'));
     
         return redirect()->route('users.index')
                         ->with('success','User updated successfully');

@@ -12,14 +12,7 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class BrandController extends Controller
 {
-    // You can add permission middleware here if you use a package like Spatie/laravel-permission
-    function __construct()
-    {
-         $this->middleware('permission:brandView|brandAdd|brandUpdate|brandDelete', ['only' => ['index','data']]);
-         $this->middleware('permission:brandAdd', ['only' => ['store']]);
-         $this->middleware('permission:brandUpdate', ['only' => ['update']]);
-         $this->middleware('permission:brandDelete', ['only' => ['destroy']]);
-    }
+   
 
      public function index(): View
     {
@@ -59,6 +52,7 @@ class BrandController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:brands,name',
+            'description' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -84,6 +78,7 @@ class BrandController extends Controller
 
         Brand::create([
             'name' => $request->name,
+            'description' => $request->description,
             'slug' => Str::slug($request->name),
             'logo' => $path,
         ]);
@@ -98,6 +93,7 @@ class BrandController extends Controller
 
         $request->validate([
             'name' => 'required|string|unique:brands,name,' . $brand->id,
+            'description' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -123,6 +119,7 @@ class BrandController extends Controller
 
         $brand->update([
             'name' => $request->name,
+            'description' => $request->description,
             'slug' => Str::slug($request->name),
             'logo' => $path,
             'status' => $request->status,

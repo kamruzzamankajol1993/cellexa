@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="addModalLabel">Add New Brand</h1>
+                <h1 class="modal-title fs-5" id="addModalLabel">Add New Company</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -11,10 +11,16 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="mb-3">
-                                <label class="form-label text-dark">Brand Name</label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter Brand Name" required>
+                                <label class="form-label text-dark">Company Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter Company Name" required>
                             </div>
                         </div>
+                        <div class="col-md-12">
+    <div class="mb-3">
+        <label class="form-label text-dark">Description</label>
+        <textarea name="description" class="form-control" placeholder="Enter Company Description" rows="3"></textarea>
+    </div>
+</div>
                         <div class="col-md-12">
                             <div class="mb-3">
                                 <label class="form-label text-dark">Logo</label>

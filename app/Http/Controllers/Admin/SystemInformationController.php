@@ -17,13 +17,7 @@ use Mpdf\Mpdf;
 class SystemInformationController extends Controller
 {
 
-    function __construct()
-    {
-         $this->middleware('permission:panelSettingView|panelSettingAdd|panelSettingUpdate|panelSettingDelete', ['only' => ['index','store','destroy','update']]);
-         $this->middleware('permission:panelSettingAdd', ['only' => ['create','store']]);
-         $this->middleware('permission:panelSettingUpdate', ['only' => ['edit','update']]);
-         $this->middleware('permission:panelSettingDelete', ['only' => ['destroy']]);
-    }
+   
 
 
        public function downloadSystemInformationExcel()
@@ -93,18 +87,9 @@ class SystemInformationController extends Controller
     {
         try{
 
-            if(Auth::user()->id == 1){
-                $panelSettingInfo = SystemInformation::latest()->get();
+             $panelSettingInfo = SystemInformation::first();
 
-            }else{
-$panelSettingInfo = SystemInformation::where('branch_id',Auth::user()->branch_id)->latest()->get();
-            }
-
-            
-
-            CommonController::addToLog('panelSettingView');
-
-            return view('admin.panelSettingInfo.panelList',compact('panelSettingInfo'));
+            return view('admin.panelSettingInfo.edit',compact('panelSettingInfo'));
 
         } catch (\Exception $e) {
     

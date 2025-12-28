@@ -142,6 +142,12 @@ Route::controller(AuthController::class)->group(function () {
 
 
 Route::group(['middleware' => ['auth']], function() {
+
+Route::get('products/import/sample', [App\Http\Controllers\Admin\ProductController::class, 'downloadSample'])->name('product.import.sample');
+    // In routes/web.php, inside the auth middleware group
+Route::post('products-import', [App\Http\Controllers\Admin\ProductController::class, 'import'])->name('product.import');
+
+
    Route::get('area-wise-price/data', [AreaWisePriceController::class, 'data'])->name('area-wise-price.data'); // ADD THIS LINE
      Route::resource('area-wise-price', AreaWisePriceController::class);
 

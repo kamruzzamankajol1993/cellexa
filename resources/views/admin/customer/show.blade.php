@@ -16,7 +16,7 @@
                             <i data-feather="shopping-bag"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-1">Total Orders</h6>
+                            <h6 class="text-muted mb-1">Total Requests</h6>
                             <h4 class="mb-0">{{ $totalOrders }}</h4>
                         </div>
                     </div>
@@ -29,7 +29,7 @@
                             <i data-feather="loader"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-1">Pending Orders</h6>
+                            <h6 class="text-muted mb-1">Pending Requests</h6>
                             <h4 class="mb-0">{{ $pendingOrders }}</h4>
                         </div>
                     </div>
@@ -42,7 +42,7 @@
                             <i data-feather="dollar-sign"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-1">Total Buy Amount</h6>
+                            <h6 class="text-muted mb-1">Total Request Amount</h6>
                             <h4 class="mb-0">৳{{ number_format($totalBuyAmount, 2) }}</h4>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">All Orders</h5>
+                        <h5 class="mb-0">All Requests</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -86,7 +86,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted">No orders found for this customer.</td>
+                                        <td colspan="4" class="text-center text-muted">No requests found for this customer.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -104,7 +104,7 @@
                             <li class="list-group-item"><strong>Email:</strong> {{ $user->email ?? $customer->email ?? 'N/A' }}</li>
                             <li class="list-group-item"><strong>Phone:</strong> {{ $customer->phone }}</li>
                             <li class="list-group-item"><strong>Secondary Phone:</strong> {{ $customer->secondary_phone ?? 'N/A' }}</li>
-                            <li class="list-group-item"><strong>Type:</strong> <span class="badge bg-info">{{ ucfirst($customer->type) }}</span></li>
+
                             <li class="list-group-item"><strong>Discount:</strong> {{ $customer->discount_in_percent ?? 0 }}%</li>
                             <li class="list-group-item"><strong>Status:</strong>
                                 @if($customer->status)

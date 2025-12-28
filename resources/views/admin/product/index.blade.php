@@ -42,16 +42,51 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <h2 class="mb-0">Product List</h2>
-            {{-- এই নতুন বাটনটি যুক্ত করুন --}}
-        <a href="{{ route('product.export.variants') }}" class="btn text-white me-2" style="background-color: #28a745; white-space: nowrap;">
-            <i class="fa fa-file-excel me-1"></i> Stock Export
-        </a>
-        {{-- -------------------------- --}}
-            <a href="{{ route('product.create') }}" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
-                <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Product
-            </a>
-        </div>
+          
+            <div>
+        <button type="button" class="btn text-white me-2" style="background-color: #28a745;" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="fas fa-file-excel me-1"></i> Import Excel
+        </button>
 
+        <a href="{{ route('product.create') }}" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
+            <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Product
+        </a>
+    </div>
+        </div>
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Products from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('product.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <a href="{{ route('product.import.sample') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> Download Sample File
+                        </a>
+                    </div>
+
+                    <div class="alert alert-info" style="font-size: 0.9rem;">
+                        <strong>Required Columns:</strong><br>
+                        company_name, category_name, product_name, description, specification, buying_price, selling_price, discount_price
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Choose Excel/CSV File</label>
+                        <input type="file" name="file" class="form-control" required accept=".xlsx,.xls,.csv">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Upload & Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="card-title mb-0">Filter Products</h5>
@@ -107,11 +142,10 @@
                                 <th>Image</th>
                                 <th class="sortable" data-column="name">Name</th>
                                 <th>Price</th>
-                                <th>Total Stock</th>
+                             
                                 <th class="sortable" data-column="created_at">Created At</th>
                                 <th class="sortable" data-column="status">Status</th>
-                                <th>Free Delivery</th>
-                                <th>Pre Order</th>
+                             
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -150,7 +184,7 @@
 <script>
 $(document).ready(function() {
     // Store all sizes passed from the controller for easy lookup
-    const allSizes = @json($sizes);
+  
 
     var currentPage = 1,
         productName = '',
@@ -252,11 +286,10 @@ const preOrderBadge = product.is_pre_order == 1
                         <td><img src="${imageUrl}" alt="${product.name}" width="50" class="img-thumbnail"></td>
                         <td>${product.name}</td>
                         <td>${priceHtml}</td>
-                        <td>${stockButton}</td>
+                    
                         <td>${createdAt}</td>
                         <td>${statusBadge}</td>
-                        <td>${freeDeliveryBadge}</td>
-                        <td>${preOrderBadge}</td>
+                      
                         <td>
                             <a href="${showUrl}" class="btn btn-sm btn-primary"><i class="fa fa-eye"></i></a>
                             <a href="${editUrl}" class="btn btn-sm btn-info"><i class="fa fa-edit"></i></a>
@@ -284,46 +317,7 @@ const preOrderBadge = product.is_pre_order == 1
         });
     }
 
-    // Modal Population Logic
-    $(document).on('click', '.btn-stock-modal', function() {
-        const productName = $(this).data('product-name');
-        const variants = $(this).data('variants');
-        const modalTitle = $('#stockModalLabel');
-        const modalBody = $('#stockModalBodyContent');
-
-        modalTitle.text(`Stock Details for: ${productName}`);
-        modalBody.empty();
-
-        if (variants && variants.length > 0) {
-            let contentHtml = '<table class="table table-sm table-bordered"><thead><tr><th>Color</th><th>Size</th><th>Quantity</th></tr></thead><tbody>';
-            let hasStock = false;
-            variants.forEach(variant => {
-                if (variant.sizes && Array.isArray(variant.sizes)) {
-                    const availableSizes = variant.sizes.filter(s => s.quantity > 0);
-                    if (availableSizes.length > 0) {
-                        hasStock = true;
-                        availableSizes.forEach(sizeInfo => {
-                            const sizeName = allSizes[sizeInfo.size_id] ? allSizes[sizeInfo.size_id].name : 'Unknown';
-                            contentHtml += `<tr>
-                                <td>${variant.color ? variant.color.name : 'N/A'}</td>
-                                <td>${sizeName}</td>
-                                <td><b>${sizeInfo.quantity}</b></td>
-                            </tr>`;
-                        });
-                    }
-                }
-            });
-            contentHtml += '</tbody></table>';
-
-            if (!hasStock) {
-                modalBody.html('<p class="text-muted">No stock variations available for this product.</p>');
-            } else {
-                modalBody.html(contentHtml);
-            }
-        } else {
-            modalBody.html('<p class="text-muted">No stock variations available for this product.</p>');
-        }
-    });
+ 
 
     // --- Central function to apply filters and fetch data ---
     function applyFiltersAndFetch() {

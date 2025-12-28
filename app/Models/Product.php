@@ -21,6 +21,7 @@ class Product extends Model
         'slug',
         'product_code',
         'brand_id',
+        'specification',
         'category_id',
         'subcategory_id',
         'sub_subcategory_id',

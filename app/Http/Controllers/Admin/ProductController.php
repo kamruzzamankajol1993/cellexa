@@ -26,7 +26,8 @@ use Illuminate\Support\Facades\File;
 use App\Models\ProductVariant;
 use App\Models\AssignCategory;
 use Illuminate\Validation\ValidationException;
-
+use App\Imports\ProductsImport;
+use Maatwebsite\Excel\Facades\Excel;
 class ProductController extends Controller
 {
 
@@ -100,13 +101,7 @@ class ProductController extends Controller
         return [
             'brands' => Brand::where('status', 1)->get(),
              'categories' => Category::with('children')->whereNull('parent_id')->where('status', 1)->get(),
-            'fabrics' => Fabric::where('status', 1)->get(),
-            'units' => Unit::where('status', 1)->get(),
-            'colors' => Color::where('status', 1)->get(),
-            'sizes' => Size::where('status', 1)->get(),
-            'size_charts' => SizeChart::where('status', 1)->get(),
-            'animation_categories' => AnimationCategory::where('status', 1)->get(),
-             'extra_categories' => ExtraCategory::where('status', 1)->get(),
+          
         ];
 
         } catch (\Exception $e) {
@@ -124,6 +119,68 @@ class ProductController extends Controller
     } catch (\Exception $e) {
             Log::error('Error getting subcategories: ' . $e->getMessage());
             return response()->json(['error' => 'Could not fetch subcategories.'], 500);
+        }
+    }
+
+    public function downloadSample()
+{
+    $filename = 'product_import_sample.csv';
+    
+    $headers = [
+        "Content-type"        => "text/csv",
+        "Content-Disposition" => "attachment; filename=$filename",
+        "Pragma"              => "no-cache",
+        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+        "Expires"             => "0"
+    ];
+
+    $columns = [
+        'company_name', 
+        'category_name', 
+        'product_name', 
+        'description', 
+        'specification', 
+        'buying_price', 
+        'selling_price', 
+        'discount_price'
+    ];
+
+    $callback = function() use ($columns) {
+        $file = fopen('php://output', 'w');
+        
+        // Add Header Row
+        fputcsv($file, $columns);
+
+        // Add Dummy Data Row (Example)
+        fputcsv($file, [
+            'Nike',           // company_name
+            'Shoes',          // category_name
+            'Running Shoe',   // product_name
+            'Comfortable running shoes', // description
+            'Size: 42, Color: Red',      // specification
+            '500',            // buying_price
+            '800',            // selling_price
+            '750'             // discount_price
+        ]);
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+
+    public function import(Request $request) 
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+ 
+        try {
+            Excel::import(new ProductsImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Products imported successfully!');
+        } catch (\Exception $e) {
+            Log::error('Import Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error importing products: ' . $e->getMessage());
         }
     }
 
@@ -154,10 +211,9 @@ class ProductController extends Controller
     {
 
          try {
-        // Pass both sizes (for the modal) and categories (for the new filter)
-        $sizes = Size::all()->keyBy('id');
+       
         $categories = Category::where('status', 1)->orderBy('name')->get(); // MODIFIED: Get categories for the filter
-        return view('admin.product.index', compact('sizes', 'categories')); // MODIFIED: Pass categories to the view
+        return view('admin.product.index', compact('categories')); // MODIFIED: Pass categories to the view
          } catch (\Exception $e) {
             Log::error('Error loading product index page: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Could not load product page.');
@@ -167,7 +223,7 @@ class ProductController extends Controller
     public function data(Request $request)
     {
         try {
-        $query = Product::with(['category', 'variants.color']);
+        $query = Product::with(['category', 'brand']);
 
          // --- NEW: Advanced Filtering Logic ---
         if ($request->filled('product_name')) {
@@ -225,14 +281,11 @@ try {
             'name' => 'required|string|max:255',
            'category_ids' => 'required|array|min:1',
            'category_ids.*' => 'exists:categories,id',
-            'unit_id' => 'required|exists:units,id',
             'base_price' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0',
             'thumbnail_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'real_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'size_chart_id' => 'nullable|exists:size_charts,id',
-            'chart_entries' => 'nullable|array',
-            'pre_order_msg' => 'nullable|string',
+          
         ]);
 
         // --- NEW: Get all parent categories from the selection ---
@@ -271,6 +324,7 @@ try {
                 'fabric_id' => $request->fabric_id,
                 'unit_id' => $request->unit_id,
                 'description' => $request->description,
+                    'specification' => $request->specification,
                 'base_price' => $request->base_price,
                 'purchase_price' => $request->purchase_price,
                 'discount_price' => $request->discount_price,
@@ -293,67 +347,10 @@ try {
                 }
             }
 
-              // Handle Assigned Categories
-            if ($request->has('animation_category_ids')) {
-                foreach ($request->animation_category_ids as $id) {
-                    $category = AnimationCategory::find($id);
-                    if ($category) {
-                        $product->assigns()->create([
-                            'category_id' => $id,
-                            'category_name' => $category->name,
-                            'type' => 'animation'
-                        ]);
-                    }
-                }
-            }
-             if ($request->has('extra_category_ids')) {
-                foreach ($request->extra_category_ids as $id) {
-                    $categoryone = ExtraCategory::find($id);
-                    if ($categoryone) {
-                        $product->assigns()->create([
-                            'category_id' => $id, 'category_name' => $categoryone->slug, 'type' => 'other'
-                        ]);
-                    }
-                }
-            }
+           
+          
 
-            // Handle Assign Chart
-            if ($request->filled('size_chart_id') && $request->has('chart_entries')) {
-                $assignChart = $product->assignChart()->create([
-                    'size_chart_id' => $request->size_chart_id,
-                ]);
-                foreach ($request->chart_entries as $entry) {
-                    $assignChart->entries()->create($entry);
-                }
-            }
-
-            if ($request->has('variants')) {
-                foreach ($request->variants as $variantData) {
-                    $variantImagePath = null;
-                    $variantImagePathmain = null;
-                    if (isset($variantData['image'])) {
-                        $variantImagePath = $this->uploadImageMobile($variantData['image'], 'products/variants');
-                        $variantImagePathmain = $this->uploadImage($variantData['image'], 'products/variants');
-                    }
-
-                    // Filter out sizes that don't have a quantity
-                   // **FIXED LOGIC HERE**
-                    $sizesWithKeys = array_filter($variantData['sizes'], fn($size) => isset($size['quantity']) && $size['quantity'] !== null);
-                    $sizes = array_values($sizesWithKeys); // Re-index the array to remove keys
-
-                    if (!empty($sizes)) {
-                        $product->variants()->create([
-                            'color_id' => $variantData['color_id'],
-                                                        'variant_sku' => $variantData['variant_sku'],
-
-                            'variant_image' => $variantImagePath,
-                            'main_image' => $variantImagePathmain,
-                            'sizes' => $sizes,
-                            'additional_price' => $variantData['additional_price'] ?? 0,
-                        ]);
-                    }
-                }
-            }
+        
         });
 
         return redirect()->route('product.index')->with('success', 'Product created successfully.');
@@ -371,11 +368,7 @@ try {
         // --- MODIFIED: Eager load relationships for the view ---
         $product->load([
             'brand',
-            'fabric',
-            'unit',
-            'variants.color',
-            'assignChart.entries',
-            'assignChart.originalSizeChart',
+          
             // Load only the 'product_category' type assigns, and for those, load the category name.
             'assigns' => function ($query) {
                 $query->where('type', 'product_category')->with('category');
@@ -393,11 +386,11 @@ try {
     {
         try {
         $data = $this->getProductData();
-        $product->load('variants.color', 'assignChart.entries', 'assigns');
+        $product->load('assigns');
         $data['product'] = $product;
         // --- NEW: Get assigned category IDs for the edit form ---
         $data['assignedCategoryIds'] = $product->assigns->where('type', 'product_category')->pluck('category_id')->toArray();
-        $data['assignedExtraCategoryIds'] = $product->assigns->where('type', 'extra_category')->pluck('category_id')->toArray();
+      
         return view('admin.product.edit', $data);
         } catch (\Exception $e) {
             Log::error('Error loading edit product page: ' . $e->getMessage());
@@ -414,7 +407,6 @@ try {
             'product_code' => 'nullable|string|unique:products,product_code,' . $product->id,
            'category_ids' => 'required|array|min:1',
             'category_ids.*' => 'exists:categories,id',
-            'unit_id' => 'required|exists:units,id',
             'base_price' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|lt:base_price',
@@ -423,7 +415,6 @@ try {
                 'variants' => 'nullable|array',
                 'delete_images' => 'nullable|array',
                 'delete_real_images' => 'nullable|array',
-                'pre_order_msg' => 'nullable|string',
         ]);
 
         //dd($request->all());
@@ -512,6 +503,7 @@ $primaryCategoryId = $request->category_ids[0] ?? null;
                 'fabric_id' => $request->fabric_id,
                 'unit_id' => $request->unit_id,
                 'description' => $request->description,
+                    'specification' => $request->specification,
                 'base_price' => $request->base_price,
                 'purchase_price' => $request->purchase_price,
                 'discount_price' => $request->discount_price,
@@ -538,80 +530,9 @@ $primaryCategoryId = $request->category_ids[0] ?? null;
             }
 
               
-            if ($request->has('animation_category_ids')) {
-                foreach ($request->animation_category_ids as $id) {
-                    $category = AnimationCategory::find($id);
-                    if ($category) {
-                        $product->assigns()->create([
-                            'category_id' => $id,
-                            'category_name' => $category->name,
-                            'type' => 'animation'
-                        ]);
-                    }
-                }
-            }
-              if ($request->has('extra_category_ids')) {
-                foreach ($request->extra_category_ids as $id) {
-                    $categoryone = ExtraCategory::find($id);
-                    if ($categoryone) {
-                        $product->assigns()->create([
-                            'category_id' => $id, 'category_name' => $categoryone->slug, 'type' => 'other'
-                        ]);
-                    }
-                }
-            }
+          
 
-             // Handle Assign Chart update (delete old, create new)
-            if ($product->assignChart) {
-                $product->assignChart->entries()->delete();
-                $product->assignChart()->delete();
-            }
-            if ($request->filled('size_chart_id') && $request->has('chart_entries')) {
-                $assignChart = $product->assignChart()->create([
-                    'size_chart_id' => $request->size_chart_id,
-                ]);
-                foreach ($request->chart_entries as $entry) {
-                    $assignChart->entries()->create($entry);
-                }
-            }
-
-            // Delete old variants and their images before creating new ones
-            
-            $product->variants()->delete();
-
-            if ($request->has('variants')) {
-                foreach ($request->variants as $variantData) {
-                    $variantImagePath = null;
-                    $variantImagePathmain = null;
-                    if (isset($variantData['image'])) {
-
-                        foreach ($product->variants as $variant) {
-                $this->deleteImage($variant->variant_image);
-            }
-                        // This assumes you are using a file input with the name 'variants[index][image]'
-                        $variantImagePath = $this->uploadImageMobile($variantData['image'], 'products/variants');
-                        $variantImagePathmain = $this->uploadImage($variantData['image'], 'products/variants');
-                    } elseif (isset($variantData['existing_image'])) {
-                        // This handles cases where the image is not being changed
-                        $variantImagePath = $variantData['existing_image'];
-                        $variantImagePathmain = $variantData['existing_image'];
-                    }
-
-                    $sizesWithKeys = array_filter($variantData['sizes'], fn($size) => isset($size['quantity']) && $size['quantity'] !== null);
-                    $sizes = array_values($sizesWithKeys); // Re-index the array
-
-                    if (!empty($sizes)) {
-                        $product->variants()->create([
-                            'color_id' => $variantData['color_id'],
-                             'variant_sku' => $variantData['variant_sku'],
-                            'variant_image' => $variantImagePath,
-                            'main_image' => $variantImagePathmain,
-                            'sizes' => $sizes,
-                            'additional_price' => $variantData['additional_price'] ?? 0,
-                        ]);
-                    }
-                }
-            }
+          
         });
 
         return redirect()->route('product.index')->with('success', 'Product updated successfully.');
