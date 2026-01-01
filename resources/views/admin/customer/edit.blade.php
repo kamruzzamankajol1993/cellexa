@@ -37,19 +37,7 @@
                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if (this.value.length > 11) this.value = this.value.slice(0, 11);" 
                                    pattern="[0-9]{11}" title="Please enter an 11-digit mobile number">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Type</label>
-                            <select name="type" class="form-select" required>
-                                <option value="normal" @selected(old('type', $customer->type) == 'normal')>Normal</option>
-                                <option value="silver" @selected(old('type', $customer->type) == 'silver')>Silver</option>
-                                <option value="platinum" @selected(old('type', $customer->type) == 'platinum')>Platinum</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-    <label class="form-label">Discount (%)</label>
-    <input type="number" name="discount_in_percent" class="form-control" value="{{ old('discount_in_percent', $customer->discount_in_percent) }}" step="0.1" min="0" max="100">
-</div>
+                      
                     </div>
 
                     @if($user)

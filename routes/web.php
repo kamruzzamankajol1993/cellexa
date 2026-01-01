@@ -70,12 +70,14 @@ use App\Http\Controllers\Admin\ShareholderDepositController;
 use App\Http\Controllers\Admin\ShareholderWithdrawController;
 use App\Http\Controllers\Admin\CashBookController;
 use App\Http\Controllers\Admin\BankBookController;
+use App\Http\Controllers\Admin\CompanyCategoryController;
 use App\Http\Controllers\Admin\HighlightProductController;
 use App\Http\Controllers\Admin\ExtraCategoryController;
 use App\Http\Controllers\Admin\HeroLeftSliderController;
 use App\Http\Controllers\Admin\HeroRightSliderController;
 use App\Http\Controllers\Admin\FooterBannerController;
 use App\Http\Controllers\Admin\AreaWisePriceController;
+use App\Http\Controllers\Admin\MainBrandController;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
@@ -142,6 +144,35 @@ Route::controller(AuthController::class)->group(function () {
 
 
 Route::group(['middleware' => ['auth']], function() {
+
+
+
+    Route::controller(App\Http\Controllers\Admin\ProductController::class)->group(function () {
+    // আগের রাউটগুলো...
+    
+    // NEW AJAX ROUTES
+    Route::get('/get-brands-by-category/{categoryId}', 'getBrandsByCategory')->name('get.brands.by.category');
+    Route::get('/get-company-categories-by-brand/{brandId}', 'getCompanyCategoriesByBrand')->name('get.company.categories.by.brand');
+});
+
+    // Company Category Routes
+    Route::get('company-category/get-by-company/{id}', [CompanyCategoryController::class, 'getCategoriesByCompany'])->name('company-category.get-by-company');
+
+    Route::get('company-category/import/sample', [CompanyCategoryController::class, 'downloadSample'])->name('company-category.import.sample');
+    Route::post('company-category-import', [CompanyCategoryController::class, 'import'])->name('company-category.import');
+
+    Route::get('ajax_company_categories', [CompanyCategoryController::class, 'data'])->name('ajax.company-category.data');
+    Route::resource('company-category', CompanyCategoryController::class);
+
+    Route::get('main_brands/import/sample', [MainBrandController::class, 'downloadSample'])->name('main_brand.import.sample');
+Route::post('main-brands-import', [MainBrandController::class, 'import'])->name('main_brand.import');
+
+// Place this near your existing Brand/Company routes
+Route::get('brands/import/sample', [BrandController::class, 'downloadSample'])->name('brand.import.sample');
+Route::post('brands-import', [BrandController::class, 'import'])->name('brand.import');
+    // Place this near your existing Category routes
+Route::get('categories/import/sample', [CategoryController::class, 'downloadSample'])->name('category.import.sample');
+Route::post('categories-import', [CategoryController::class, 'import'])->name('category.import');
 
 Route::get('products/import/sample', [App\Http\Controllers\Admin\ProductController::class, 'downloadSample'])->name('product.import.sample');
     // In routes/web.php, inside the auth middleware group
@@ -452,6 +483,7 @@ Route::resource('defaultLocation', DefaultLocationController::class);
     //setting part start
     Route::resource('setting', SettingController::class);
     Route::resource('branch', BranchController::class);
+    Route::resource('main_brand', MainBrandController::class);
     Route::resource('designation', DesignationController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('roles', RoleController::class);

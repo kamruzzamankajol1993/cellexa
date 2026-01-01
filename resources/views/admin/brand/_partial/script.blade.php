@@ -9,7 +9,28 @@
         delete: id => `{{ route('brand.destroy', ':id') }}`.replace(':id', id),
         csrf: "{{ csrf_token() }}"
     };
+ $(document).ready(function() {
+        // --- Initialize Summernote ---
+        $('#summernoteAdd').summernote({
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
 
+        $('#editDescription').summernote({
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
     function fetchData() {
         $.get(routes.fetch, {
             page: currentPage,
@@ -21,12 +42,15 @@
             res.data.forEach((brand, i) => {
                 const logoUrl = brand.logo ? `{{ asset('public') }}/${brand.logo}` : 'https://placehold.co/50x50/EFEFEF/AAAAAA&text=No+Image';
                 const statusBadge = brand.status == 1 ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+                
+                // ক্যাটাগরি নাম চেক করা (যদি ক্যাটাগরি ডিলিট হয়ে যায় বা না থাকে)
+                const categoryName = brand.category ? brand.category.name : '<span class="text-muted">N/A</span>';
 
                 rows += `<tr>
                     <td>${(res.current_page - 1) * 10 + i + 1}</td>
                     <td><img src="${logoUrl}" alt="${brand.name}" width="50" class="img-thumbnail"></td>
                     <td>${brand.name}</td>
-                    <td>${brand.description ? brand.description : ''}</td>
+                    <td>${categoryName}</td> <td>${brand.description ? brand.description : ''}</td>
                     <td>${statusBadge}</td>
                     <td class="d-flex gap-2">
                         <button class="btn btn-sm btn-info btn-edit btn-custom-sm" data-id="${brand.id}"><i class="fa fa-edit"></i></button>
@@ -40,7 +64,7 @@
             });
             $('#tableBody').html(rows);
 
-            // Pagination logic (copied from your script)
+            // Pagination logic
             let paginationHtml = '';
             if (res.last_page > 1) {
                 paginationHtml += `<li class="page-item ${res.current_page === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="1">First</a></li>`;
@@ -82,7 +106,8 @@
         $.get(routes.show(id), function (brand) {
             $('#editBrandId').val(brand.id);
             $('#editName').val(brand.name);
-            $('#editDescription').val(brand.description);
+            $('#editCategoryId').val(brand.category_id); // ক্যাটাগরি সেট করা হচ্ছে
+              $('#editDescription').summernote('code', brand.description);
             $('#editStatus').val(brand.status);
             if (brand.logo) {
                 $('#logoPreview').attr('src', `{{ asset('public') }}/${brand.logo}`).show();
@@ -99,14 +124,14 @@
         const id = $('#editBrandId').val();
         const btn = $(this).find('button[type="submit"]');
         let formData = new FormData(this);
-        formData.append('_method', 'PUT'); // Since HTML forms don't support PUT
+        formData.append('_method', 'PUT'); 
         formData.append('_token', routes.csrf);
 
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
 
         $.ajax({
             url: routes.update(id),
-            method: 'POST', // Use POST to tunnel PUT
+            method: 'POST', 
             data: formData,
             processData: false,
             contentType: false,
@@ -116,7 +141,8 @@
                 fetchData();
             },
             error(xhr) {
-                // Handle validation errors
+                // Handle validation errors here if needed
+                console.log(xhr.responseText);
             },
             complete() {
                 btn.prop('disabled', false).text('Save Changes');
@@ -125,9 +151,8 @@
     });
 
     // Delete Action
-    // UPDATED DELETE BUTTON CLICK HANDLER
     $(document).on('click', '.btn-delete', function () {
-        const deleteButton = $(this); // Reference to the button
+        const deleteButton = $(this);
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -138,7 +163,6 @@
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Find the closest form and submit it
                 deleteButton.closest('form').submit();
             }
         });
@@ -147,6 +171,12 @@
     $('#editModal').on('hidden.bs.modal', function () {
         $('#editBrandForm')[0].reset();
         $('#logoPreview').hide();
+         $('#editDescription').summernote('reset');
+    });
+
+    $('#addModal').on('hidden.bs.modal', function () {
+        $('#addBrandForm')[0].reset(); // form id চেক করে নিবেন (addModal.blade.php এ id="addBrandForm" থাকলে)
+        $('#summernoteAdd').summernote('reset');
     });
 
     fetchData(); // Initial data load

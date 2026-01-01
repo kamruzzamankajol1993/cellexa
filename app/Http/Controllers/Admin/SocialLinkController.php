@@ -22,13 +22,7 @@ use Log;
 use Carbon\Carbon;
 class SocialLinkController extends Controller
 {
-    function __construct()
-    {
-         $this->middleware('permission:socialLinkView|socialLinkAdd|socialLinkUpdate|socialLinkDelete', ['only' => ['index','store','destroy','update']]);
-         $this->middleware('permission:socialLinkAdd', ['only' => ['create','store']]);
-         $this->middleware('permission:socialLinkUpdate', ['only' => ['edit','update']]);
-         $this->middleware('permission:socialLinkDelete', ['only' => ['destroy']]);
-    }
+   
 
     // Define a list of common social media names for consistent options
     private $socialMediaNames = [

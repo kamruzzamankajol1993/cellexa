@@ -69,6 +69,16 @@ Update Panel Setting | {{ $ins_name }}
                                     <input type="text" name="ins_name" class="form-control" value="{{ $panelSettingInfo->ins_name }}" placeholder="Enter System Name" required>
                                 </div>
 
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">System Title<span class="text-danger font-w900">*</span></label>
+                                        <input type="text" name="title" class="form-control" value="{{ $panelSettingInfo->title }}" placeholder="Enter System Title" required>
+                                    </div>          
+
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Open Hour<span class="text-danger font-w900">*</span></label>
+                                        <input type="text" name="open_hour" class="form-control" value="{{  $panelSettingInfo->open_hour }}" placeholder="e.g., Mon-Fri: 9am - 6pm" required>
+                                    </div>
+
                                 
 
                                 <div class="col-md-12 mb-3">

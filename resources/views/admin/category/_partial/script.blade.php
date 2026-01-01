@@ -19,7 +19,28 @@
             delete: id => `{{ route('category.destroy', ':id') }}`.replace(':id', id),
             csrf: "{{ csrf_token() }}"
         };
+ $(document).ready(function() {
+        // --- Initialize Summernote ---
+        $('#summernoteAdd').summernote({
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
 
+        $('#editDescription').summernote({
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
         function fetchData() {
             $.get(routes.fetch, {
                 page: currentPage, search: searchTerm, sort: sortColumn, direction: sortDirection
@@ -80,14 +101,14 @@
             $.get(routes.show(id), function (item) {
                 $('#editId').val(item.id);
                 $('#editName').val(item.name);
-                $('#editDescription').val(item.description);
+                  $('#editDescription').summernote('code', item.description);
                 $('#editStatus').val(item.status);
                 
                 // --- MODIFIED: Set Select2 value and trigger change ---
                 $('#editParentId').val(item.parent_id || '').trigger('change'); 
 
                 if (item.image) {
-                    $('#imagePreview').attr('src', `{{ asset('') }}${item.image}`).show();
+                    $('#imagePreview').attr('src', `{{ asset('') }}public/${item.image}`).show();
                 } else {
                     $('#imagePreview').hide();
                 }
@@ -141,6 +162,8 @@
             $(this).find('.select2-modal').val('').trigger('change');
             $('#imagePreview').hide();
             $('#editParentId option').prop('disabled', false);
+             $('#editDescription').summernote('reset');
+             $('#summernoteAdd').summernote('reset');
         });
 
         fetchData();

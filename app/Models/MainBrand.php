@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Brand extends Model
+class MainBrand extends Model
 {
-    use HasFactory;
+     use HasFactory;
 
     protected $fillable = [
-        'category_id', // নতুন কলাম
         'name',
         'slug',
         'logo',
@@ -19,12 +18,7 @@ class Brand extends Model
         'status',
     ];
 
-    // ক্যাটাগরি রিলেশন
-    public function category()
-    {
-        return $this->belongsTo(Category::class, 'category_id');
-    }
-
+    // Automatically create a slug from the name if no slug is provided
     protected static function boot()
     {
         parent::boot();

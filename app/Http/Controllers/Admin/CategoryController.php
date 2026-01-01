@@ -9,9 +9,54 @@ use Illuminate\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Laravel\Facades\Image;
-
+use App\Imports\CategoriesImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 class CategoryController extends Controller
 {
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            Excel::import(new CategoriesImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Categories imported successfully!');
+        } catch (\Exception $e) {
+            Log::error('Category Import Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error importing categories: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadSample()
+    {
+        $filename = 'category_import_sample.csv';
+        
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['category_name', 'parent_category_name', 'description'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            // Sample Data
+            fputcsv($file, ['Men', '', 'Main category for men']); 
+            fputcsv($file, ['Shirts', 'Men', 'Shirts for men']); 
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
     public function index(): View
     {
         // Pass all categories to the view for the parent dropdown
@@ -66,7 +111,7 @@ class CategoryController extends Controller
                 File::makeDirectory($destinationPath, 0777, true, true);
             }
 
-            Image::read($image->getRealPath())->resize(50, 50)->save($destinationPath.'/'.$imageName);
+            Image::read($image->getRealPath())->resize(200, 200)->save($destinationPath.'/'.$imageName);
             $path = 'uploads/categories/'.$imageName;
         }
 
@@ -104,8 +149,8 @@ class CategoryController extends Controller
             if (!File::isDirectory($destinationPath)) {
                 File::makeDirectory($destinationPath, 0777, true, true);
             }
-            
-            Image::read($image->getRealPath())->resize(50, 50)->save($destinationPath.'/'.$imageName);
+
+            Image::read($image->getRealPath())->resize(200, 200)->save($destinationPath.'/'.$imageName);
             $path = 'uploads/categories/'.$imageName;
         }
 

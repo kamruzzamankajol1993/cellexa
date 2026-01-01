@@ -8,6 +8,15 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
+        <label for="editCategoryId" class="form-label">Category</label>
+        <select id="editCategoryId" name="category_id" class="form-select">
+            <option value="">Select Category</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}">{{ $category->name }}</option>
+            @endforeach
+        </select>
+    </div>
+                <div class="mb-3">
                     <label for="editName" class="form-label">Company Name</label>
                     <input type="text" id="editName" name="name" class="form-control">
                 </div>
@@ -17,7 +26,7 @@
 </div>
                 <div class="mb-3">
                     <label for="editLogo" class="form-label">Logo</label>
-                    <input type="file" id="editLogo" name="logo" class="form-control">
+                    <input type="file" accept="image/*" id="editLogo" name="logo" class="form-control">
                     <img id="logoPreview" src="" alt="Logo Preview" class="img-thumbnail mt-2" style="max-width: 100px; display: none;">
                 </div>
                 <div class="mb-3">

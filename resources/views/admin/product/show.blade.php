@@ -46,17 +46,9 @@
         font-weight: 500;
     }
     
-    /* --- List Group Customization --- */
     .list-group-flush > .list-group-item {
         border-color: #f3f4f6;
         padding: 1rem 0;
-    }
-    .list-group-item:first-child { border-top: none; padding-top: 0; }
-    .list-group-item:last-child { border-bottom: none; padding-bottom: 0; }
-    
-    .img-thumbnail {
-        border-radius: 8px;
-        border-color: #e5e7eb;
     }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -94,14 +86,14 @@
                                 {!! $product->description ?? '<span class="text-muted fst-italic">No description provided.</span>' !!}
                             </div>
                         </div>
-{{-- NEW SPECIFICATION SECTION --}}
+
                         <div class="mb-4">
                             <div class="data-label">Specification</div>
                             <div class="data-value rich-text mt-2 lh-base">
                                 {!! $product->specification ?? '<span class="text-muted fst-italic">No specification provided.</span>' !!}
                             </div>
                         </div>
-                        {{-- END NEW SPECIFICATION SECTION --}}
+
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="p-3 bg-light rounded-3">
@@ -109,10 +101,10 @@
                                     <div class="data-value font-monospace">{{ $product->product_code ?? 'N/A' }}</div>
                                 </div>
                             </div>
-                             <div class="col-md-6">
+                            <div class="col-md-6">
                                 <div class="p-3 bg-light rounded-3">
-                                    <div class="data-label">Company</div>
-                                    <div class="data-value">{{ $product->brand->name ?? 'N/A' }}</div>
+                                    <div class="data-label">Main Category</div>
+                                    <div class="data-value">{{ $product->category->name ?? 'Uncategorized' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +113,7 @@
             </div>
 
             <div class="col-md-4">
-                {{-- Pricing & Organization --}}
+                {{-- Pricing & Media --}}
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-images"></i> Media Gallery</h5>
@@ -161,20 +153,26 @@
                                     {{ $product->discount_price ? '$'.number_format($product->discount_price, 2) : 'N/A' }}
                                 </span>
                             </li>
+                            
+                            {{-- Company & Company Categories --}}
                             <li class="list-group-item">
-                                <div class="mb-2 text-muted small">Categories</div>
+                                <div class="mb-2 text-muted small">Company (Brand)</div>
+                                <div class="fw-bold text-dark">{{ $product->brand->name ?? 'N/A' }}</div>
+                            </li>
+
+                            <li class="list-group-item">
+                                <div class="mb-2 text-muted small">Company Categories</div>
                                 <div class="d-flex flex-wrap gap-1">
-                                    @forelse($product->assigns->where('type', 'product_category') as $assign)
-                                        @if($assign->category)
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fw-normal">
-                                                {{ $assign->category->name }}
-                                            </span>
-                                        @endif
+                                    @forelse($product->assigns as $assign)
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 fw-normal">
+                                            {{ $assign->category_name ?? 'N/A' }}
+                                        </span>
                                     @empty
-                                        <span class="text-muted small">Uncategorized</span>
+                                        <span class="text-muted small fst-italic">No categories assigned</span>
                                     @endforelse
                                 </div>
                             </li>
+
                             <li class="list-group-item d-flex justify-content-between align-items-center pt-3">
                                 <span class="text-muted">Status</span>
                                 @if($product->status)

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('brands', function (Blueprint $table) {
+        Schema::create('main_brands', function (Blueprint $table) {
             $table->id();
-              $table->string('name')->unique();
+               $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->string('logo')->nullable();
              $table->longText('description')->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('brands');
+        Schema::dropIfExists('main_brands');
     }
 };

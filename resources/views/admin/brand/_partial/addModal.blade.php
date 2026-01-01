@@ -10,6 +10,17 @@
                     @csrf
                     <div class="row">
                         <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-label text-dark">Category</label>
+            <select name="category_id" class="form-select">
+                <option value="">Select Category</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+                        <div class="col-md-12">
                             <div class="mb-3">
                                 <label class="form-label text-dark">Company Name</label>
                                 <input type="text" name="name" class="form-control" placeholder="Enter Company Name" required>
@@ -18,13 +29,13 @@
                         <div class="col-md-12">
     <div class="mb-3">
         <label class="form-label text-dark">Description</label>
-        <textarea name="description" class="form-control" placeholder="Enter Company Description" rows="3"></textarea>
+        <textarea name="description" id="summernoteAdd" class="form-control" placeholder="Enter Company Description" rows="3"></textarea>
     </div>
 </div>
                         <div class="col-md-12">
                             <div class="mb-3">
                                 <label class="form-label text-dark">Logo</label>
-                                <input type="file" name="logo" class="form-control">
+                                <input type="file" accept="image/*" name="logo" class="form-control">
                             </div>
                         </div>
                     </div>

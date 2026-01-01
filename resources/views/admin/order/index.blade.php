@@ -1,5 +1,5 @@
 @extends('admin.master.master')
-@section('title', 'Invoice List')
+@section('title', 'Requested Product List')
 @section('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
@@ -62,7 +62,7 @@
 <main class="main-content">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-            <h2 class="mb-0">Invoice List</h2>
+            <h2 class="mb-0">Requested Product List</h2>
             {{-- <a href="{{ route('order.create') }}" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
                 <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Invoice
             </a> --}}

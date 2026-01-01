@@ -176,6 +176,8 @@ class SystemInformationController extends Controller
                 $systemInformation->develop_by = $request->develop_by;
                 $systemInformation->tax	= $request->tax;
                 $systemInformation->charge = $request->charge;
+                    $systemInformation->open_hour = $request->open_hour;
+                    $systemInformation->title = $request->title;
                 
                 if ($request->hasfile('logo')) {
 
@@ -271,6 +273,8 @@ class SystemInformationController extends Controller
         $systemInformation->tax	= $request->tax;
         
                 $systemInformation->charge = $request->charge;
+                   $systemInformation->open_hour = $request->open_hour;
+                    $systemInformation->title = $request->title;
         if ($request->hasfile('logo')) {
 
 

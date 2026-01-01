@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
 use Illuminate\Http\Request;
+use App\Models\Brand;
+use App\Models\MainBrand;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Laravel\Facades\Image;
-use App\Imports\BrandsImport;
+use App\Imports\MainBrandsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
-use App\Models\Category;
-class BrandController extends Controller
+class MainBrandController extends Controller
 {
-   
+     
 public function import(Request $request)
     {
         $request->validate([
@@ -23,58 +23,53 @@ public function import(Request $request)
         ]);
 
         try {
-            Excel::import(new BrandsImport, $request->file('file'));
-            return redirect()->back()->with('success', 'Companies imported successfully!');
+            Excel::import(new MainBrandsImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Brands imported successfully!');
         } catch (\Exception $e) {
-            Log::error('Company Import Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error importing companies: ' . $e->getMessage());
+            Log::error('Brand Import Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error importing brands: ' . $e->getMessage());
         }
     }
 
-    // BrandController.php এর downloadSample মেথডটি আপডেট করুন
-
-public function downloadSample()
-{
-    $filename = 'company_import_sample.csv';
-    
-    $headers = [
-        "Content-type"        => "text/csv",
-        "Content-Disposition" => "attachment; filename=$filename",
-        "Pragma"              => "no-cache",
-        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-        "Expires"             => "0"
-    ];
-
-    // নতুন কলাম 'category_name' যুক্ত করা হলো
-    $columns = ['company_name', 'category_name', 'description'];
-
-    $callback = function() use ($columns) {
-        $file = fopen('php://output', 'w');
-        fputcsv($file, $columns);
-
-        // Sample Data তে ক্যাটাগরি নাম দেওয়া হলো
-        // (ব্যাবহারকারীকে বুঝানোর জন্য যে এখানে ক্যাটাগরির নাম লিখতে হবে)
-        fputcsv($file, ['Nike', 'Sports', 'Leading sports brand']); 
-        fputcsv($file, ['Adidas', 'Fashion', 'Global sportswear manufacturer']); 
+    public function downloadSample()
+    {
+        $filename = 'brand_import_sample.csv';
         
-        fclose($file);
-    };
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
 
-    return response()->stream($callback, 200, $headers);
-}
+        $columns = ['brand_name', 'description'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            // Sample Data
+            fputcsv($file, ['Nike', 'Leading sports brand']); 
+            fputcsv($file, ['Adidas', 'Global sportswear manufacturer']); 
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
      public function index(): View
     {
-        $categories = Category::where('status', 1)->select('id', 'name')->get();
-        return view('admin.brand.index', compact('categories'));
+        // CommonController::addToLog('brandView'); // Assuming you have this helper
+        return view('admin.main_brand.index');
     }
 
     public function data(Request $request)
     {
-        // রিলেশনসহ কুয়েরি করা হচ্ছে (with category)
-        $query = Brand::with('category');
+        $query = MainBrand::query();
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', $request->search . '%');
+            $query->where('name', 'like',$request->search . '%');
         }
 
         $sort = $request->get('sort', 'id');
@@ -93,7 +88,7 @@ public function downloadSample()
 
     public function show($id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = MainBrand::findOrFail($id);
         return response()->json($brand);
     }
 
@@ -101,7 +96,6 @@ public function downloadSample()
     {
         $request->validate([
             'name' => 'required|string|unique:brands,name',
-            'category_id' => 'nullable|exists:categories,id', // ভ্যালিডেশন
             'description' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -112,10 +106,12 @@ public function downloadSample()
             $imageName = time().'.'.$image->getClientOriginalExtension();
             $destinationPath = public_path('uploads/brands');
 
+            // Ensure the directory exists
             if (!File::isDirectory($destinationPath)) {
                 File::makeDirectory($destinationPath, 0777, true, true);
             }
 
+            // Use Intervention Image to resize and save
             Image::read($image->getRealPath())->resize(300, 300, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
@@ -124,30 +120,30 @@ public function downloadSample()
             $path = 'uploads/brands/'.$imageName;
         }
 
-        Brand::create([
-            'category_id' => $request->category_id, // ডাটা সেভ
+        MainBrand::create([
             'name' => $request->name,
             'description' => $request->description,
             'slug' => Str::slug($request->name),
             'logo' => $path,
         ]);
 
+        // CommonController::addToLog('brandStore');
         return redirect()->back()->with('success', 'Brand created successfully!');
     }
 
     public function update(Request $request, $id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = MainBrand::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|unique:brands,name,' . $brand->id,
-            'category_id' => 'nullable|exists:categories,id', // ভ্যালিডেশন
+            'name' => 'required|string|unique:main_brands,name,' . $brand->id,
             'description' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $path = $brand->logo;
         if ($request->hasFile('logo')) {
+            // Delete old logo if it exists
             if ($brand->logo && File::exists(public_path('uploads/'.$brand->logo))) {
                 File::delete(public_path('uploads/'.$brand->logo));
             }
@@ -156,6 +152,7 @@ public function downloadSample()
             $imageName = time().'.'.$image->getClientOriginalExtension();
             $destinationPath = public_path('uploads/brands');
 
+            // Use Intervention Image to resize and save
             Image::read($image->getRealPath())->resize(300, 300, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
@@ -165,7 +162,6 @@ public function downloadSample()
         }
 
         $brand->update([
-            'category_id' => $request->category_id, // আপডেট
             'name' => $request->name,
             'description' => $request->description,
             'slug' => Str::slug($request->name),
@@ -173,12 +169,13 @@ public function downloadSample()
             'status' => $request->status,
         ]);
 
+        // CommonController::addToLog('brandUpdate');
         return response()->json(['message' => 'Brand updated successfully']);
     }
 
     public function destroy($id)
     {
-        $brand = Brand::findOrFail($id);
+        $brand = MainBrand::findOrFail($id);
 
         // Delete logo from uploads
         if ($brand->logo && File::exists(public_path('uploads/'.$brand->logo))) {
@@ -187,6 +184,6 @@ public function downloadSample()
 
         $brand->delete();
         // CommonController::addToLog('brandDelete');
-        return redirect()->route('brand.index')->with('success', 'Brand deleted successfully!');
+        return redirect()->route('main_brand.index')->with('success', 'Brand deleted successfully!');
     }
 }

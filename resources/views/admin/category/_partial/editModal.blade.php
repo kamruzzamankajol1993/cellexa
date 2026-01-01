@@ -30,7 +30,7 @@
                 <div class="mb-3">
                     <label for="editImage" class="form-label">Image</label>
                     <input type="file" id="editImage" name="image" class="form-control">
-                    <img id="imagePreview" accept="image/webp" src="" alt="Image Preview" class="img-thumbnail mt-2" style="max-width: 100px; display: none;">
+                    <img id="imagePreview" accept="image/*" src="" alt="Image Preview" class="img-thumbnail mt-2" style="max-width: 100px; display: none;">
                 </div>
                 <div class="mb-3">
                     <label for="editStatus" class="form-label">Status</label>

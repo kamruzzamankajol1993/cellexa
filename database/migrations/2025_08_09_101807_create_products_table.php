@@ -17,13 +17,14 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('product_code')->unique()->nullable();
             $table->foreignId('brand_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('main_brand_id')->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('subcategory_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('sub_subcategory_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('fabric_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
-            $table->text('description')->nullable();
-            $table->text('specification')->nullable();
+            $table->longText('description')->nullable();
+            $table->longText('specification')->nullable();
             $table->decimal('base_price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->decimal('purchase_price', 10, 2);

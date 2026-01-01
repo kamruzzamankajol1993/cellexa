@@ -29,6 +29,8 @@ class SystemInformation extends Model
             'tax',
             'charge',
             'usdollar',
+             'open_hour',
+              'title',
 
     ];
 }

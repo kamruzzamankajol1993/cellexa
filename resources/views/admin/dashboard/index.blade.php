@@ -84,6 +84,14 @@ Dashboard
                     </div>
                 </div>
             </div>
+            <div class="col-md-4 col-xl-2"> 
+                <div class="card h-100 shadow-sm border-0 summary-card">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="summary-card-icon text-secondary"><i data-feather="briefcase"></i></div>
+                        <div><h6 class="text-muted mb-1">Companies</h6><h4 class="mb-0">{{ $totalBrands }}</h4></div>
+                    </div>
+                </div>
+            </div> 
         </div>
 
         <div class="row g-4 mb-4">

@@ -70,8 +70,9 @@
                     </div>
 
                     <div class="alert alert-info" style="font-size: 0.9rem;">
-                        <strong>Required Columns:</strong><br>
-                        company_name, category_name, product_name, description, specification, buying_price, selling_price, discount_price
+                        <strong>Columns:</strong><br>
+                        company_name, company_category, category_name, product_name, description, specification, buying_price, selling_price, discount_price<br>
+                        <small class="text-muted">* company_name, company_category, selling_price are optional.</small>
                     </div>
 
                     <div class="mb-3">

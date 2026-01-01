@@ -35,7 +35,7 @@ body {
 ================================================== */
 .auth-branding-column {
     flex-basis: 45%;
-    background-color: black; /* Primary Color */
+    background-color: #a1573c; /* Primary Color */
     color: #fff;
     padding: 3rem;
     display: flex;

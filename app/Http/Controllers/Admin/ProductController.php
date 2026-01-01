@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Brand;
+use App\Models\MainBrand;
 use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\SubSubcategory;
@@ -28,6 +29,7 @@ use App\Models\AssignCategory;
 use Illuminate\Validation\ValidationException;
 use App\Imports\ProductsImport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\CompanyCategory;
 class ProductController extends Controller
 {
 
@@ -100,6 +102,7 @@ class ProductController extends Controller
         try {
         return [
             'brands' => Brand::where('status', 1)->get(),
+            'mainbrands' => MainBrand::where('status', 1)->get(),
              'categories' => Category::with('children')->whereNull('parent_id')->where('status', 1)->get(),
           
         ];
@@ -123,51 +126,54 @@ class ProductController extends Controller
     }
 
     public function downloadSample()
-{
-    $filename = 'product_import_sample.csv';
-    
-    $headers = [
-        "Content-type"        => "text/csv",
-        "Content-Disposition" => "attachment; filename=$filename",
-        "Pragma"              => "no-cache",
-        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-        "Expires"             => "0"
-    ];
-
-    $columns = [
-        'company_name', 
-        'category_name', 
-        'product_name', 
-        'description', 
-        'specification', 
-        'buying_price', 
-        'selling_price', 
-        'discount_price'
-    ];
-
-    $callback = function() use ($columns) {
-        $file = fopen('php://output', 'w');
+    {
+        $filename = 'product_import_sample.csv';
         
-        // Add Header Row
-        fputcsv($file, $columns);
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
 
-        // Add Dummy Data Row (Example)
-        fputcsv($file, [
-            'Nike',           // company_name
-            'Shoes',          // category_name
-            'Running Shoe',   // product_name
-            'Comfortable running shoes', // description
-            'Size: 42, Color: Red',      // specification
-            '500',            // buying_price
-            '800',            // selling_price
-            '750'             // discount_price
-        ]);
+        // Updated Columns List
+        $columns = [
+            'company_name', 
+            'company_category', // নতুন কলাম
+            'category_name', 
+            'product_name', 
+            'description', 
+            'specification', 
+            'buying_price', 
+            'selling_price', // This maps to base_price
+            'discount_price'
+        ];
 
-        fclose($file);
-    };
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            
+            // Add Header Row
+            fputcsv($file, $columns);
 
-    return response()->stream($callback, 200, $headers);
-}
+            // Add Dummy Data Row
+            fputcsv($file, [
+                'Nike',           // company_name (Optional)
+                'Men',            // company_category (Optional)
+                'Shoes',          // category_name
+                'Running Shoe',   // product_name
+                'Comfortable running shoes', // description
+                'Size: 42, Color: Red',      // specification
+                '500',            // buying_price
+                '800',            // selling_price (base_price - Optional)
+                '750'             // discount_price
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 
     public function import(Request $request) 
     {
@@ -206,6 +212,82 @@ class ProductController extends Controller
         }
     }
 
+    public function getBrandsByCategory($categoryId)
+    {
+        try {
+            // ক্যাটাগরি অনুযায়ী ব্র্যান্ড ফিল্টার (Brand টেবিলে category_id থাকতে হবে)
+            $brands = Brand::where('category_id', $categoryId)->where('status', 1)->get(['id', 'name']);
+            return response()->json($brands);
+        } catch (\Exception $e) {
+            return response()->json([]);
+        }
+    }
+
+    // --- UPDATED: Generate Tree Structure for Company Categories ---
+    private function generateCategoryTreeHtml($categories, $parentId = null)
+    {
+        $html = '';
+        // Filter categories belonging to the current parent (or root if null)
+        $children = $categories->where('parent_id', $parentId);
+
+        foreach ($children as $category) {
+            // Check if this category has children in the collection
+            $hasChildren = $categories->where('parent_id', $category->id)->isNotEmpty();
+
+            $html .= '<li class="category-tree-item list-unstyled">';
+            $html .= '<div class="form-check">';
+            $html .= '<input class="form-check-input" type="checkbox" name="category_ids[]" value="'.$category->id.'" id="comp-cat-'.$category->id.'">';
+            $html .= '<label class="form-check-label" for="comp-cat-'.$category->id.'">';
+            
+            // Toggle Icon logic
+            if ($hasChildren) {
+                $html .= '<i class="toggle-icon fas fa-plus-square me-1"></i>';
+            } else {
+                $html .= '<span style="display:inline-block; width:16px;"></span>';
+            }
+            
+            $html .= $category->name;
+            $html .= '</label>';
+            $html .= '</div>';
+
+            // Recursive call for children
+            if ($hasChildren) {
+                $html .= '<ul class="category-tree-child list-unstyled" style="display: none;">';
+                $html .= $this->generateCategoryTreeHtml($categories, $category->id);
+                $html .= '</ul>';
+            }
+
+            $html .= '</li>';
+        }
+
+        return $html;
+    }
+
+    // --- UPDATED: AJAX method to get company categories by brand with Tree ---
+    public function getCompanyCategoriesByBrand($brandId)
+    {
+        try {
+            // Fetch ALL active categories for this brand
+            $companyCategories = CompanyCategory::where('company_id', $brandId)
+                                                ->where('status', 1)
+                                                ->get();
+            
+            $html = '';
+            if ($companyCategories->count() > 0) {
+                // Start generating tree from Root categories (parent_id = null)
+                $html = $this->generateCategoryTreeHtml($companyCategories, null);
+            } else {
+                $html = '<li class="text-muted small">No categories found for this company.</li>';
+            }
+
+            return response()->json(['html' => $html]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching company categories: ' . $e->getMessage());
+            return response()->json(['html' => '']);
+        }
+    }
+
 
      public function index()
     {
@@ -235,12 +317,7 @@ class ProductController extends Controller
         }
 
         if ($request->filled('category_id')) {
-            // UPDATED: Filter based on the 'assigns' relationship instead of the direct column
-            // UPDATED: First, get all product IDs that belong to the selected category.
-            $productIds = AssignCategory::where('category_id', $request->category_id)->where('type', 'product_category')->pluck('product_id');
-            
-            // Then, filter the products using the retrieved IDs.
-            $query->whereIn('id', $productIds);
+            $query->where('category_id', $request->category_id); // এখন ডাইরেক্ট কলামে আছে
         }
         // --- END: Advanced Filtering Logic ---
 
@@ -263,119 +340,196 @@ class ProductController extends Controller
     }
 
 
+   
+
     public function create()
     {
-        try {
-        return view('admin.product.create', $this->getProductData());
-         } catch (\Exception $e) {
-            Log::error('Error loading create product page: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Could not load the page to create a new product.');
-        }
+        // ক্যাটাগরি শুধু প্যারেন্টগুলো লোড হবে ড্রপডাউনের জন্য
+        $categories = Category::where('status', 1)->get(); 
+        // ব্র্যান্ড ইনিশিয়ালি ফাঁকা থাকবে, ক্যাটাগরি সিলেক্ট করলে আসবে
+        $brands = []; 
+        
+        return view('admin.product.create', compact('categories', 'brands'));
     }
 
     public function store(Request $request)
     {
-try {
-        ///dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
-           'category_ids' => 'required|array|min:1',
-           'category_ids.*' => 'exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
+            'product_code' => 'nullable|string|unique:products,product_code',
+            'category_id' => 'required|exists:categories,id', // Main Category Required
+            'brand_id' => 'nullable|exists:brands,id',       // Company Nullable
+            'base_price' => 'nullable|numeric|min:0',        // Base Price Nullable
             'purchase_price' => 'required|numeric|min:0',
+            // discount_price validation relaxed since base_price is nullable
+            'discount_price' => 'nullable|numeric', 
             'thumbnail_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'real_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-          
+            'category_ids' => 'nullable|array', // Company Categories Nullable
         ]);
 
-        // --- NEW: Get all parent categories from the selection ---
-        $finalCategoryIds = $this->getAllCategoryIdsWithParents($request->input('category_ids'));
-
-        DB::transaction(function () use ($request, $finalCategoryIds) {
+        DB::beginTransaction();
+        try {
+            // 1. Image Upload (Multiple)
             $thumbnailPaths = [];
             $mainPaths = [];
+            
             if ($request->hasFile('thumbnail_image')) {
                 foreach ($request->file('thumbnail_image') as $image) {
                     $thumbnailPaths[] = $this->uploadImageMobile($image, 'products/thumbnails');
-                }
-
-                 foreach ($request->file('thumbnail_image') as $image) {
                     $mainPaths[] = $this->uploadImage($image, 'products/thumbnails');
                 }
             }
 
-            $realImagePaths = [];
-            if ($request->hasFile('real_image')) {
-                foreach ($request->file('real_image') as $image) {
-                    $realImagePaths[] = $this->uploadRealImage($image, 'products/reals');
-                }
-            }
-
-            $primaryCategoryId = $request->category_ids[0] ?? null;
-
+            // 2. Create Product
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'product_code' => $request->product_code,
-                'brand_id' => $request->brand_id,
-                'category_id' => $primaryCategoryId, // For backward compatibility
-                'subcategory_id' => null, // Deprecated
-                'sub_subcategory_id' => null, // Deprecated
-                'fabric_id' => $request->fabric_id,
-                'unit_id' => $request->unit_id,
+                'brand_id' => $request->brand_id,       
+                'category_id' => $request->category_id, 
                 'description' => $request->description,
-                    'specification' => $request->specification,
+                'specification' => $request->specification,
                 'base_price' => $request->base_price,
                 'purchase_price' => $request->purchase_price,
                 'discount_price' => $request->discount_price,
                 'thumbnail_image' => $thumbnailPaths,
                 'main_image' => $mainPaths,
-                'real_image' => $realImagePaths,
-                'status' => $request->has('status') ? 1 : 0, // <-- UPDATED
-                'is_free_delivery' => $request->has('is_free_delivery') ? 1 : 0, // <-- ADDED
-                'is_pre_order' => $request->has('is_pre_order') ? 1 : 0,
-        'pre_order_msg' => $request->pre_order_msg,
+                'status' => $request->has('status') ? 1 : 0,
             ]);
 
-            // --- NEW: Handle Multiple Category Assignment ---
-            if (!empty($finalCategoryIds)) {
-                foreach ($finalCategoryIds as $catId) {
-                    $product->assigns()->create([
-                        'category_id' => $catId,
-                        'type' => 'product_category'
+            // 3. Assign Company Categories (Only if selected)
+            if ($request->has('category_ids')) {
+                foreach ($request->category_ids as $compCatId) {
+                    $compCatName = \App\Models\CompanyCategory::where('id', $compCatId)->value('name') ?? 'N/A';
+
+                    AssignCategory::create([
+                        'product_id' => $product->id,
+                        'category_id' => $compCatId, 
+                        'category_name' => $compCatName,
+                        'type' => 'company_category'
                     ]);
                 }
             }
 
-           
-          
+            DB::commit();
+            return redirect()->route('product.index')->with('success', 'Product created successfully.');
 
-        
-        });
-
-        return redirect()->route('product.index')->with('success', 'Product created successfully.');
-         } catch (ValidationException $e) {
+        } catch (ValidationException $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Error storing product: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong while saving the product.')->withInput();
         }
     }
 
-       public function show(Product $product)
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'product_code' => 'nullable|string|unique:products,product_code,' . $product->id,
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',       // Company Nullable
+            'base_price' => 'nullable|numeric|min:0',        // Base Price Nullable
+            'purchase_price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric',
+            'thumbnail_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'category_ids' => 'nullable|array',
+            'delete_images' => 'nullable|array',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // 1. Handle Images
+            $existingThumbnails = $product->thumbnail_image ?? [];
+            $existingMains = $product->main_image ?? [];
+
+            if ($request->has('delete_images')) {
+                foreach ($request->input('delete_images') as $pathToDelete) {
+                    $index = array_search($pathToDelete, $existingThumbnails);
+                    if ($index !== false) {
+                        $this->deleteImage($existingThumbnails[$index]);
+                        $this->deleteImage($existingMains[$index] ?? null);
+                        unset($existingThumbnails[$index]);
+                        unset($existingMains[$index]);
+                    }
+                }
+            }
+
+            $finalThumbnails = array_values($existingThumbnails);
+            $finalMains = array_values($existingMains);
+
+            if ($request->hasFile('thumbnail_image')) {
+                foreach ($request->file('thumbnail_image') as $image) {
+                    $finalThumbnails[] = $this->uploadImageMobile($image, 'products/thumbnails');
+                    $finalMains[] = $this->uploadImage($image, 'products/thumbnails');
+                }
+            }
+
+            // 2. Update Product
+            $product->update([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'product_code' => $request->product_code,
+                'brand_id' => $request->brand_id,
+                'category_id' => $request->category_id,
+                'description' => $request->description,
+                'specification' => $request->specification,
+                'base_price' => $request->base_price,
+                'purchase_price' => $request->purchase_price,
+                'discount_price' => $request->discount_price,
+                'thumbnail_image' => $finalThumbnails,
+                'main_image' => $finalMains,
+                'status' => $request->has('status') ? 1 : 0,
+            ]);
+
+            // 3. Update Company Categories
+            AssignCategory::where('product_id', $product->id)
+                          ->where('type', 'company_category')
+                          ->delete();
+
+            if ($request->has('category_ids')) {
+                foreach ($request->category_ids as $compCatId) {
+                    $compCatName = \App\Models\CompanyCategory::where('id', $compCatId)->value('name') ?? 'N/A';
+
+                    AssignCategory::create([
+                        'product_id' => $product->id,
+                        'category_id' => $compCatId,
+                        'category_name' => $compCatName,
+                        'type' => 'company_category'
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('product.index')->with('success', 'Product updated successfully.');
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating product: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong while updating the product.')->withInput();
+        }
+    }
+
+    public function show(Product $product)
     {
         try {
-        // --- MODIFIED: Eager load relationships for the view ---
-        $product->load([
-            'brand',
-          
-            // Load only the 'product_category' type assigns, and for those, load the category name.
-            'assigns' => function ($query) {
-                $query->where('type', 'product_category')->with('category');
-            }
-        ]);
-        
-        return view('admin.product.show', compact('product'));
+            // Eager load relationships
+            $product->load([
+                'brand',        // The Company
+                'category',     // The Main Category
+                'assigns' => function ($query) {
+                    // Filter assigns to only show Company Categories
+                    $query->where('type', 'company_category');
+                }
+            ]);
+            
+            return view('admin.product.show', compact('product'));
+
         } catch (\Exception $e) {
             Log::error('Error showing product details: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Could not load product details.');
@@ -384,166 +538,20 @@ try {
 
  public function edit(Product $product)
     {
-        try {
-        $data = $this->getProductData();
-        $product->load('assigns');
-        $data['product'] = $product;
-        // --- NEW: Get assigned category IDs for the edit form ---
-        $data['assignedCategoryIds'] = $product->assigns->where('type', 'product_category')->pluck('category_id')->toArray();
-      
-        return view('admin.product.edit', $data);
-        } catch (\Exception $e) {
-            Log::error('Error loading edit product page: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Could not load the page to edit the product.');
-        }
+        $categories = Category::where('status', 1)->get();
+        
+        // এডিট মোডে সিলেক্টেড ক্যাটাগরি অনুযায়ী ব্র্যান্ড লোড করতে হবে
+        $brands = Brand::where('category_id', $product->category_id)->where('status', 1)->get();
+
+        // সিলেক্টেড কোম্পানি ক্যাটাগরি আইডিগুলো বের করা
+        $assignedCategoryIds = AssignCategory::where('product_id', $product->id)
+                                             ->where('type', 'company_category')
+                                             ->pluck('category_id')
+                                             ->toArray();
+
+        return view('admin.product.edit', compact('product', 'categories', 'brands', 'assignedCategoryIds'));
     }
-
-    public function update(Request $request, Product $product)
-    {
-
-        try {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'product_code' => 'nullable|string|unique:products,product_code,' . $product->id,
-           'category_ids' => 'required|array|min:1',
-            'category_ids.*' => 'exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
-            'purchase_price' => 'required|numeric|min:0',
-            'discount_price' => 'nullable|numeric|lt:base_price',
-            'thumbnail_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'real_image.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-                'variants' => 'nullable|array',
-                'delete_images' => 'nullable|array',
-                'delete_real_images' => 'nullable|array',
-        ]);
-
-        //dd($request->all());
-
-           $finalCategoryIds = $this->getAllCategoryIdsWithParents($request->input('category_ids'));
-
-        DB::transaction(function () use ($request, $product, $finalCategoryIds) {
-
-         
-
-           // --- REVISED IMAGE HANDLING LOGIC ---
-
-            // Start with the images that are already saved in the database.
-            $existingThumbnails = $product->thumbnail_image ?? [];
-            $existingMains = $product->main_image ?? [];
-
-            // 1. Handle deletion of existing images
-            if ($request->has('delete_images')) {
-                $imagesToDelete = $request->input('delete_images');
-                $indicesToDelete = [];
-
-                // Find the index of each image marked for deletion
-                foreach ($imagesToDelete as $pathToDelete) {
-                    $index = array_search($pathToDelete, $existingThumbnails);
-                    if ($index !== false) {
-                        $indicesToDelete[] = $index;
-                    }
-                }
-
-                // Delete the files from the server
-                if (!empty($indicesToDelete)) {
-                    foreach ($indicesToDelete as $index) {
-                        // Delete both the thumbnail and the corresponding main image file
-                        if (isset($existingThumbnails[$index])) {
-                            $this->deleteImage($existingThumbnails[$index]);
-                        }
-                        if (isset($existingMains[$index])) {
-                            $this->deleteImage($existingMains[$index]);
-                        }
-                        // Unset the entry from the arrays
-                        unset($existingThumbnails[$index]);
-                        unset($existingMains[$index]);
-                    }
-                }
-            }
-
-            // Re-index the arrays to prevent issues after unsetting elements
-            $finalThumbnails = array_values($existingThumbnails);
-            $finalMains = array_values($existingMains);
-
-            // 2. Handle the upload of new images
-            if ($request->hasFile('thumbnail_image')) {
-                foreach ($request->file('thumbnail_image') as $image) {
-                    // Upload and add the new paths to our final arrays
-                    $finalThumbnails[] = $this->uploadImageMobile($image, 'products/thumbnails');
-                    $finalMains[] = $this->uploadImage($image, 'products/thumbnails');
-                }
-            }
-            
-            // --- END OF REVISED IMAGE HANDLING LOGIC ---
-             // --- Real Image Handling ---
-                $existingReals = $product->real_image ?? [];
-                if ($request->has('delete_real_images')) {
-                    foreach ($request->input('delete_real_images') as $pathToDelete) {
-                        $this->deleteImage($pathToDelete);
-                        if (($key = array_search($pathToDelete, $existingReals)) !== false) {
-                            unset($existingReals[$key]);
-                        }
-                    }
-                }
-                $finalReals = array_values($existingReals);
-                if ($request->hasFile('real_image')) {
-                    foreach ($request->file('real_image') as $image) {
-                        $finalReals[] = $this->uploadRealImage($image, 'products/reals');
-                    }
-                }
-$primaryCategoryId = $request->category_ids[0] ?? null;
-            $product->update([
-                'name' => $request->name,
-                'slug' => Str::slug($request->name),
-                'product_code' => $request->product_code,
-                'brand_id' => $request->brand_id,
-                'category_id' => $primaryCategoryId, // For backward compatibility
-                'subcategory_id' => null, // Deprecated
-                'sub_subcategory_id' => null, // Deprecated
-                'fabric_id' => $request->fabric_id,
-                'unit_id' => $request->unit_id,
-                'description' => $request->description,
-                    'specification' => $request->specification,
-                'base_price' => $request->base_price,
-                'purchase_price' => $request->purchase_price,
-                'discount_price' => $request->discount_price,
-                'thumbnail_image' => $finalThumbnails, // Save the updated array of thumbnails
-                'main_image' => $finalMains, 
-                'real_image' => $finalReals,
-                'status' => $request->has('status') ? 1 : 0, // <-- UPDATED
-                'is_free_delivery' => $request->has('is_free_delivery') ? 1 : 0,
-                'is_pre_order' => $request->has('is_pre_order') ? 1 : 0,
-        'pre_order_msg' => $request->pre_order_msg,
-            ]);
-
-
-             // Delete old product-category associations first
-             $product->assigns()->delete();
-            if (!empty($finalCategoryIds)) {
-                foreach ($finalCategoryIds as $catId) {
-                    $product->assigns()->create([
-                        'category_id' => $catId,
-                        'category_name' => 'cat',
-                        'type' => 'product_category'
-                    ]);
-                }
-            }
-
-              
-          
-
-          
-        });
-
-        return redirect()->route('product.index')->with('success', 'Product updated successfully.');
-
-         } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            Log::error('Error updating product: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Something went wrong while updating the product.')->withInput();
-        }
-    }
+    
 
      private function uploadRealImage($image, $directory)
     {

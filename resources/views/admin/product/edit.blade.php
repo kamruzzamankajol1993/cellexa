@@ -1,8 +1,9 @@
 @extends('admin.master.master')
 @section('title', 'Edit Product')
 @section('css')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        /* --- Modern Root Variables --- *
+        /* --- Modern Root Variables --- */
         /* --- Global Layout --- */
         .main-content {
             font-size: 0.925rem;
@@ -41,7 +42,7 @@
             margin-bottom: 0.4rem;
             font-size: 0.875rem;
         }
-        .form-control, .form-select, .custom-select-display {
+        .form-control, .form-select {
             border-radius: 8px;
             border: 1px solid #e5e7eb;;
             padding: 0.625rem 0.875rem;
@@ -71,11 +72,9 @@
         }
         .upload-zone-wrapper input[type="file"] {
             position: absolute;
-            top: 0; left: 0; w-100; h-100;
+            top: 0; left: 0; width: 100%; height: 100%;
             opacity: 0;
             cursor: pointer;
-            width: 100%;
-            height: 100%;
         }
         .upload-placeholder {
             pointer-events: none;
@@ -121,16 +120,28 @@
             background-color: #4338ca;
             border-color: #4338ca;
         }
-
-        /* --- Existing Custom Select (Kept functional) --- */
-        .custom-select-container { position: relative; }
-        .custom-select-display { cursor: pointer; position: relative; }
-        .custom-select-display::after { content: '\f078'; font-family: 'FontAwesome'; position: absolute; top: 50%; right: 15px; font-size: 0.75rem; color: #9ca3af; transform: translateY(-50%); }
-        .custom-select-options { display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb;; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 1051; max-height: 200px; overflow-y: auto; }
-        .custom-select-search-input { width: 100%; padding: 10px; border: none; border-bottom: 1px solid #e5e7eb;; outline: none; }
-        .custom-select-option { padding: 10px 15px; cursor: pointer; transition: background 0.15s; }
-        .custom-select-option:hover { background-color: #f3f4f6; }
-        .custom-select-option.is-hidden { display: none; }
+        
+         /* --- Select2 Customization --- */
+        .select2-container .select2-selection--single {
+            height: 42px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+            right: 8px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px;
+            color: #374151;
+            padding-left: 0;
+        }
+        .select2-dropdown {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -162,14 +173,14 @@
                                 <label class="form-label">Thumbnail Images</label>
                                 <div class="upload-zone-wrapper mb-3">
                                     <div class="text-muted"><i class="fas fa-plus-circle me-2"></i>Add more images</div>
-                                    <input type="file" accept="image/webp" name="thumbnail_image[]" class="form-control" id="thumbnailInput" multiple>
+                                    <input type="file" accept="image/*" name="thumbnail_image[]" class="form-control" id="thumbnailInput" multiple>
                                 </div>
                                 
                                 <div id="thumbnail-preview-container" class="d-flex flex-wrap gap-3">
                                     @if(is_array($product->thumbnail_image))
                                         @foreach($product->thumbnail_image as $image)
                                         <div class="existing-image-wrapper position-relative" style="width: 80px; height: 80px;">
-                                            <img src="{{ asset('public/uploads/'.$image) }}" class="w-100 h-100 object-fit-cover">
+                                            <img src="{{ asset('public/uploads/'.$image) }}" class="w-100 h-100 object-fit-cover rounded">
                                             <button type="button" class="btn btn-danger btn-sm delete-image-btn rounded-circle d-flex align-items-center justify-content-center" 
                                                 style="position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; padding: 0; font-size: 10px;">
                                                 <i class="fas fa-times"></i>
@@ -200,7 +211,6 @@
                                 <textarea name="description" id="summernote" class="form-control" rows="4">{{ old('description', $product->description) }}</textarea>
                             </div>
 
-                            {{-- NEW SPECIFICATION FIELD WITH SUMMERNOTE --}}
                             <div class="mb-3">
                                 <label class="form-label">Specification</label>
                                 <textarea name="specification" id="summernote2" class="form-control" rows="4">{{ old('specification', $product->specification) }}</textarea>
@@ -226,7 +236,7 @@
                                     <label class="form-label">Base Price</label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text">$</span>
-                                        <input type="number" name="base_price" class="form-control" value="{{ old('base_price', $product->base_price) }}" required step="0.01">
+                                        <input type="number" name="base_price" class="form-control" value="{{ old('base_price', $product->base_price) }}" step="0.01">
                                     </div>
                                 </div>
                             </div>
@@ -238,11 +248,11 @@
                                 </div>
                             </div>
                             
-                            <hr class="my-4 dashed">
-                            
+                            <hr class="my-4" style="border-top-style: dashed;">
+
                             <div class="mb-3">
                                 <label class="form-label">Company</label>
-                                <select name="brand_id" class="form-select select2-like">
+                                <select name="brand_id" id="brand_id" class="form-select select2" style="width: 100%;">
                                     <option value="">Select Company</option>
                                     @foreach($brands as $brand)
                                     <option value="{{ $brand->id }}" @selected($product->brand_id == $brand->id)>{{ $brand->name }}</option>
@@ -251,14 +261,21 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Product Categories</label>
+                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                <select name="category_id" id="category_id" class="form-select select2" required style="width: 100%;">
+                                    <option value="">Select Category</option>
+                                    @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" @selected($product->category_id == $category->id)>{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Company Categories</label>
                                 <div class="category-tree-container">
-                                    <ul class="list-unstyled mb-0">
-                                        {{-- Pass the $assignedCategoryIds from the controller --}}
-                                        @include('admin.product._partials.category-tree-checkbox', [
-                                            'categories' => $categories, 
-                                            'assignedCategoryIds' => old('category_ids', $assignedCategoryIds)
-                                        ])
+                                    <ul class="list-unstyled mb-0" id="company-category-tree">
+                                        {{-- Initial load will happen via JS --}}
+                                        <li class="text-center mt-3"><div class="spinner-border spinner-border-sm text-primary"></div> Loading assigned categories...</li>
                                     </ul>
                                 </div>
                                 @error('category_ids')
@@ -266,7 +283,7 @@
                                 @enderror
                             </div>
                          
-                            <hr class="my-4 dashed">
+                            <hr class="my-4" style="border-top-style: dashed;">
                             
                             <div class="form-check form-switch p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
                                 <label class="form-check-label fw-bold mb-0" for="status">Active Status</label>
@@ -288,18 +305,14 @@
 @endsection
 
 @section('script')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Pre Order Logic ---
-    const preOrderCheck = document.getElementById('is_pre_order');
-    const preOrderContainer = document.getElementById('preOrderMsgContainer');
-    if(preOrderCheck && preOrderContainer) {
-        preOrderCheck.addEventListener('change', function() {
-            this.checked ? $(preOrderContainer).slideDown() : $(preOrderContainer).slideUp();
-        });
-    }
+    
+    // Initialize Select2
+    $('.select2').select2();
 
-    // --- Category Tree Logic ---
+    // --- Category Tree Toggle ---
     $('.category-tree-container').on('click', '.toggle-icon', function(e) {
         e.preventDefault();
         $(this).toggleClass('fa-plus-square fa-minus-square');
@@ -316,40 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     expandSelectedCategories();
-
-    // --- Custom Select2-like ---
-    function createSearchableSelect(originalSelect) {
-        const $originalSelect = $(originalSelect);
-        if ($originalSelect.next('.custom-select-container').length) return;
-        $originalSelect.hide();
-        const $container = $('<div class="custom-select-container" />');
-        const $display = $('<div class="custom-select-display form-select" />').text($originalSelect.find('option:selected').text() || 'Select an option');
-        const $optionsContainer = $('<div class="custom-select-options" />');
-        const $searchInput = $('<input type="text" class="custom-select-search-input" placeholder="Search...">');
-        $optionsContainer.append($searchInput);
-        $originalSelect.find('option').each(function() {
-            const $option = $(this);
-            const $customOption = $('<div class="custom-select-option" />').data('value', $option.val()).text($option.text());
-            if ($option.val() === '') $customOption.addClass('is-hidden');
-            $optionsContainer.append($customOption);
-        });
-        $originalSelect.after($container.append($display).append($optionsContainer));
-        $display.on('click', e => { e.stopPropagation(); $('.custom-select-options').not($optionsContainer).hide(); $optionsContainer.toggle(); });
-        $searchInput.on('click', e => e.stopPropagation());
-        $searchInput.on('keyup', function() {
-            const searchTerm = $(this).val().toLowerCase();
-            $optionsContainer.find('.custom-select-option').each(function() {
-                $(this).toggleClass('is-hidden', $(this).text().toLowerCase().indexOf(searchTerm) === -1);
-            });
-        });
-        $optionsContainer.on('click', '.custom-select-option', function() {
-            $originalSelect.val($(this).data('value')).trigger('change');
-            $display.text($(this).text());
-            $optionsContainer.hide();
-        });
-    }
-    $('.select2-like').each(function() { createSearchableSelect(this); });
-    $(document).on('click', () => $('.custom-select-options').hide());
 
     // --- Image Manager (New & Existing) ---
     function setupImageManager(inputId, containerId, deleteBtnClass, existingWrapperClass, newWrapperClass, removePreviewBtnClass) {
@@ -424,25 +403,102 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setupImageManager('thumbnailInput', 'thumbnail-preview-container', 'delete-image-btn', 'existing-image-wrapper', 'new-thumbnail-wrapper', 'remove-preview-btn');
+
+    // --- AJAX LOGIC FOR DEPENDENT DROPDOWNS ---
+    
+    // Load existing selections logic
+    var assignedIds = @json($assignedCategoryIds);
+    var initialBrandId = "{{ $product->brand_id }}";
+
+    function loadCompanyCategories(brandId) {
+        var treeContainer = $('#company-category-tree');
+        
+        if (!brandId) {
+             treeContainer.html('<li class="text-muted small text-center mt-3">Select a Company to view categories</li>');
+             return;
+        }
+
+        treeContainer.html('<li class="text-center mt-3"><div class="spinner-border spinner-border-sm text-primary"></div> Loading...</li>');
+
+        $.ajax({
+            url: "{{ url('/get-company-categories-by-brand') }}/" + brandId,
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                if (data.html) {
+                    treeContainer.html(data.html);
+                    // Check assigned boxes
+                    if(assignedIds.length > 0) {
+                        assignedIds.forEach(function(id) {
+                            $('#comp-cat-' + id).prop('checked', true);
+                        });
+                    }
+                } else {
+                    treeContainer.html('<li class="text-muted small text-center mt-3">No categories available.</li>');
+                }
+            },
+            error: function() {
+                treeContainer.html('<li class="text-danger small text-center mt-3">Error fetching categories.</li>');
+            }
+        });
+    }
+
+    // Initial Load
+    if(initialBrandId) {
+        loadCompanyCategories(initialBrandId);
+    }
+
+    $('#category_id').on('change', function() {
+        var categoryId = $(this).val();
+        var brandSelect = $('#brand_id');
+        var treeContainer = $('#company-category-tree');
+
+        brandSelect.html('<option value="">Loading...</option>').prop('disabled', true);
+        treeContainer.html('<li class="text-muted small text-center mt-3">Select a Company to view categories</li>');
+
+        if (categoryId) {
+            $.ajax({
+                url: "{{ url('/get-brands-by-category') }}/" + categoryId,
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    brandSelect.html('<option value="">Select Company</option>');
+                    if (data.length > 0) {
+                        $.each(data, function(key, value) {
+                            brandSelect.append('<option value="' + value.id + '">' + value.name + '</option>');
+                        });
+                        brandSelect.prop('disabled', false);
+                    } else {
+                        brandSelect.append('<option value="">No companies found</option>');
+                    }
+                    brandSelect.trigger('change');
+                },
+                error: function() {
+                    brandSelect.html('<option value="">Error loading companies</option>');
+                    brandSelect.trigger('change');
+                }
+            });
+        } else {
+            brandSelect.html('<option value="">Select Category First</option>');
+            brandSelect.trigger('change');
+        }
+    });
+
+    $('#brand_id').on('change', function() {
+        var brandId = $(this).val();
+        // Only reload if user initiates change, to avoid clearing on initial load if script runs
+        // But here we need to reload if the brand changes to show relevant categories
+        // We reset assignedIds only if the brand actually changed from initial
+        // Actually simpler: just reload. If brand changes, old category selections are invalid usually.
+        loadCompanyCategories(brandId);
+    });
+
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#summernote').summernote({
-            height: 250,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                ['insert', ['link', 'hr']],
-                ['view', ['fullscreen', 'codeview']]
-            ]
-        });
-        // Specification Editor
-        $('#summernote2').summernote({
+        $('#summernote, #summernote2').summernote({
             height: 250,
             toolbar: [
                 ['style', ['style']],

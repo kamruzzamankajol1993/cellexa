@@ -9,7 +9,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use App\Models\Brand;
 class HomeController extends Controller
 {
     public function __construct()
@@ -25,7 +25,7 @@ class HomeController extends Controller
         $acceptedRequests = Order::where('status', 'accepted')->count();
         $cancelledRequests = Order::where('status', 'cancelled')->count();
         $totalCustomers = Customer::count();
-
+$totalBrands = Brand::count();
         // 2. Request History Graph Data (Last 30 Days)
         $last30DaysData = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->where('created_at', '>=', Carbon::now()->subDays(30))
@@ -82,6 +82,7 @@ class HomeController extends Controller
         $topCustomerRequests = $topCustomers->pluck('total_requests');
 
         return view('admin.dashboard.index', compact(
+            'totalBrands',
             'totalProducts',
             'pendingRequests',
             'acceptedRequests',

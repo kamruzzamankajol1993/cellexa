@@ -59,6 +59,14 @@
                 <span>Company</span>
             </a>
         </li>
+
+        {{-- NEW: Company Category --}}
+        <li class="nav-item">
+            <a class="nav-link {{ Route::is('company-category.index') || Route::is('company-category.edit') || Route::is('company-category.create') ? 'active' : '' }}" href="{{ route('company-category.index') }}">
+                <i data-feather="menu"></i>
+                <span>Company Category</span>
+            </a>
+        </li>
         
         {{-- Customers --}}
         <li class="nav-item">
@@ -71,6 +79,17 @@
         <li class="sidebar-title">
             <span>Settings</span>
         </li>
+
+          
+        <li class="nav-item">
+            <a class="nav-link {{ Route::is('socialLink.index') || Route::is('socialLink.edit') || Route::is('socialLink.create') ? 'active' : '' }}" href="{{ route('socialLink.index') }}"> <i data-feather="link"></i><span>Social Link</span></a>
+        </li>
+                
+
+        <li class="nav-item">
+            <a class="nav-link {{ Route::is('message.index') || Route::is('message.edit') || Route::is('message.create') ? 'active' : '' }}" href="{{ route('message.index') }}"> <i data-feather="mail"></i><span>Message</span></a>
+        </li>
+                  
 
         {{-- Panel Settings --}}
         <li class="nav-item">
