@@ -6,17 +6,28 @@ use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\AssignCategory;
-use App\Models\CompanyCategory; // CompanyCategory মডেল যুক্ত করুন
+use App\Models\CompanyCategory;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Illuminate\Support\Facades\File;
+use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Facades\Log;
 
 class ProductsImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
         // Expected Excel Headers: 
-        // company_name, company_category, category_name, product_name, description, specification, buying_price, selling_price, discount_price
+        // company_name, company_category, category_name, product_name, description, specification, buying_price, selling_price, discount_price, image
+
+        // --- Helper: Price Sanitizer (Remove commas) ---
+        $sanitizePrice = function ($price) {
+            if (empty($price)) return 0;
+            // Remove commas and spaces, then convert to float
+            $cleaned = str_replace([',', ' '], '', $price);
+            return is_numeric($cleaned) ? (float)$cleaned : 0;
+        };
 
         // 1. Handle Brand (Company Name) - Nullable
         $brandId = null;
@@ -31,7 +42,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             $brandId = $brand->id;
         }
 
-        // 2. Handle Company Category - Nullable (Only if Brand exists)
+        // 2. Handle Company Category - Nullable
         $companyCategoryId = null;
         $companyCategoryName = null;
         if ($brandId && !empty($row['company_category'])) {
@@ -50,7 +61,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             $companyCategoryName = $companyCategory->name;
         }
 
-        // 3. Handle Main Category - Required in Logic but handled if missing
+        // 3. Handle Main Category
         $categoryId = null;
         if (!empty($row['category_name'])) {
             $category = Category::firstOrCreate(
@@ -63,33 +74,66 @@ class ProductsImport implements ToModel, WithHeadingRow
             $categoryId = $category->id;
         }
 
-        // 4. Generate Product Code
+        // 4. Handle Image Download
+        $imageArray = [];
+        if (!empty($row['image'])) {
+            try {
+                $imageUrl = $row['image'];
+                // Use @ to suppress warnings for invalid URLs
+                $imageContents = @file_get_contents($imageUrl);
+
+                if ($imageContents) {
+                    $destinationPath = public_path('uploads/products/thumbnails');
+                    
+                    // Create directory if it doesn't exist
+                    if (!File::isDirectory($destinationPath)) {
+                        File::makeDirectory($destinationPath, 0777, true, true);
+                    }
+
+                    // Generate Unique Name
+                    $imageName = time() . '_' . uniqid() . '.webp';
+
+                    // Resize to 600x600 (Standard for products) using Intervention Image
+                    Image::read($imageContents)->resize(600, 600, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->save($destinationPath . '/' . $imageName);
+
+                    // Path to store in DB
+                    $imagePath = 'products/thumbnails/' . $imageName;
+                    
+                    // Product images are stored as an array in your system
+                    $imageArray[] = $imagePath;
+                }
+            } catch (\Exception $e) {
+                Log::error('Product Import Image Error (' . $row['product_name'] . '): ' . $e->getMessage());
+            }
+        }
+
+        // 5. Generate Product Code
         $productCode = strtoupper(substr($row['product_name'], 0, 3)) . '-' . time() . rand(10, 99);
 
-        // 5. Create Product
+        // 6. Create Product
         $product = Product::create([
             'name'              => $row['product_name'],
             'slug'              => Str::slug($row['product_name']),
             'product_code'      => $productCode,
-            'brand_id'          => $brandId,      // Nullable
-            'category_id'       => $categoryId,   
+            'brand_id'          => $brandId,
+            'category_id'       => $categoryId,
             'description'       => $row['description'] ?? null,
             'specification'     => $row['specification'] ?? null,
             
-            // --- PRICE COLUMNS ---
-            'purchase_price'    => $row['buying_price'] ?? 0,    
-            'base_price'        => $row['selling_price'] ?? null, // Nullable (Base Price)
-            'discount_price'    => $row['discount_price'] ?? null,
+            // --- PRICE COLUMNS (With Sanitization) ---
+            'purchase_price'    => $sanitizePrice($row['buying_price'] ?? 0),    
+            'base_price'        => $sanitizePrice($row['selling_price'] ?? 0),
+            'discount_price'    => $sanitizePrice($row['discount_price'] ?? null),
 
             'status'            => 1,
-            'thumbnail_image'   => [], 
-            'main_image'        => [],
+            // Store the downloaded image array
+            'thumbnail_image'   => $imageArray, 
+            'main_image'        => $imageArray, // Using same image for main view
             'real_image'        => [],
         ]);
-
-        // 6. Assign Main Category to Pivot Table (Legacy support or if needed)
-        // Note: You logic moved category_id to products table, but if you still use assign_categories for main category:
-        // if ($categoryId) { ... } 
 
         // 7. Assign Company Category
         if ($companyCategoryId) {

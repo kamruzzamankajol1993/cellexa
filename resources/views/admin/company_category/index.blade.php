@@ -7,7 +7,6 @@ Company Category | {{ $front_ins_name ?? 'Admin' }}
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <style>
-     /* --- Font & Layout Adjustments (Same as Brand Module) --- */
     .main-content { font-size: 0.9rem; }
     .main-content h2 { font-size: 1.6rem; }
     .main-content h5 { font-size: 1.1rem; }
@@ -57,13 +56,13 @@ Company Category | {{ $front_ins_name ?? 'Admin' }}
                             </div>
 
                             <div class="alert alert-info" style="font-size: 0.9rem;">
-    <strong>Required Columns:</strong><br>
-    company_name, category_name, parent_category, description <br>
-    <small class="text-danger">
-        * <strong>parent_category</strong> is optional. Leave it empty to create a Root Category.<br>
-        * If provided, the Parent Category must exist or will be created under the same Company.
-    </small>
-</div>
+                                <strong>Required Columns:</strong><br>
+                                company_name, category_name, parent_category, description, image <br>
+                                <small class="text-danger">
+                                    * <strong>parent_category</strong> is optional.<br>
+                                    * <strong>image</strong> should be a direct download link.
+                                </small>
+                            </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Choose Excel/CSV File</label>
@@ -91,7 +90,6 @@ Company Category | {{ $front_ins_name ?? 'Admin' }}
                                 <th>Company</th>
                                 <th>Parent Category</th>
                                 <th class="sortable" data-column="name">Category Name</th>
-                                <th>Description</th>
                                 <th class="sortable" data-column="status">Status</th>
                                 <th>Action</th>
                             </tr>

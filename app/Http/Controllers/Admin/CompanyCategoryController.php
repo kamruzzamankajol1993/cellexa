@@ -18,6 +18,8 @@ class CompanyCategoryController extends Controller
     // --- নতুন: এক্সেল ইম্পোর্ট মেথড ---
     public function import(Request $request)
     {
+
+        set_time_limit(0);
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
@@ -31,46 +33,52 @@ class CompanyCategoryController extends Controller
         }
     }
 
-    public function downloadSample()
-    {
-        $filename = 'company_category_import_sample.csv';
-        
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
+   public function show($id)
+{
+    $category = CompanyCategory::with(['company', 'parent'])->findOrFail($id);
 
-        // Updated Columns: Added 'parent_category'
-        $columns = ['company_name', 'category_name', 'parent_category', 'description'];
-
-        $callback = function() use ($columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-
-            // Sample Data 1: Root Category (No Parent)
-            fputcsv($file, [
-                'Nike',           // Company
-                'Shoes',          // Category Name
-                '',               // Parent Category (Empty for Root)
-                'All kinds of shoes'
-            ]); 
-            
-            // Sample Data 2: Child Category (Running Shoes under Shoes)
-            fputcsv($file, [
-                'Nike',           // Company
-                'Running',        // Category Name
-                'Shoes',          // Parent Category (Must match exact name of parent)
-                'Running specific shoes'
-            ]); 
-            
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+    // If AJAX request (Edit Modal), return JSON
+    if (request()->ajax()) {
+        return response()->json($category);
     }
+
+    // Otherwise return View (Show Page)
+    return view('admin.company_category.show', compact('category'));
+}
+
+public function downloadSample()
+{
+    $filename = 'company_category_import_sample.csv';
+    
+    $headers = [
+        "Content-type"        => "text/csv",
+        "Content-Disposition" => "attachment; filename=$filename",
+        "Pragma"              => "no-cache",
+        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+        "Expires"             => "0"
+    ];
+
+    // Added 'image' column
+    $columns = ['company_name', 'category_name', 'parent_category', 'description', 'image'];
+
+    $callback = function() use ($columns) {
+        $file = fopen('php://output', 'w');
+        fputcsv($file, $columns);
+
+        // Sample Row
+        fputcsv($file, [
+            'Nike', 
+            'Shoes', 
+            '', 
+            'Description here', 
+            'https://example.com/image.jpg'
+        ]); 
+        
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
 
    public function index()
     {
@@ -154,11 +162,7 @@ class CompanyCategoryController extends Controller
         return redirect()->back()->with('success', 'Created successfully!');
     }
 
-    public function show($id)
-    {
-        $category = CompanyCategory::findOrFail($id);
-        return response()->json($category);
-    }
+   
 
     public function update(Request $request, $id)
     {

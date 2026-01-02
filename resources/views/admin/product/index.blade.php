@@ -70,10 +70,11 @@
                     </div>
 
                     <div class="alert alert-info" style="font-size: 0.9rem;">
-                        <strong>Columns:</strong><br>
-                        company_name, company_category, category_name, product_name, description, specification, buying_price, selling_price, discount_price<br>
-                        <small class="text-muted">* company_name, company_category, selling_price are optional.</small>
-                    </div>
+    <strong>Columns:</strong><br>
+    company_name, company_category, category_name, product_name, description, specification, buying_price, selling_price, discount_price, image<br>
+    <small class="text-muted">* company_name, company_category, selling_price are optional.</small><br>
+    <small class="text-danger">* <strong>image</strong> column should contain a direct download link.</small>
+</div>
 
                     <div class="mb-3">
                         <label class="form-label">Choose Excel/CSV File</label>

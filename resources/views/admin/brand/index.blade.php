@@ -76,10 +76,11 @@ Company Management | {{ $front_ins_name }}
                         </a>
                     </div>
 
-                    <div class="alert alert-info" style="font-size: 0.9rem;">
+                   <div class="alert alert-info" style="font-size: 0.9rem;">
     <strong>Required Columns:</strong><br>
-    company_name, category_name, description <br>
-    <small class="text-danger">* Category Name must match exactly with existing categories.</small>
+    company_name, category_name, description, image <br>
+    <small class="text-danger">* Category Name must match exactly with existing categories.</small><br>
+    <small class="text-muted">* Image column should contain a direct download link (e.g., https://site.com/image.jpg).</small>
 </div>
 
                     <div class="mb-3">
@@ -101,15 +102,15 @@ Company Management | {{ $front_ins_name }}
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
                         <thead>
-                            <tr>
-                                <th>Sl</th>
+    <tr>
+        <th>Sl</th>
         <th>Logo</th>
         <th class="sortable" data-column="name">Company Name</th>
-        <th>Category</th> <th>Description</th>
+        <th>Category</th>
         <th class="sortable" data-column="status">Status</th>
         <th>Action</th>
-                            </tr>
-                        </thead>
+    </tr>
+</thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>

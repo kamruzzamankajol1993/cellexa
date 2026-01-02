@@ -18,6 +18,9 @@ class BrandController extends Controller
    
 public function import(Request $request)
     {
+        // Timeout বাড়িয়ে দেওয়া হয়েছে কারণ ইমেজ ডাউনলোড করতে সময় লাগতে পারে
+        set_time_limit(0); 
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
@@ -31,39 +34,49 @@ public function import(Request $request)
         }
     }
 
-    // BrandController.php এর downloadSample মেথডটি আপডেট করুন
-
-public function downloadSample()
-{
-    $filename = 'company_import_sample.csv';
-    
-    $headers = [
-        "Content-type"        => "text/csv",
-        "Content-Disposition" => "attachment; filename=$filename",
-        "Pragma"              => "no-cache",
-        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-        "Expires"             => "0"
-    ];
-
-    // নতুন কলাম 'category_name' যুক্ত করা হলো
-    $columns = ['company_name', 'category_name', 'description'];
-
-    $callback = function() use ($columns) {
-        $file = fopen('php://output', 'w');
-        fputcsv($file, $columns);
-
-        // Sample Data তে ক্যাটাগরি নাম দেওয়া হলো
-        // (ব্যাবহারকারীকে বুঝানোর জন্য যে এখানে ক্যাটাগরির নাম লিখতে হবে)
-        fputcsv($file, ['Nike', 'Sports', 'Leading sports brand']); 
-        fputcsv($file, ['Adidas', 'Fashion', 'Global sportswear manufacturer']); 
-        
-        fclose($file);
-    };
-
-    return response()->stream($callback, 200, $headers);
-}
-     public function index(): View
+    public function downloadSample()
     {
+        $filename = 'company_import_sample.csv';
+        
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        // নতুন কলাম 'image' যুক্ত করা হলো
+        $columns = ['company_name', 'category_name', 'description', 'image'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            // Sample Data তে ইমেজের লিংক দেওয়া হলো
+            fputcsv($file, [
+                'Nike', 
+                'Sports', 
+                'Leading sports brand', 
+                'https://example.com/nike-logo.png' // ডামি ইমেজ লিংক
+            ]); 
+            fputcsv($file, [
+                'Adidas', 
+                'Fashion', 
+                'Global sportswear manufacturer', 
+                'https://example.com/adidas-logo.jpg'
+            ]); 
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+     public function index()
+
+
+    {
+        
         $categories = Category::where('status', 1)->select('id', 'name')->get();
         return view('admin.brand.index', compact('categories'));
     }
@@ -92,10 +105,18 @@ public function downloadSample()
     }
 
     public function show($id)
-    {
-        $brand = Brand::findOrFail($id);
+{
+    // Load category relationship
+    $brand = Brand::with('category')->findOrFail($id);
+
+    // If request comes from AJAX (Edit Modal), return JSON
+    if (request()->ajax()) {
         return response()->json($brand);
     }
+
+    // Otherwise return the Show View
+    return view('admin.brand.show', compact('brand'));
+}
 
     public function store(Request $request)
     {

@@ -9,7 +9,8 @@
         delete: id => `{{ route('brand.destroy', ':id') }}`.replace(':id', id),
         csrf: "{{ csrf_token() }}"
     };
- $(document).ready(function() {
+
+    $(document).ready(function() {
         // --- Initialize Summernote ---
         $('#summernoteAdd').summernote({
             height: 200,
@@ -31,6 +32,7 @@
             ]
         });
     });
+
     function fetchData() {
         $.get(routes.fetch, {
             page: currentPage,
@@ -43,21 +45,25 @@
                 const logoUrl = brand.logo ? `{{ asset('public') }}/${brand.logo}` : 'https://placehold.co/50x50/EFEFEF/AAAAAA&text=No+Image';
                 const statusBadge = brand.status == 1 ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
                 
-                // ক্যাটাগরি নাম চেক করা (যদি ক্যাটাগরি ডিলিট হয়ে যায় বা না থাকে)
+                // ক্যাটাগরি নাম চেক করা
                 const categoryName = brand.category ? brand.category.name : '<span class="text-muted">N/A</span>';
+
+                // Show Route URL generation
+                const showUrl = routes.show(brand.id);
 
                 rows += `<tr>
                     <td>${(res.current_page - 1) * 10 + i + 1}</td>
                     <td><img src="${logoUrl}" alt="${brand.name}" width="50" class="img-thumbnail"></td>
                     <td>${brand.name}</td>
-                    <td>${categoryName}</td> <td>${brand.description ? brand.description : ''}</td>
+                    <td>${categoryName}</td>
                     <td>${statusBadge}</td>
                     <td class="d-flex gap-2">
-                        <button class="btn btn-sm btn-info btn-edit btn-custom-sm" data-id="${brand.id}"><i class="fa fa-edit"></i></button>
+                        <a href="${showUrl}" class="btn btn-sm btn-primary btn-custom-sm" title="View Details"><i class="fa fa-eye"></i></a>
+                        <button class="btn btn-sm btn-info btn-edit btn-custom-sm" data-id="${brand.id}" title="Edit"><i class="fa fa-edit"></i></button>
                          <form action="${routes.delete(brand.id)}" method="POST" class="d-inline">
                             <input type="hidden" name="_token" value="${routes.csrf}">
                             <input type="hidden" name="_method" value="DELETE">
-                            <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fa fa-trash"></i></button>
+                            <button type="button" class="btn btn-sm btn-danger btn-delete" title="Delete"><i class="fa fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>`;
@@ -106,8 +112,8 @@
         $.get(routes.show(id), function (brand) {
             $('#editBrandId').val(brand.id);
             $('#editName').val(brand.name);
-            $('#editCategoryId').val(brand.category_id); // ক্যাটাগরি সেট করা হচ্ছে
-              $('#editDescription').summernote('code', brand.description);
+            $('#editCategoryId').val(brand.category_id);
+            $('#editDescription').summernote('code', brand.description);
             $('#editStatus').val(brand.status);
             if (brand.logo) {
                 $('#logoPreview').attr('src', `{{ asset('public') }}/${brand.logo}`).show();
@@ -175,7 +181,7 @@
     });
 
     $('#addModal').on('hidden.bs.modal', function () {
-        $('#addBrandForm')[0].reset(); // form id চেক করে নিবেন (addModal.blade.php এ id="addBrandForm" থাকলে)
+        $('#addBrandForm')[0].reset();
         $('#summernoteAdd').summernote('reset');
     });
 

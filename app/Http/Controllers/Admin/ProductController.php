@@ -137,17 +137,18 @@ class ProductController extends Controller
             "Expires"             => "0"
         ];
 
-        // Updated Columns List
+        // Updated Columns List with 'image'
         $columns = [
             'company_name', 
-            'company_category', // নতুন কলাম
+            'company_category', 
             'category_name', 
             'product_name', 
             'description', 
             'specification', 
             'buying_price', 
-            'selling_price', // This maps to base_price
-            'discount_price'
+            'selling_price', 
+            'discount_price',
+            'image' // New Column
         ];
 
         $callback = function() use ($columns) {
@@ -156,17 +157,18 @@ class ProductController extends Controller
             // Add Header Row
             fputcsv($file, $columns);
 
-            // Add Dummy Data Row
+            // Add Dummy Data Row with Image URL
             fputcsv($file, [
-                'Nike',           // company_name (Optional)
-                'Men',            // company_category (Optional)
-                'Shoes',          // category_name
-                'Running Shoe',   // product_name
-                'Comfortable running shoes', // description
-                'Size: 42, Color: Red',      // specification
-                '500',            // buying_price
-                '800',            // selling_price (base_price - Optional)
-                '750'             // discount_price
+                'Nike',           
+                'Men',            
+                'Shoes',          
+                'Running Shoe',   
+                'Comfortable running shoes', 
+                'Size: 42, Color: Red',      
+                '500',            
+                '800',            
+                '750',
+                'https://example.com/shoe.jpg' // Sample Image URL
             ]);
 
             fclose($file);
@@ -177,6 +179,8 @@ class ProductController extends Controller
 
     public function import(Request $request) 
     {
+
+        set_time_limit(0);
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
