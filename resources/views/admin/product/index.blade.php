@@ -253,7 +253,9 @@ const preOrderBadge = product.is_pre_order == 1
     : '<span class="badge bg-secondary">No</span>';
 
                     let priceHtml = `<b>${product.base_price}</b>`;
-                    if (product.discount_price) {
+                    if (product.discount_price == 0) {
+                        priceHtml = `<b>${product.base_price}</b>`;
+                    }else if (product.discount_price > 0) {
                         priceHtml = `<del>${product.base_price}</del><br><b>${product.discount_price}</b>`;
                     }
 

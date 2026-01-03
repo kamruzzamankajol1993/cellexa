@@ -35,4 +35,10 @@ class Brand extends Model
             }
         });
     }
+
+    public function companyCategories()
+{
+    // CompanyCategory মডেলে 'company_id' ফরেন কি হিসেবে আছে
+    return $this->hasMany(CompanyCategory::class, 'company_id');
+}
 }

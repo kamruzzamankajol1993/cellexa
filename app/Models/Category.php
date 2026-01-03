@@ -51,4 +51,15 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
+
+    // --- এই নতুন ফাংশনটি যোগ করুন ---
+    public function brands()
+    {
+        return $this->hasMany(Brand::class, 'category_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

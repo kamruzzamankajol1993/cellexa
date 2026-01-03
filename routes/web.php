@@ -11,13 +11,8 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\ClientSayController;
-use App\Http\Controllers\Admin\ReviewController;
-use App\Http\Controllers\Admin\NewsAndMediaController;
-use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\SocialLinkController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ExtraPageController;
@@ -26,50 +21,19 @@ use App\Http\Controllers\Admin\AboutUsController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Front\TextController;
 use App\Http\Controllers\Front\AuthController;
+use App\Http\Controllers\Front\FrontController;
 use App\Http\Controllers\Front\CustomerPersonalController;
-use App\Http\Controllers\Admin\DefaultLocationController;
-use App\Http\Controllers\Admin\SearchLogController;
-use App\Http\Controllers\Admin\CouponController;
-use App\Http\Controllers\Admin\HolidayCalenderController;
-
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SubCategoryController;
-use App\Http\Controllers\Admin\ColorController;
-use App\Http\Controllers\Admin\UnitController;
-use App\Http\Controllers\Admin\AnimationCategoryController;
-
-use App\Http\Controllers\Admin\SubSubcategoryController;
-use App\Http\Controllers\Admin\FabricController;
-
 use App\Http\Controllers\Admin\SizeChartController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\BarcodeController;
-use App\Http\Controllers\Admin\FrontendControlController;
-use App\Http\Controllers\Admin\BundleOfferController;
-use App\Http\Controllers\Admin\OfferDetailController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\OfferSectionController;
 use App\Http\Controllers\Admin\SliderControlController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\RewardPointController;
-use App\Http\Controllers\Admin\ExpenseCategoryController;
-use App\Http\Controllers\Admin\ExpenseController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\PosController;
-use App\Http\Controllers\Admin\StockController;
-use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\PurchaseController;
-use App\Http\Controllers\Admin\AnalyticSettingController;
-use App\Http\Controllers\Admin\BankController;
-use App\Http\Controllers\Admin\AccountController;
-use App\Http\Controllers\Admin\AccountingSettingController;
-use App\Http\Controllers\Admin\OpeningBalanceController;
-use App\Http\Controllers\Admin\ShareholderDepositController;
-use App\Http\Controllers\Admin\ShareholderWithdrawController;
-use App\Http\Controllers\Admin\CashBookController;
-use App\Http\Controllers\Admin\BankBookController;
 use App\Http\Controllers\Admin\CompanyCategoryController;
 use App\Http\Controllers\Admin\HighlightProductController;
 use App\Http\Controllers\Admin\ExtraCategoryController;
@@ -90,6 +54,38 @@ Route::get('/clear', function() {
     \Illuminate\Support\Facades\Artisan::call('route:clear');
     return redirect()->back();
 });
+
+
+//frontend part start 
+
+Route::controller(FrontController::class)->group(function () {
+
+    Route::get('/', 'index')->name('front.index');
+    Route::get('/about-us', 'aboutUs')->name('front.aboutUs');
+    Route::get('/contact-us', 'contactUs')->name('front.contactUs');
+    Route::post('/contact-us-post', 'contactUsPost')->name('front.contactUsPost');
+    Route::get('/services', 'services')->name('front.services');
+
+    // --- নতুন ২ টি রাউট ---
+    // ১. যদি ক্যাটাগরির ব্র্যান্ড/কোম্পানি থাকে
+    Route::get('/category/companies/{slug}', 'categoryWiseCompanies')->name('front.category.companies');
+
+    // ২. যদি ক্যাটাগরির ব্র্যান্ড না থাকে (সরাসরি প্রোডাক্ট)
+    Route::get('/category/products/{slug}', 'categoryWiseProducts')->name('front.category.products');
+
+
+    // ১. যদি কোম্পানির ক্যাটাগরি থাকে: কোম্পানির ক্যাটাগরি লিস্ট পেজ
+    Route::get('/company/{slug}/categories', 'companyWiseCategories')->name('front.company.categories');
+
+    // ২. যদি কোম্পানির ক্যাটাগরি না থাকে: সরাসরি কোম্পানির প্রোডাক্ট পেজ
+    Route::get('/company/{slug}/products', 'companyWiseProducts')->name('front.company.products');
+
+    Route::get('/product-details/{slug}', 'productDetails')->name('front.product.details');
+
+   }); 
+
+
+//frontend part end
 
 // Highlight Product Routes
     Route::get('highlight-product', [HighlightProductController::class, 'index'])->name('highlight-product.index');
@@ -115,7 +111,7 @@ Route::get('/customerPersonalTicketPdf/{id}', 'customerPersonalTicketPdf')->name
 });
 Route::controller(LoginController::class)->group(function () {
 
-    Route::get('/', 'viewLoginPage')->name('viewLoginPage');
+    Route::get('/admin_login_page', 'viewLoginPage')->name('viewLoginPage');
     Route::get('/password/reset', 'showLinkRequestForm')->name('showLinkRequestForm');
     Route::post('/password/reset/submit', 'reset')->name('reset');
 

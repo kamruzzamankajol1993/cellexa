@@ -1,0 +1,1827 @@
+:root {
+  --default-font: "IBM Plex Sans", sans-serif;
+  --heading-font: "IBM Plex Sans", sans-serif;
+  --nav-font: "IBM Plex Sans", sans-serif;
+}
+
+/* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
+
+:root {
+  --background-color: #f1f5f7;
+  --default-color: #a1573c;
+  --heading-color: #000000;
+  --accent-color: #e3773d;
+  --surface-color: #ffffff;
+  --contrast-color: #ffffff;
+}
+
+/* Smooth scroll */
+
+:root {
+  scroll-behavior: smooth;
+}
+
+/*--------------------------------------------------------------
+# General Styling & Shared Classes
+--------------------------------------------------------------*/
+
+body {
+  color: black;
+  background-color: var(--background-color);
+  font-family: var(--default-font);
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--accent-color), transparent 25%);
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--heading-color);
+  font-family: var(--heading-font);
+}
+
+/*--------------------------------------------------------------
+# Global Header
+--------------------------------------------------------------*/
+.logo-icon-circle {
+  height: 100px;
+  width: auto;
+}
+
+.logo-icon-circle img {
+  height: 100%;
+  width: 100%;
+}
+
+.warehouse-title {
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--gw-dark-grey);
+}
+.nav-link-main {
+  font-weight: 600;
+  font-size: 18px;
+  color: black;
+  text-transform: uppercase;
+}
+.nav-link-main:hover {
+  color: var(--default-color) !important;
+}
+.sub-nav-link {
+  font-size: 0.9rem;
+  color: white;
+  opacity: 0.9;
+  display: inline-block;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  text-align: center;
+}
+
+.sub-nav-link::after {
+  content: "";
+  display: inline-block;
+  height: 8px;
+  width: 8px;
+  background-color: rgb(209, 197, 197);
+  border-radius: 50%;
+  margin-left: 80px;
+}
+
+.sub-nav-link:last-child::after {
+  display: none;
+}
+
+.nav-sticky-wrapper {
+  z-index: 1030;
+  width: 100%;
+}
+
+.is-sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #f7f7f7;
+}
+
+.branding-section {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.branding-shape-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.branding-shape-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 30%;
+  height: 100%;
+  width: 40%;
+  background-color: #f5c7b6;
+  transform: skewX(-20deg);
+  z-index: 2;
+}
+
+.branding-content {
+  position: relative;
+  z-index: 3;
+}
+
+.social-icon-btn {
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 0.25rem;
+  transition: transform 0.2s;
+}
+.social-icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.btn-linkedin {
+  background-color: #0077b5;
+}
+.btn-facebook {
+  background-color: #1877f2;
+}
+.btn-youtube {
+  background-color: #ff0000;
+}
+
+.sub-nav-bar {
+  background-color: var(--default-color);
+  padding: 0.5rem 0;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.offcanvas-header {
+  background-color: var(--gw-blue);
+  color: white;
+}
+
+@media screen and (min-width: 768px) and (max-width: 1250px) {
+  .nav-link-main {
+    font-size: 15px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Global Footer
+--------------------------------------------------------------*/
+
+.footer {
+  color: rgb(0, 0, 0);
+  background-color: #f0d6c8;
+  font-size: 14px;
+  position: relative;
+}
+
+.footer .footer-top {
+  padding-top: 50px;
+}
+
+.footer .footer-about .logo {
+  line-height: 1;
+  margin-bottom: 25px;
+}
+
+.footer .footer-about .logo img {
+  max-height: 120px;
+  margin-right: 6px;
+}
+
+.footer .footer-about .logo span {
+  color: black;
+  font-family: var(--heading-font);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.footer .footer-about p {
+  font-size: 14px;
+  font-family: var(--heading-font);
+}
+
+.footer .social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgb(0, 0, 0);
+  font-size: 16px;
+  color: black;
+  margin-right: 10px;
+  transition: 0.3s;
+}
+
+.footer .social-links a:hover {
+  color: white;
+  border-color: var(--accent-color);
+  background-color: var(--accent-color);
+}
+
+.footer h4 {
+  font-size: 16px;
+  font-weight: bold;
+  position: relative;
+  padding-bottom: 12px;
+  color: black;
+}
+
+.footer .footer-links {
+  margin-bottom: 30px;
+}
+
+.footer .footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer .footer-links ul i {
+  padding-right: 2px;
+  font-size: 12px;
+  line-height: 0;
+}
+
+.footer .footer-links ul li {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.footer .footer-links ul li:first-child {
+  padding-top: 0;
+}
+
+.footer .footer-links ul a {
+  color: black;
+  display: inline-block;
+  line-height: 1;
+}
+
+.footer .footer-links ul a:hover {
+  color: var(--accent-color);
+}
+
+.footer .footer-contact p {
+  margin-bottom: 5px;
+}
+
+.footer .copyright {
+  padding: 25px 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--default-color), transparent 90%);
+  background-color: #111111;
+}
+
+.footer .copyright p {
+  margin-bottom: 0;
+  color: white;
+}
+
+.footer .credits {
+  margin-top: 8px;
+  font-size: 13px;
+  color: white;
+}
+
+/*--------------------------------------------------------------
+# Scroll Top Button
+--------------------------------------------------------------*/
+
+.scroll-top {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 15px;
+  bottom: -15px;
+  z-index: 99999;
+  background-color: var(--accent-color);
+  width: 44px;
+  height: 44px;
+  border-radius: 50px;
+  transition: all 0.4s;
+}
+
+.scroll-top i {
+  font-size: 24px;
+  color: var(--contrast-color);
+  line-height: 0;
+}
+
+.scroll-top:hover {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 20%);
+  color: var(--contrast-color);
+}
+
+.scroll-top.active {
+  visibility: visible;
+  opacity: 1;
+  bottom: 15px;
+}
+
+/*--------------------------------------------------------------
+# Disable aos animation delay on mobile devices
+--------------------------------------------------------------*/
+
+@media screen and (max-width: 768px) {
+  [data-aos-delay] {
+    transition-delay: 0 !important;
+  }
+}
+
+/*--------------------------------------------------------------
+# Global Sections
+--------------------------------------------------------------*/
+
+.section {
+  background-color: var(--background-color);
+  padding: 60px 0;
+  scroll-margin-top: 90px;
+  overflow: clip;
+}
+
+@media (max-width: 1199px) {
+  .section {
+    scroll-margin-top: 45px;
+  }
+}
+
+/*--------------------------------------------------------------
+# FLOATING ACTION BUTTONS (Right Side - Middle)
+--------------------------------------------------------------*/
+
+.cellexa_company_category_floating_nav {
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  left: auto;
+  transform: translateY(-50%);
+  z-index: 1050;
+  background-color: #a1573c;
+  padding: 20px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cellexa_company_category_nav_btn {
+  background: none;
+  border: none;
+  font-weight: 500;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.cellexa_company_category_nav_btn:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 950px) {
+  .cellexa_company_category_floating_nav {
+    right: 5px;
+    padding: 10px 5px;
+    border-radius: 10px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Offcanvas Custom Style
+--------------------------------------------------------------*/
+
+.cellexa_company_category_offcanvas_header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+/* New Styles for Cart Layout */
+.cellexa_company_category_offcanvas_body_flex {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cellexa_company_category_cart_list_container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.cellexa_company_category_cart_footer {
+  flex-shrink: 0;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-top: 1px solid #dee2e6;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.cellexa_company_category_auth_toggle {
+  display: flex;
+  margin-bottom: 20px;
+  background: #f1f3f5;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.cellexa_company_category_auth_tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.cellexa_company_category_auth_tab.active {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  color: #0d6efd;
+}
+
+.cellexa_company_category_auth_form {
+  display: none;
+  animation: fadeIn 0.3s;
+}
+
+.cellexa_company_category_auth_form.show {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cart Item Styles */
+.cellexa_company_category_cart_item {
+  display: flex;
+  align-items: center; /* Centered vertically for better look with inputs */
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cellexa_company_category_cart_item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.cellexa_company_category_cart_img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 15px;
+}
+
+.cellexa_company_category_cart_details {
+  flex-grow: 1;
+}
+
+.cellexa_company_category_qty_controls {
+  margin-top: 8px;
+}
+
+.cellexa_company_category_delete_btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  padding: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  font-size: 1.2rem;
+  margin-left: 10px;
+}
+
+.cellexa_company_category_delete_btn:hover {
+  opacity: 1;
+}
+
+/* Header Button */
+
+/*--------------------------------------------------------------
+# Hero Section
+--------------------------------------------------------------*/
+
+.hero {
+  background-image: url("../img/hero/hero1.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: scroll;
+  overflow: visible;
+  box-shadow: inset 0 0 0 2000px #461a0bb6;
+  height: 80vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.hero_content {
+  width: 70%;
+}
+
+.hero_content h1 {
+  color: white;
+  font-size: 60px;
+  font-weight: bold;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.hero_left_content {
+  width: 100%;
+  text-align: left;
+  padding-top: 40px;
+}
+
+.hero_left_content p {
+  font-size: 18px;
+  color: white;
+}
+
+.hero_single_image {
+  position: absolute;
+  bottom: -1px;
+  left: 16%;
+  z-index: 1;
+}
+
+.hero_single_image {
+  width: 290px;
+  height: auto;
+}
+
+.hero_single_image img {
+  width: 100%;
+  height: 100%;
+  animation: float-badge 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes float-badge {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateX(-80px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero {
+    height: 70vh;
+  }
+  .hero_content {
+    width: 100%;
+  }
+  .hero_content h1 {
+    font-size: 30px;
+  }
+
+  .hero_left_content {
+    width: 100%;
+    text-align: left;
+    padding-top: 40px;
+  }
+
+  .hero_left_content p {
+    font-size: 16px;
+  }
+}
+
+/*--------------------------------------------------------------
+# About US Section
+--------------------------------------------------------------*/
+
+.about_section {
+  position: relative;
+}
+
+.about_us_content h4 {
+  color: black;
+  font-size: 40px;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 40px;
+  width: 90%;
+  text-transform: uppercase;
+}
+
+.about_us_content_below {
+  width: 90%;
+}
+
+.about_us_content_below p {
+  font-size: 18px;
+  text-align: justify;
+}
+
+.about_number {
+  margin-top: 20px;
+  margin-right: 40px;
+  text-align: left;
+}
+
+.about_image {
+  height: 100%;
+  width: 100%;
+}
+
+.about_image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1199px) {
+  .about_us_content h4 {
+    font-size: 30px;
+    width: 100%;
+  }
+
+  .about_us_content_below {
+    width: 100%;
+  }
+
+  .about_us_content_below p {
+    font-size: 16px;
+    text-align: justify;
+  }
+  .about_image {
+    margin-top: 20px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Home Product
+--------------------------------------------------------------*/
+
+.home_category_title {
+  font-size: 40px;
+  font-weight: 500;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.home_category_sub {
+  text-align: right;
+}
+
+.home_category_sub p {
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.cellexa_custom_btn {
+  border-radius: 0;
+  font-size: 14px;
+  padding: 10px 25px;
+  background-color: var(--default-color);
+  color: white;
+  width: 200px;
+}
+
+.cellexa_custom_btn:hover {
+  background-color: black;
+  color: white;
+}
+
+.cellexa_item_box {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 2px 2px 6px #adabab;
+  padding: 20px 10px;
+  height: 100%;
+}
+
+.cellexa_item_box_img {
+  height: 200px;
+  width: auto;
+  text-align: center;
+}
+
+.cellexa_item_box_img1 {
+  height: 300px;
+  width: auto;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.cellexa_item_box_img img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.cellexa_item_box_img1 img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.cellexa_item_box_text h1 {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cellexa_item_box_text1 h1 {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 15px;
+  height: 60px;
+}
+
+.cellexa_item_box_list ul li {
+  font-size: 16px;
+  color: black;
+}
+
+@media (max-width: 1199px) {
+  .home_category_title {
+    font-size: 30px;
+  }
+  .home_category_sub {
+    text-align: left;
+  }
+  .cellexa_item_box_img {
+    height: 180px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Home Details
+--------------------------------------------------------------*/
+
+.home_details {
+  background-color: #111111;
+}
+
+.home_details_left h4 {
+  text-align: left;
+  font-size: 20px;
+  color: white;
+}
+
+.home_details_left img {
+  margin-left: 15px;
+  height: 250px;
+  width: auto;
+}
+
+.home_details_left h2 {
+  text-align: left;
+  font-size: 30px;
+  color: white;
+}
+
+.home_details_right {
+  padding-right: 10%;
+  border-right: 1px solid white;
+}
+
+.home_details_right h2 {
+  text-align: left;
+  font-size: 40px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.home_details_right h3 {
+  text-align: left;
+  font-size: 40px;
+  color: #777777;
+  padding-top: 30px;
+}
+
+.home_details_right p {
+  text-align: left;
+  font-size: 16px;
+  color: white;
+  padding-top: 30px;
+}
+
+.home_details_right ul li {
+  text-align: left;
+  font-size: 16px;
+  color: white;
+}
+
+.home_details_bottom_left {
+  height: 100%;
+}
+
+.home_details_bottom_left img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.home_details_bottom_middle {
+  background-color: #95533a;
+  padding: 20px;
+  height: 100%;
+}
+
+.home_details_bottom_middle h4 {
+  text-align: left;
+  font-size: 30px;
+  text-transform: uppercase;
+  color: white;
+  margin-bottom: 40px;
+}
+
+.home_details_bottom_middle p {
+  text-align: left;
+  font-size: 18px;
+  color: rgb(240, 239, 239);
+  margin-top: 10px;
+}
+
+.home_details_bottom_right {
+  background-color: #212121;
+  padding: 20px;
+  height: 100%;
+}
+
+.home_details_bottom_right h4 {
+  text-align: left;
+  font-size: 30px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.home_details_bottom_right h2 {
+  text-align: left;
+  font-size: 60px;
+  font-weight: bold;
+  color: white;
+  margin-top: 40px;
+}
+
+.home_details_bottom_right p {
+  text-align: left;
+  font-size: 18px;
+  color: rgb(240, 239, 239);
+  margin-top: 40px;
+}
+
+@media (max-width: 1199px) {
+  .home_details_right h2 {
+    font-size: 30px;
+  }
+  .home_details_bottom_middle h4 {
+    font-size: 30px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Faq Section
+--------------------------------------------------------------*/
+
+.faq .faq-container .faq-item {
+  position: relative;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 0px;
+  overflow: hidden;
+  border-bottom: 1px solid black;
+}
+
+.faq .faq-container .faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.faq .faq-container .faq-item h3 {
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 24px;
+  margin: 0 30px 0 0;
+  transition: 0.3s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: black;
+}
+
+.faq .faq-container .faq-item h3 span {
+  font-size: 20px;
+  list-style: 24px;
+  color: black;
+  border-radius: 50%;
+  border: 1px solid black;
+  height: 35px;
+  width: 35px;
+  padding: 5px;
+  text-align: center;
+  margin-right: 20px;
+}
+
+.faq .faq-container .faq-item h3:hover {
+  color: var(--accent-color);
+}
+
+.faq .faq-container .faq-item .faq-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: 0.3s ease-in-out;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.faq .faq-container .faq-item .faq-content p {
+  margin-bottom: 0;
+  overflow: hidden;
+  font-size: 16px;
+}
+
+.faq .faq-container .faq-item .faq-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 16px;
+  line-height: 0;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.faq .faq-container .faq-active .faq-content {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+  padding-top: 10px;
+}
+
+.faq .faq-container .faq-active .faq-toggle {
+  transform: rotate(90deg);
+  color: var(--accent-color);
+}
+
+.home_faq {
+  height: 100%;
+}
+
+.home_faq img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1199px) {
+  .home_faq {
+    height: 100%;
+    margin-top: 15px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Company Page
+--------------------------------------------------------------*/
+
+.product_breadcumb {
+  background-color: rgb(230, 226, 226);
+  padding: 15px 10px;
+  margin-top: 20px;
+}
+
+.product_breadcumb p {
+  font-size: 14px;
+  color: black;
+  margin: 0;
+  padding: 0;
+}
+
+.product_breadcumb p a {
+  color: black;
+}
+
+.category_company_filter_box {
+  background-color: white;
+  padding: 30px 15px;
+}
+
+.category_company_filter_box h3 {
+  font-size: 18px;
+  color: black;
+}
+
+.category_company_filter_box ul li a {
+  color: black;
+}
+
+.company_category_box {
+  text-align: left;
+  padding: 30px 10px;
+  background-color: var(--background-color);
+}
+
+.company_category_box h5 {
+  font-size: 20px;
+  color: black;
+  margin: 0;
+  height: 80px;
+}
+
+.company_listing_image {
+  height: 100px;
+  width: auto;
+}
+
+/*--------------------------------------------------------------
+# History Section
+--------------------------------------------------------------*/
+
+.history .about-content h2 {
+  font-size: 30px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.history .about-content h3 {
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.history .about-content p {
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+.about-image {
+  height: 100%;
+  width: 100%;
+}
+
+.about-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.history .about-image .mission-vision {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.achievement-badge {
+  border: 2px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+  padding: 15px 2rem;
+  text-align: left;
+  transition: all 0.4s ease;
+  height: 100%;
+}
+
+.badge-title {
+  text-transform: uppercase;
+  font-size: 25px;
+}
+
+.history .core-values {
+  margin-top: 30px;
+}
+
+.history .core-values h3 {
+  font-size: 30px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.history .core-values .value-card {
+  background-color: var(--surface-color);
+  padding: 30px 20px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.history .core-values .value-card .value-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
+  margin-bottom: 20px;
+}
+
+.history .core-values .value-card .value-icon i {
+  font-size: 32px;
+  color: var(--accent-color);
+}
+
+.history .core-values .value-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background-color: #e3773d;
+}
+
+.history .core-values .value-card:hover .value-icon i {
+  color: white;
+}
+
+.history .core-values .value-card h4 {
+  font-size: 25px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.history .core-values .value-card p {
+  font-size: 18px;
+  margin-bottom: 0;
+}
+
+/*--------------------------------------------------------------
+# Contact Section
+--------------------------------------------------------------*/
+
+.contact .contact-main-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+@media (min-width: 992px) {
+  .contact .contact-main-wrapper {
+    grid-template-columns: 45% 55%;
+    min-height: 600px;
+  }
+}
+
+.contact .map-wrapper {
+  height: 300px;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .contact .map-wrapper {
+    height: 100%;
+    position: sticky;
+    top: 100px;
+  }
+}
+
+.contact .contact-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.contact .contact-cards-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+@media (min-width: 576px) {
+  .contact .contact-cards-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.contact .contact-card {
+  background-color: var(--surface-color);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact .contact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.contact .contact-card .icon-box {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contact .contact-card .icon-box i {
+  font-size: 22px;
+  color: var(--accent-color);
+}
+
+.contact .contact-card .contact-text h4 {
+  font-size: 22px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--heading-color);
+}
+
+.contact .contact-card .contact-text p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--default-color);
+  margin-bottom: 0;
+}
+
+.contact .contact-form-container {
+  background-color: var(--surface-color);
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.contact .contact-form-container h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--heading-color);
+  position: relative;
+  padding-left: 15px;
+  text-transform: uppercase;
+}
+
+.contact .contact-form-container h3:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+}
+
+.contact .contact-form-container > p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  color: var(--default-color);
+}
+
+.contact .contact-form-container .php-email-form .form-control {
+  height: auto;
+  padding: 14px 20px;
+  border-radius: 0px;
+  background-color: color-mix(in srgb, var(--background-color), #f5f8fd 30%);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+  color: var(--default-color);
+  transition: all 0.3s ease;
+}
+
+.contact .contact-form-container .php-email-form .form-control:focus {
+  background-color: var(--surface-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 85%);
+}
+
+.contact .contact-form-container .php-email-form .form-control::placeholder {
+  color: color-mix(in srgb, var(--default-color), transparent 60%);
+}
+
+.contact .contact-form-container .php-email-form textarea.form-control {
+  min-height: 140px;
+}
+
+.contact .contact-form-container .php-email-form .form-submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+@media (max-width: 576px) {
+  .contact .contact-form-container .php-email-form .form-submit {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.contact .contact-form-container .php-email-form button {
+  background-color: var(--accent-color);
+  color: var(--contrast-color);
+  border: none;
+  padding: 12px 28px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.contact .contact-form-container .php-email-form button:hover {
+  background-color: color-mix(in srgb, var(--accent-color), #000 15%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px
+    color-mix(in srgb, var(--accent-color), transparent 75%);
+}
+
+.contact .contact-form-container .php-email-form .social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.contact .contact-form-container .php-email-form .social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--background-color), #f5f8fd 20%);
+  color: var(--heading-color);
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.contact .contact-form-container .php-email-form .social-links a:hover {
+  background-color: var(--accent-color);
+  color: var(--contrast-color);
+  transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+  .contact .contact-form-container {
+    padding: 25px 20px;
+  }
+  .contact .contact-form-container h3 {
+    font-size: 22px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Campany Category Page design
+--------------------------------------------------------------*/
+
+/* Sidebar / Filter Section Styles - Responsive Logic */
+.cellexa_company_category_col_sidebar {
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Desktop specific styles (Sticky Sidebar) - Only applies on LG screens and up */
+@media (min-width: 992px) {
+  .cellexa_company_category_filter_sidebar {
+    padding: 25px;
+    /* Sticky Logic */
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background-color: white;
+  }
+}
+
+.cellexa_company_category_filter_title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  border-bottom: 2px solid #eaeaea;
+  padding-bottom: 10px;
+}
+
+.cellexa_company_category_filter_group {
+  margin-bottom: 25px;
+}
+
+.cellexa_company_category_filter_subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.cellexa_company_category_checkbox_label {
+  font-size: 0.95rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.cellexa_company_category_checkbox_label:hover {
+  color: #0d6efd;
+}
+
+/* Product Showcase Section Styles */
+.cellexa_company_category_product_card {
+  background-color: #ffffff;
+  border: none;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #a1573c;
+}
+
+.cellexa_company_category_product_card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.cellexa_company_category_image_container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  background-color: #f1f3f5;
+  overflow: hidden;
+}
+
+.cellexa_company_category_product_img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.cellexa_company_category_product_card:hover
+  .cellexa_company_category_product_img {
+  transform: scale(1.05);
+}
+
+.cellexa_company_category_card_body {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.cellexa_company_category_product_name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 8px;
+}
+
+.cellexa_company_category_explore_btn {
+  background-color: #212529;
+  color: #fff;
+  padding: 10px 20px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, transform 0.2s;
+  display: inline-block;
+  border: 2px solid transparent;
+}
+
+.cellexa_company_category_explore_btn:hover {
+  background-color: #fff;
+  color: #212529;
+  border-color: #212529;
+  transform: scale(1.02);
+}
+
+/* Custom Checkbox Styling */
+.cellexa_company_category_checkbox_input {
+  margin-right: 8px;
+}
+
+/*--------------------------------------------------------------
+# Profile Page design
+--------------------------------------------------------------*/
+/* Wrapper for the entire profile section */
+.cellexa_user_wrapper {
+  padding: 40px 0;
+}
+
+/* Sidebar Styling */
+.cellexa_user_sidebar {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.cellexa_user_profile_header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.cellexa_user_avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e9ecef;
+  margin-bottom: 15px;
+}
+
+.cellexa_user_name_display {
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.cellexa_user_role_badge {
+  background-color: #fbece8; /* Custom Light Color */
+  color: #a1573c; /* Custom Primary Color */
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Navigation Buttons */
+.cellexa_user_nav_menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cellexa_user_nav_btn {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #6c757d;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.cellexa_user_nav_btn i {
+  margin-right: 15px;
+  width: 20px;
+  text-align: center;
+}
+
+.cellexa_user_nav_btn:hover {
+  background-color: #f8f9fa;
+  color: #a1573c; /* Custom Primary Color */
+  transform: translateX(5px);
+}
+
+/* UPDATED: Uses .active instead of .cellexa_user_active for Bootstrap compatibility */
+.cellexa_user_nav_btn.active {
+  background-color: #a1573c; /* Custom Primary Color */
+  color: white;
+  box-shadow: 0 4px 6px rgba(161, 87, 60, 0.2);
+}
+
+.cellexa_user_nav_btn.active:hover {
+  transform: none; /* remove hover move for active */
+}
+
+/* Content Area Styling */
+.cellexa_user_content_area {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  min-height: 500px;
+}
+
+.cellexa_user_section_title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+  color: #2c3e50;
+}
+
+/* Forms */
+.cellexa_user_form_label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.cellexa_user_input {
+  border-radius: 6px;
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+}
+
+.cellexa_user_input:focus {
+  box-shadow: 0 0 0 3px rgba(161, 87, 60, 0.15); /* Custom Primary Color */
+  border-color: #a1573c;
+}
+
+.cellexa_user_save_btn {
+  background-color: #a1573c; /* Custom Primary Color */
+  border: none;
+  padding: 10px 30px;
+  font-weight: 600;
+  color: white;
+}
+
+.cellexa_user_save_btn:hover {
+  background-color: #8a4a33; /* Darker shade */
+  color: white;
+}
+
+/* Custom Buttons & Text */
+.cellexa_user_btn_outline {
+  color: #a1573c;
+  border-color: #a1573c;
+  background: transparent;
+}
+
+.cellexa_user_btn_outline:hover {
+  background-color: #a1573c;
+  color: white;
+  border-color: #a1573c;
+}
+
+.cellexa_user_text_primary {
+  color: #a1573c !important;
+}
+
+/* Tables (Quotes & Orders) */
+.cellexa_user_table_wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+
+.cellexa_user_status_badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cellexa_user_status_pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.cellexa_user_status_approved {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+.cellexa_user_status_shipped {
+  background: #cff4fc;
+  color: #055160;
+}
+.cellexa_user_status_cancelled {
+  background: #f8d7da;
+  color: #842029;
+}
+
+/* Modal Customization */
+.cellexa_user_modal_header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.cellexa_user_modal_title {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+  .cellexa_user_wrapper {
+    padding: 20px 0;
+  }
+
+  .cellexa_user_sidebar {
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .cellexa_user_content_area {
+    padding: 20px;
+    min-height: auto;
+  }
+
+  /* Make navigation horizontal and scrollable on mobile/tablet */
+  .cellexa_user_nav_menu {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .cellexa_user_nav_menu::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .cellexa_user_nav_btn {
+    width: auto;
+    white-space: nowrap;
+    margin-right: 10px;
+    padding: 10px 15px;
+    flex-shrink: 0;
+  }
+
+  .cellexa_user_nav_btn:hover {
+    transform: none; /* Disable shift on touch devices */
+  }
+
+  .cellexa_user_profile_header {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    gap: 15px;
+  }
+
+  .cellexa_user_avatar {
+    margin-bottom: 0;
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+  }
+
+  .cellexa_user_header_text {
+    flex-grow: 1;
+  }
+
+  .cellexa_user_name_display {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+  }
+}

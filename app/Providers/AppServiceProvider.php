@@ -7,8 +7,11 @@ use DB;
 use Auth;
 use Carbon\Carbon;
 use App\Models\SystemInformation;
+use App\Models\SocialLink; // Import SocialLink Model
+use App\Models\Category;   // Import Category Model
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -26,7 +29,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
-    
         // Add this code block
         Relation::morphMap([
             'offer' => 'App\Models\Offer',
@@ -36,7 +38,22 @@ class AppServiceProvider extends ServiceProvider
 
         view()->composer('*', function ($view)
         {
-            //provider code for frontend
+            // --- 1. Dynamic Header Categories (New Logic) ---
+            // Fetch parent categories (where parent_id is null)
+            // Eager load 'brands' to check if a category has companies or not
+            $header_categories = Category::whereNull('parent_id')
+                                         ->where('status', 1) // Assuming you want only active categories
+                                         ->with('brands')
+                                         ->get();
+            view()->share('header_categories', $header_categories);
+
+
+            // --- 2. Social Links (New Logic) ---
+            $social_links = SocialLink::all();
+            view()->share('social_links', $social_links);
+
+
+            // --- 3. System Information (Frontend) ---
             $frontEndData = DB::table('system_information')->first();
 
             if ($frontEndData) {
@@ -44,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
                 $front_icon_name = $frontEndData->icon;
                 $front_logo_name = $frontEndData->logo;
                 $front_ins_name = $frontEndData->ins_name;
+                $front_ins_title = $frontEndData->title;
+                $front_ins_opening_hour = $frontEndData->open_hour;
                 $front_ins_add = $frontEndData->address;
                 $front_ins_email = $frontEndData->email;
                 $front_ins_phone = $frontEndData->phone;
@@ -60,6 +79,8 @@ class AppServiceProvider extends ServiceProvider
                 $front_icon_name = '';
                 $front_logo_name = '';
                 $front_ins_name = '';
+                $front_ins_title = '';
+                $front_ins_opening_hour = '';
                 $front_ins_add = '';
                 $front_ins_email = '';
                 $front_ins_phone = '';
@@ -72,22 +93,28 @@ class AppServiceProvider extends ServiceProvider
                 $front_develop_by = '';
             }
 
-              view()->share('front_icon_name', $front_icon_name);
-              view()->share('front_logo_name', $front_logo_name);
-              view()->share('front_ins_name', $front_ins_name);
-              view()->share('front_ins_add', $front_ins_add);
-              view()->share('front_ins_email', $front_ins_email);
-              view()->share('front_ins_phone', $front_ins_phone);
+            view()->share('front_icon_name', $front_icon_name);
+            view()->share('front_logo_name', $front_logo_name);
+            view()->share('front_ins_name', $front_ins_name);
+            
+            // Fixed: Added this line to solve the "Undefined variable" error
+            view()->share('front_ins_title', $front_ins_title);
 
-              // Shared the new variable
-              view()->share('front_ins_phone_one', $front_ins_phone_one);
+            view()->share('front_ins_add', $front_ins_add);
+            view()->share('front_ins_email', $front_ins_email);
+            view()->share('front_ins_phone', $front_ins_phone);
 
-              view()->share('front_ins_k', $front_ins_k);
-              view()->share('front_ins_d', $front_ins_d);
-              view()->share('front_develop_by', $front_develop_by);
+            // Shared the new variable
+            view()->share('front_ins_phone_one', $front_ins_phone_one);
+
+            view()->share('front_ins_k', $front_ins_k);
+            view()->share('front_ins_d', $front_ins_d);
+            view()->share('front_develop_by', $front_develop_by);
 
             //provider code for frontend end
 
+
+            // --- 4. Auth Check Code (Backend/Dashboard) ---
             if (Auth::check()) {
 
                 //auth check code start

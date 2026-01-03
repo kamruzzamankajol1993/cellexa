@@ -76,42 +76,48 @@ class ProductsImport implements ToModel, WithHeadingRow
 
         // 4. Handle Image Download
         $imageArray = [];
-        if (!empty($row['image'])) {
-            try {
-                $imageUrl = $row['image'];
-                // Use @ to suppress warnings for invalid URLs
-                $imageContents = @file_get_contents($imageUrl);
+        // if (!empty($row['image'])) {
+        //     try {
+        //         $imageUrl = $row['image'];
+        //         // Use @ to suppress warnings for invalid URLs
+        //         $imageContents = @file_get_contents($imageUrl);
 
-                if ($imageContents) {
-                    $destinationPath = public_path('uploads/products/thumbnails');
+        //         if ($imageContents) {
+        //             $destinationPath = public_path('uploads/products/thumbnails');
                     
-                    // Create directory if it doesn't exist
-                    if (!File::isDirectory($destinationPath)) {
-                        File::makeDirectory($destinationPath, 0777, true, true);
-                    }
+        //             // Create directory if it doesn't exist
+        //             if (!File::isDirectory($destinationPath)) {
+        //                 File::makeDirectory($destinationPath, 0777, true, true);
+        //             }
 
-                    // Generate Unique Name
-                    $imageName = time() . '_' . uniqid() . '.webp';
+        //             // Generate Unique Name
+        //             $imageName = time() . '_' . uniqid() . '.webp';
 
-                    // Resize to 600x600 (Standard for products) using Intervention Image
-                    Image::read($imageContents)->resize(600, 600, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->save($destinationPath . '/' . $imageName);
+        //             // Resize to 600x600 (Standard for products) using Intervention Image
+        //             Image::read($imageContents)->resize(600, 600, function ($constraint) {
+        //                 $constraint->aspectRatio();
+        //                 $constraint->upsize();
+        //             })->save($destinationPath . '/' . $imageName);
 
-                    // Path to store in DB
-                    $imagePath = 'products/thumbnails/' . $imageName;
+        //             // Path to store in DB
+        //             $imagePath = 'products/thumbnails/' . $imageName;
                     
-                    // Product images are stored as an array in your system
-                    $imageArray[] = $imagePath;
-                }
-            } catch (\Exception $e) {
-                Log::error('Product Import Image Error (' . $row['product_name'] . '): ' . $e->getMessage());
-            }
-        }
+        //             // Product images are stored as an array in your system
+        //             $imageArray[] = $imagePath;
+        //         }
+        //     } catch (\Exception $e) {
+        //         Log::error('Product Import Image Error (' . $row['product_name'] . '): ' . $e->getMessage());
+        //     }
+        // }
 
-        // 5. Generate Product Code
-        $productCode = strtoupper(substr($row['product_name'], 0, 3)) . '-' . time() . rand(10, 99);
+        // 5. Generate Product Code (Unique)
+        // প্রোডাক্ট নেম থেকে প্রিফিক্স নেওয়া হচ্ছে
+        $prefix = isset($row['product_name']) ? strtoupper(substr($row['product_name'], 0, 3)) : 'PRD';
+        // স্পেশাল ক্যারেক্টার রিমুভ করা
+        $prefix = preg_replace('/[^A-Z0-9]/', '', $prefix);
+        
+        // uniqid() ব্যবহার করে ইউনিক কোড তৈরি (সময় এবং র‍্যান্ডম ভ্যালুর উপর ভিত্তি করে)
+        $productCode = $prefix . '-' . strtoupper(uniqid()) . rand(10, 99);
 
         // 6. Create Product
         $product = Product::create([
