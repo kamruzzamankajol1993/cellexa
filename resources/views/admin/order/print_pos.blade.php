@@ -6,7 +6,6 @@
    <style>
         body {
         color: #333639;
-        /* Update this line to use the Nikosh font */
         font-family: 'nikosh', sans-serif; 
     }
 
@@ -31,10 +30,6 @@
         .first_table tr td:nth-child(2)
         {
             text-align: right;
-        }
-
-        .first_table tr td:nth-child(2) img {
-           
         }
 
         .first_table tr td:nth-child(2) p {
@@ -115,7 +110,6 @@
     </style>
 </head>
 <body>
-    {{-- The top part of the receipt is unchanged --}}
     <table class="first_table">
         <tr>
             <td>
@@ -152,7 +146,6 @@
         </tr>
     </table>
     
-    {{-- --- TABLE UPDATED --- --}}
     <table class="third_table">
         <thead>
         <tr>
@@ -167,22 +160,18 @@
             @foreach($order->orderDetails as $detail)
             <tr>
                 <td style="text-align: center;">{{ $loop->iteration }}</td>
-                <td>{{ $detail->product->name }} ({{ $detail->size }})</td>
-                <td style="text-align: center;">{{ number_format($detail->unit_price, 2) }}</td>
+                <td>{{ $detail->product->name }}</td> <td style="text-align: center;">{{ number_format($detail->unit_price, 2) }}</td>
                 <td style="text-align: center;">{{ $detail->quantity }}</td>
                 <td style="text-align: center;">{{ number_format($detail->subtotal, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
-    {{-- --- END OF UPDATE --- --}}
 
     <table class="forth_table">
         <tr>
         <td>
-            <h4>COD Charge:{{ number_format($order->cod, 2) }}
             <br> <span style="font-size:8px;">Powered By ResNova Tech Limited</span>
-            </h4>
         </td>
         <td>
           <table class="inner-table">
@@ -190,18 +179,12 @@
               <td>Sub Total</td>
               <td>{{ number_format($order->subtotal, 2) }}</td>
             </tr>
-            <tr>
-              <td>Ship.Charge</td>
-              <td>{{ number_format($order->shipping_cost, 2) }}</td>
-            </tr>
-            @if($order->discount  == 0 )
-    
-            @else
+            @if($order->discount > 0)
             <tr>
                 <td>Discount</td>
                 <td>{{ number_format($order->discount, 2) }}</td>
-              </tr>
-              @endif
+            </tr>
+            @endif
             <tr style="font-weight:bold">
               <td>Total</td>
               <td>{{ number_format($order->total_amount, 2) }}</td>

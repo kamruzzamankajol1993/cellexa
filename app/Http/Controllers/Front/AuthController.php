@@ -4,359 +4,300 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Auth;
-use Maatwebsite\Excel\Facades\Excel;
-use Mpdf\Mpdf;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Customer;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Hash; // For password hashing
-use Illuminate\Support\Str; // For generating unique file names
-use Intervention\Image\Laravel\Facades\Image;
-use Illuminate\Support\Facades\File; // For file operations (delete)
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Mail; // <-- Add Mail facade
-use App\Mail\PasswordResetMail; // <-- Add our new Mailable
+use Illuminate\Support\Str;
+use App\Models\Brand;
+use App\Models\CompanyCategory;
+use App\Models\Order;
+use App\Models\OrderDetail;
 class AuthController extends Controller
 {
+    // Login & Register Page View (যদি আলাদা পেজ থাকে)
     public function loginregisterPage()
     {
-        return view('front.auth.loginRegister'); 
-}
+        return view('front.auth.login_register');
+    }
 
-public function registerUserPost(Request $request)
+    // ১. কাস্টমার রেজিস্ট্রেশন
+    public function registerUserPost(Request $request)
     {
-        // 1. Validate the incoming request data for Customer
-        $validatedCustomerData = $request->validate([
+        // ভ্যালিডেশন
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'phone' => 'nullable|string|max:20',
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('customers', 'email'), // Ensure email is unique in customers table
-                Rule::unique('users', 'email'),     // Ensure email is also unique in users table
-            ],
-            'status' => 'nullable|string|in:active,inactive', // Assuming these are your valid statuses
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // 2MB Max
-            'nid_front_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'nid_back_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'company_name' => 'nullable|string|max:255',
+            'address' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email|unique:customers,email',
+            'password' => 'required|min:6|confirmed', // password_confirmation ফিল্ড লাগবে
         ]);
 
-        // 2. Handle image uploads directly to the public folder using Intervention Image
-        $customerImagePath = null;
-        $customerImageDir = 'uploads/customer_images/'; // Directory inside public folder
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $fileName = time() . '_customer_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            $path = public_path($customerImageDir . $fileName);
-
-            // Ensure the directory exists
-            if (!File::isDirectory(public_path($customerImageDir))) { // Use File facade
-                File::makeDirectory(public_path($customerImageDir), 0777, true, true);
-            }
-
-            Image::read($image)->save($path);
-            $customerImagePath = $customerImageDir . $fileName; // Store relative path in DB
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ]);
         }
 
-        $nidFrontImagePath = null;
-        $nidImageDir = 'uploads/nid_images/'; // Directory inside public folder for NID images
-        if ($request->hasFile('nid_front_image')) {
-            $image = $request->file('nid_front_image');
-            $fileName = time() . '_nid_front_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            $path = public_path($nidImageDir . $fileName);
-
-            // Ensure the directory exists
-            if (!File::isDirectory(public_path($nidImageDir))) { // Use File facade
-                File::makeDirectory(public_path($nidImageDir), 0777, true, true);
-            }
-
-            Image::read($image)->save($path);
-            $nidFrontImagePath = $nidImageDir . $fileName; // Store relative path in DB
-        }
-
-        $nidBackImagePath = null;
-        if ($request->hasFile('nid_back_image')) {
-            $image = $request->file('nid_back_image');
-            $fileName = time() . '_nid_back_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            $path = public_path($nidImageDir . $fileName);
-
-            // Ensure the directory exists
-            if (!File::isDirectory(public_path($nidImageDir))) { // Use File facade
-                File::makeDirectory(public_path($nidImageDir), 0777, true, true);
-            }
-
-            Image::read($image)->save($path);
-            $nidBackImagePath = $nidImageDir . $fileName; // Store relative path in DB
-        }
-
-        // 3. Create a new Customer record
-        $customer = Customer::create([
-            'name' => $validatedCustomerData['name'],
-            'address' => $validatedCustomerData['address'] ?? null, // Use null for nullable fields if not present
-            'phone' => $validatedCustomerData['phone'] ?? null,
-            'email' => $validatedCustomerData['email'],
-            'status' => 'active', // Default status if not provided
-            'image' => $customerImagePath,
-            'nid_front_image' => $nidFrontImagePath,
-            'nid_back_image' => $nidBackImagePath,
-        ]);
-
-        // 4. Create a new User record associated with the customer
-        $defaultPassword = '12345678';
-        User::create([
-            'name' => $validatedCustomerData['name'],
-            'phone' => $validatedCustomerData['phone'] ?? null,
-            'email' => $validatedCustomerData['email'],
-            'password' => Hash::make($request->password), // Always hash the password
-            'viewpassword' => $request->password,          // Store plain text for viewpassword as per request
-            'customer_id' => $customer->id,              // Link to the newly created customer
-            'user_type' => 2,                             // As specified, user_type will always be 2
-        ]);
-
-        // 5. Redirect back with a success message
-        return redirect()->back()->with('success', 'Registered successfully, now login!');
-    }
-
-     public function loginUserPost(Request $request): RedirectResponse
-    {
-        // 1. Validate the incoming request data
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        // 2. Attempt to authenticate the user
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            
-            // 3. Regenerate session
-            $request->session()->regenerate();
-
-            // 4. Redirect to the named dashboard route
-            //    This is the key update.
-            return redirect()->intended(route('front.userDashboard'))
-                ->with('success', 'You have successfully logged in!');
-        }
-
-        // 5. If authentication fails, redirect back with an error
-        throw ValidationException::withMessages([
-            'email' => [trans('auth.failed')],
-        ]);
-    }
-    public function userDashboard()
-    {
-        // 1. Get the authenticated user
-        $user = Auth::user();
-
-        // 2. Check if the user is authenticated
-        if (!$user && $user->user_type != 2) {
-            return redirect()->route('front.loginRegister')->with('error', 'You must be logged in to access the dashboard.');
-        }
-
-        // 3. Return the user dashboard view with user data
-        return view('front.auth.userDashboard', compact('user'));
-    }
-
-    public function updatePassword(Request $request)
-    {
-        // Define validation rules for password
-        $request->validateWithBag('updatePassword', [
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
-
-        $user = Auth::user();
-        
-        // Update the password
-        $user->password = Hash::make($request->password);
-        $user->viewpassword = $request->password;
-        $user->save();
-
-        return redirect()->route('front.userDashboard')->with('success', 'Password changed successfully!');
-    }
-
-
-    public function updateProfile(Request $request)
-    {
-        // 1. Validate the form data
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'nid_front_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'nid_back_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
-
+        DB::beginTransaction();
         try {
-            // Start a database transaction
-            DB::beginTransaction();
-
-            // 2. Find the authenticated User and their associated Customer record
-            $user = Auth::user();
-            // Assuming user->customer_id links to the customers table primary key
-            $customer = Customer::findOrFail($user->customer_id);
-
-            // 3. Update text-based fields on BOTH models
-            $user->name = $validatedData['name'];
-            $customer->name = $validatedData['name'];
-            
-            $user->phone = $validatedData['phone'];
-            $customer->phone = $validatedData['phone'];
-
-          
-
-            // 4. Handle Image Uploads, mirroring your existing registration logic
-            
-            // --- Profile Image ---
-            if ($request->hasFile('image')) {
-                $path = $this->handleImageUpload($request->file('image'), 'uploads/customer_images/', 'customer', $user->image);
-                //$user->image = $path;
-                $customer->image = $path;
-            }
-
-            // --- NID Front Image ---
-            if ($request->hasFile('nid_front_image')) {
-                $path = $this->handleImageUpload($request->file('nid_front_image'), 'uploads/nid_images/', 'nid_front', $user->nid_front_image);
-                //$user->nid_front_image = $path;
-                $customer->nid_front_image = $path;
-            }
-
-            // --- NID Back Image ---
-            if ($request->hasFile('nid_back_image')) {
-                $path = $this->handleImageUpload($request->file('nid_back_image'), 'uploads/nid_images/', 'nid_back', $user->nid_back_image);
-                //$user->nid_back_image = $path;
-                $customer->nid_back_image = $path;
-            }
-
-            // 5. Save both models
+            // ১. ইউজার টেবিলে ডাটা ইনসার্ট (user_type = 1 for Customer)
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = Hash::make($request->password);
+            $user->user_type = 1; // 1 = Customer
+            $user->status = 1; // Active
             $user->save();
+
+            // ২. কাস্টমার টেবিলে ডাটা ইনসার্ট
+            $customer = new Customer();
+            $customer->user_id = $user->id; // রিলেশন
+            $customer->name = $request->name;
+            $customer->company_name = $request->company_name;
+            $customer->email = $request->email;
+            $customer->phone = $request->phone ?? null; // ফোন যদি থাকে
+            $customer->address = $request->address;
+            $customer->password = Hash::make($request->password); // ব্যাকআপ বা লেগাসি সাপোর্টের জন্য
+            $customer->status = 1;
             $customer->save();
 
-            // If everything is successful, commit the transaction
+            // ৩. ইউজারের মধ্যে কাস্টমার আইডি আপডেট করা (Optional, but good for linking)
+            $user->customer_id = $customer->id;
+            $user->save();
+
             DB::commit();
 
-            return redirect()->back()->with('success', 'Profile updated successfully!');
+            // অটো লগইন করিয়ে দেওয়া (অপশনাল)
+            Auth::login($user);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Registration successful! Redirecting...',
+                'redirect_url' => route('front.userDashboard') // বা হোমপেজ
+            ]);
 
         } catch (\Exception $e) {
-            // If any error occurs, roll back the transaction
             DB::rollBack();
-            // Optionally log the error: Log::error($e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while updating your profile. Please try again.');
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong! ' . $e->getMessage()
+            ]);
         }
     }
 
-    /**
-     * Reusable private method to handle image upload, saving, and old file deletion.
-     * This keeps the main method cleaner and follows your established pattern.
-     */
-    private function handleImageUpload($file, $directory, $prefix, $oldImagePath = null)
+    // ২. কাস্টমার লগইন
+    public function loginUserPost(Request $request)
     {
-        // Delete the old file if it exists
-        if ($oldImagePath && File::exists(public_path($oldImagePath))) {
-            File::delete(public_path($oldImagePath));
-        }
-
-        // Generate a new unique filename
-        $fileName = time() . '_' . $prefix . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-        $path = public_path($directory . $fileName);
-
-        // Ensure the directory exists
-        if (!File::isDirectory(public_path($directory))) {
-            File::makeDirectory(public_path($directory), 0777, true, true);
-        }
-        
-        // Save the new image using Intervention Image
-        Image::read($file)->save($path);
-
-        // Return the relative path to store in the database
-        return $directory . $fileName;
-    }
-
-   // ---------- NEW FORGOT PASSWORD METHODS ----------
-
-    /**
-     * Display the form to request a password reset link.
-     */
-    public function showForgotPasswordForm(): View
-    {
-        return view('front.auth.password.email');
-    }
-
-    /**
-     * Handle an incoming password reset link request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function sendResetLink(Request $request): RedirectResponse
-    {
-        $request->validate(['email' => 'required|email']);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return back()->withErrors(['email' => 'We can\'t find a user with that email address.']);
-        }
-
-        //Create Password Reset Token
-        $token = Password::broker()->createToken($user);
-
-        try {
-            Mail::to($user->email)->send(new PasswordResetMail($token, $user));
-            return back()->with('success', 'We have e-mailed your password reset link!');
-        } catch (\Exception $e) {
-            // You can log the error here if needed: \Log::error($e);
-            return back()->withErrors(['email' => 'Unable to send password reset email. Please try again later.']);
-        }
-    }
-
-
-    /**
-     * Display the password reset view for the given token.
-     */
-    public function showResetPasswordForm(Request $request, $token): View
-    {
-        return view('front.auth.password.reset', [
-            'token' => $token,
-            'email' => $request->email
-        ]);
-    }
-
-    /**
-     * Handle an incoming new password request.
-     */
-    public function resetPassword(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'token' => 'required',
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => 'required',
         ]);
 
-        // Here we will attempt to reset the user's password.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                    'viewpassword' => $password, // Also updating viewpassword as per your existing logic
-                ])->save();
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'Please fill all fields correctly.']);
+        }
 
-                // event(new PasswordReset($user)); // <-- REMOVED AS REQUESTED
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password,
+            'user_type' => 1, // শুধু কাস্টমার লগইন করতে পারবে
+            'status' => 1 // শুধু অ্যাক্টিভ ইউজার
+        ];
+
+        if (Auth::attempt($credentials, $request->remember)) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful!',
+                'redirect_url' => route('front.userDashboard') // বা কাস্টমার ড্যাশবোর্ড
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid credentials or access denied.'
+            ]);
+        }
+    }
+    
+    // 1. User Dashboard (Updated to pass data)
+    public function userDashboard() {
+    $user = Auth::user();
+    $customer = Customer::where('user_id', $user->id)->first();
+    // Fetch orders
+    $orders = Order::where('customer_id', $customer->id ?? 0)->latest()->get(); 
+    
+    return view('front.customer.customer_profile', compact('user', 'customer', 'orders'));
+}
+
+    // 2. Update Profile Information
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        $customer = Customer::where('user_id', $user->id)->first();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'company_name' => 'nullable|string|max:255',
+            'address' => 'required|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'errors' => $validator->errors()]);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Update User Table
+            $user->name = $request->name;
+            $user->save();
+
+            // Update Customer Table
+            if ($customer) {
+                $customer->name = $request->name;
+                $customer->phone = $request->phone;
+                $customer->company_name = $request->company_name;
+                $customer->address = $request->address;
+                $customer->save();
             }
-        );
 
-        // If the password was successfully reset, we will redirect the user to the
-        // login page and display a success message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('front.loginRegister')->with('success', __($status))
-                    : back()->withErrors(['email' => [__($status)]]);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success', 
+                'message' => 'Profile updated successfully!',
+                'new_name' => $request->name // Return name to update header dynamically
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Update failed: ' . $e->getMessage()]);
+        }
+    }
+
+    // 3. Update Password
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'password' => 'required|min:6|confirmed', // field name must be password and password_confirmation
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'errors' => $validator->errors()]);
+        }
+
+        $user = Auth::user();
+
+        // Check Current Password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => 'error', 
+                'errors' => ['current_password' => ['Current password does not match.']]
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Update User Password
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            // Update Customer Password (Legacy support)
+            $customer = Customer::where('user_id', $user->id)->first();
+            if ($customer) {
+                $customer->password = Hash::make($request->password);
+                $customer->save();
+            }
+
+            DB::commit();
+
+            return response()->json(['status' => 'success', 'message' => 'Password changed successfully!']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong!']);
+        }
+    }
+    
+    // Logout
+    public function logout() {
+        Auth::logout();
+        return redirect()->route('front.index');
+    }
+
+    // --- Step 1: Check if Email Exists ---
+    public function checkEmailForReset(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid email format.']);
+        }
+
+        // চেক করা হচ্ছে ইউজার টেবিলে ইমেইল আছে কিনা
+        $userExists = User::where('email', $request->email)->where('user_type', 1)->exists();
+
+        if ($userExists) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Account found.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No account found with this email address.'
+            ]);
+        }
+    }
+
+    // --- Step 2: Direct Password Update ---
+    public function directPasswordReset(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|min:6|confirmed', // password & password_confirmation
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error', 
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // ১. ইউজার খুঁজে বের করা
+            $user = User::where('email', $request->email)->first();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            // ২. কাস্টমার টেবিলে পাসওয়ার্ড আপডেট করা (যদি থাকে)
+            $customer = Customer::where('user_id', $user->id)->first();
+            if ($customer) {
+                $customer->password = Hash::make($request->password);
+                $customer->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'System error: ' . $e->getMessage()
+            ]);
+        }
     }
 }

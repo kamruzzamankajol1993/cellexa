@@ -79,7 +79,7 @@
                         </div>
                         <div class="col-md-2">
                             <label for="filterCustomerName" class="form-label">Customer</label>
-                            <input type="text" class="form-control form-control-sm" id="filterCustomerName" placeholder="Name/Phone...">
+                            <input type="text" class="form-control form-control-sm" id="filterCustomerName" placeholder="Name/email...">
                         </div>
                          <div class="col-md-2">
                             <label for="filterProduct" class="form-label">Product</label>
@@ -108,7 +108,7 @@
                         <button class="btn btn-danger btn-sm" id="deleteAllBtn">
                             <i class="fa fa-trash"></i> Delete (<span id="selectedCount">0</span>)
                         </button>
-                        <div class="input-group input-group-sm" style="width: 250px;">
+                        {{-- <div class="input-group input-group-sm" style="width: 250px;">
                             <select class="form-select" id="bulkStatusSelect">
                                 <option value="">Change Status To...</option>
                                 <option value="pending">Pending</option>
@@ -117,7 +117,7 @@
                                 <option value="cancelled">Cancelled</option>
                             </select>
                             <button class="btn btn-primary" type="button" id="applyBulkStatusBtn">Apply</button>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 
@@ -149,42 +149,73 @@
     </div>
 </main>
 
-{{-- Status Update Modal --}}
+{{-- Status Update Modal (Updated with Price Inputs) --}}
 <div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Status</h5>
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">Update Order Status & Prices</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="statusUpdateForm">
                     <input type="hidden" id="statusOrderId">
-                    <select id="statusSelect" class="form-select">
-                        <option value="pending">Pending</option>
-                        <option value="waiting">Waiting</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
+                    
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-0">Order Status:</label>
+                        </div>
+                        <div class="col-md-9">
+                            <select id="statusSelect" class="form-select">
+                                <option value="pending">Pending</option>
+                                <option value="waiting">Waiting</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <small class="text-muted">Select "Accepted" to auto-fill base prices (if current price is 0).</small>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Product Info</th>
+                                    <th width="80" class="text-center">Qty</th>
+                                    <th width="150">Unit Price</th>
+                                    <th width="120" class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statusModalTableBody">
+                                </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Grand Total:</td>
+                                    <td class="text-end fw-bold text-primary" id="statusModalGrandTotal">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fa fa-times me-1"></i> Close</button>
-                <button type="button" id="saveStatusBtn" class="btn btn-primary"><i class="fa fa-save me-1"></i> Save changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="saveStatusBtn" class="btn btn-primary"><i class="fa fa-save me-1"></i> Update Changes</button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Details Modal --}}
+{{-- Details Modal (Updated: Removed Shipping, Paid, Due) --}}
 <div class="modal fade" id="detailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalTitle">Order Details</h5>
+                <h5 class="modal-title" id="detailsModalTitle">Invoice Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="detailsModalBody"></div>
+            <div class="modal-body" id="detailsModalBody">
+                </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fa fa-times me-1"></i> Close</button>
                 <div class="btn-group">
@@ -215,7 +246,8 @@ $(document).ready(function() {
         destroy: id => `{{ url('order') }}/${id}`,
         bulkUpdateStatus: "{{ route('order.bulk-update-status') }}",
         destroyMultiple: "{{ route('order.destroy-multiple') }}",
-        updateStatus: id => `{{ route('order.update-status', ':id') }}`.replace(':id', id),
+        // নোট: আমরা এখন updateStatusWithPrices মেথড ব্যবহার করব যা আপনি আগের ধাপে তৈরি করেছেন
+        updateStatusPrices: id => `{{ route('order.update.status.prices', ':id') }}`.replace(':id', id),
         getDetails: id => `{{ route('order.get-details', ':id') }}`.replace(':id', id),
         csrf: "{{ csrf_token() }}"
     };
@@ -229,12 +261,11 @@ $(document).ready(function() {
     };
 
     function fetchData() {
-        // --- 8 Columns in Table ---
         $('#tableBody').html('<tr><td colspan="8" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div></td></tr>');
         
         const filterData = {
             page: currentPage,
-            status: 'all', // Always fetch all
+            status: 'all',
             order_id: $('#filterOrderId').val(),
             customer_name: $('#filterCustomerName').val(),
             product_info: $('#filterProduct').val(),
@@ -248,18 +279,17 @@ $(document).ready(function() {
                 rows = '<tr><td colspan="8" class="text-center">No orders found.</td></tr>';
             } else {
                 res.data.forEach((order, i) => {
+                    // Show URL for full page view
                     const showUrl = `{{ url('order') }}/${order.id}`;
-                    const editUrl = `{{ url('order') }}/${order.id}/edit`;
-                    // Updated Billing Name with Phone
+                    
                     const billingName = order.customer ? `${order.customer.name} <br> <small class="text-muted">${order.customer.phone}</small>` : '<span class="text-danger">Customer Deleted</span>';
                     const date = new Date(order.created_at).toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
                     
-                    // --- Status Logic ---
                     const statusKey = order.status ? order.status.toLowerCase() : 'pending';
                     const badgeColor = statusColors[statusKey] || 'secondary';
                     const displayStatus = order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1)) : 'Pending';
-                    const deliveryStatusButton = `<button class="btn btn-sm btn-${badgeColor} btn-update-status" data-id="${order.id}" data-status="${statusKey}">${displayStatus}</button>`;
                     
+                    const deliveryStatusButton = `<button class="btn btn-sm btn-${badgeColor} btn-update-status" data-id="${order.id}" data-status="${statusKey}">${displayStatus}</button>`;
                     const detailsButton = `<button class="btn btn-sm btn-primary btn-details" data-id="${order.id}"><i class="fa fa-eye me-1"></i> View</button>`;
                     const orderFromBadge = order.order_from ? (order.order_from === 'web' ? `<span class="badge bg-info">Web</span>` : `<span class="badge bg-secondary">Admin</span>`) : '';
 
@@ -275,8 +305,8 @@ $(document).ready(function() {
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="${showUrl}"><i class="fa fa-eye me-2"></i>View Full</a></li>
-                                  
+                                    {{-- এই বাটনটি অ্যাড করা হয়েছে --}}
+                                    <li><a class="dropdown-item" href="${showUrl}"><i class="fa fa-external-link-alt me-2"></i>Show Details</a></li>
                                     <li><button class="dropdown-item btn-delete" data-id="${order.id}"><i class="fa fa-trash me-2"></i>Delete</button></li>
                                 </ul>
                             </div>
@@ -304,187 +334,227 @@ $(document).ready(function() {
         });
     }
 
-    // --- Debounced Search ---
+    // Search Handlers
     const searchInputs = '#filterOrderId, #filterCustomerName, #filterProduct';
     $(document).on('keyup', searchInputs, function() {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function() {
-            currentPage = 1; 
-            fetchData();
-        }, 500); 
+        debounceTimer = setTimeout(function() { currentPage = 1; fetchData(); }, 500); 
     });
-    
     $('#filterBtn').on('click', function() { clearTimeout(debounceTimer); currentPage = 1; fetchData(); });
     $('#resetBtn').on('click', function() { $('#filterForm')[0].reset(); flatpickr("#filterStartDate").clear(); flatpickr("#filterEndDate").clear(); currentPage = 1; fetchData(); });
     $(document).on('click', '.page-link', function (e) { e.preventDefault(); if(!$(this).parent().hasClass('disabled')) { currentPage = $(this).data('page'); fetchData(); } });
     
-    // --- Delete Handler ---
-    $(document).on('click', '.btn-delete', function () {
-        const id = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = routes.destroy(id);
-                form.innerHTML = `<input type="hidden" name="_token" value="${routes.csrf}"><input type="hidden" name="_method" value="DELETE">`;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    });
-
-    // --- Update Status Handler ---
+    // --- 1. NEW STATUS UPDATE HANDLER (Populates Table) ---
     $(document).on('click', '.btn-update-status', function() {
         const orderId = $(this).data('id');
         const currentStatus = $(this).data('status');
+        
         $('#statusOrderId').val(orderId);
         $('#statusSelect').val(currentStatus);
-        statusModal.show();
+        $('#statusModalTableBody').html('<tr><td colspan="4" class="text-center">Loading details...</td></tr>');
+        
+        // Fetch Order Details to populate table
+        $.get(routes.getDetails(orderId), function(data) {
+            let rows = '';
+            let grandTotal = 0;
+            
+            if (data.order_details && data.order_details.length > 0) {
+                data.order_details.forEach(item => {
+                    const productName = item.product ? item.product.name : 'Unknown';
+                    const productCode = item.product ? item.product.product_code : '';
+                    // Get base price from product if unit price is 0
+                    const basePrice = item.product ? (item.product.base_price || 0) : 0;
+                    const currentPrice = parseFloat(item.unit_price) || 0;
+                    
+                    // Logic: If price is > 0 show it, otherwise if user switches to accepted we might use basePrice
+                    // We store basePrice in data attribute
+                    
+                    const rowTotal = currentPrice * item.quantity;
+                    grandTotal += rowTotal;
+
+                    rows += `
+                        <tr>
+                            <td>
+                                <div><strong>${productName}</strong></div>
+                                <div class="small text-muted">${productCode}</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border">${item.quantity}</span>
+                                <input type="hidden" class="status-qty" value="${item.quantity}">
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" class="form-control form-control-sm status-price-input" 
+                                       name="prices[${item.id}]" 
+                                       value="${currentPrice}" 
+                                       data-base-price="${basePrice}">
+                            </td>
+                            <td class="text-end fw-bold status-row-total">${rowTotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+            $('#statusModalTableBody').html(rows);
+            $('#statusModalGrandTotal').text(grandTotal.toFixed(2));
+            statusModal.show();
+        });
     });
 
+    // --- Status Modal: Auto-fill Price logic ---
+    $('#statusSelect').change(function() {
+        if($(this).val() === 'accepted') {
+            $('.status-price-input').each(function() {
+                var currentVal = parseFloat($(this).val()) || 0;
+                var basePrice = parseFloat($(this).data('base-price')) || 0;
+                
+                // If current price is 0, auto-fill with base price
+                if(currentVal === 0) {
+                    $(this).val(basePrice);
+                    updateStatusRowTotal($(this));
+                }
+            });
+        }
+    });
+
+    // --- Status Modal: Live Calculation ---
+    $(document).on('input', '.status-price-input', function() {
+        updateStatusRowTotal($(this));
+    });
+
+    function updateStatusRowTotal(inputObj) {
+        let price = parseFloat(inputObj.val()) || 0;
+        let qty = parseFloat(inputObj.closest('tr').find('.status-qty').val()) || 0;
+        let total = price * qty;
+        inputObj.closest('tr').find('.status-row-total').text(total.toFixed(2));
+        
+        // Recalc Grand Total
+        let grandTotal = 0;
+        $('.status-row-total').each(function() {
+            grandTotal += parseFloat($(this).text()) || 0;
+        });
+        $('#statusModalGrandTotal').text(grandTotal.toFixed(2));
+    }
+
+    // --- Status Modal: Save ---
     $('#saveStatusBtn').on('click', function() {
         const orderId = $('#statusOrderId').val();
-        const newStatus = $('#statusSelect').val();
-        $.post(routes.updateStatus(orderId), { _token: routes.csrf, status: newStatus }, function(response) {
-            statusModal.hide();
-            Swal.fire('Success', response.message, 'success');
-            fetchData();
-        });
-    });
-
-    // --- Bulk Action Logic ---
-    function updateBulkActionUI() {
-        const selectedCount = $('.row-checkbox:checked').length;
-        $('#selectedCount').text(selectedCount);
-        $('#bulkActionContainer').toggle(selectedCount > 0);
-    }
-    
-    $('#selectAllCheckbox').on('change', function() { $('.row-checkbox').prop('checked', $(this).is(':checked')); updateBulkActionUI(); });
-    $(document).on('change', '.row-checkbox', function() { updateBulkActionUI(); });
-
-    $('#deleteAllBtn').on('click', function() {
-        const selectedIds = $('.row-checkbox:checked').map((_, el) => el.value).get();
-        Swal.fire({
-            title: `Delete ${selectedIds.length} orders?`,
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete them!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: routes.destroyMultiple,
-                    method: 'get',
-                    data: { ids: selectedIds, _token: routes.csrf },
-                    success: function(response) { 
-                        Swal.fire('Deleted!', response.message, 'success');
-                        fetchData();
-                        updateBulkActionUI();
-                        $('#selectAllCheckbox').prop('checked', false);
-                    }
-                });
-            }
-        });
-    });
-
-    $('#applyBulkStatusBtn').on('click', function() {
-        const selectedIds = $('.row-checkbox:checked').map((_, el) => el.value).get();
-        const newStatus = $('#bulkStatusSelect').val();
-        if (!newStatus) { Swal.fire('No Status Selected', 'Please select a status from the dropdown.', 'warning'); return; }
+        const formData = $('#statusUpdateForm').serialize(); // Includes status and prices[]
         
-        Swal.fire({
-            title: `Change status to "${newStatus}"?`,
-            text: `This will affect ${selectedIds.length} order(s).`,
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, change it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.post(routes.bulkUpdateStatus, { ids: selectedIds, status: newStatus, _token: routes.csrf }, function(response) {
-                    Swal.fire('Success!', response.message, 'success');
-                    fetchData();
-                    updateBulkActionUI();
-                    $('#selectAllCheckbox').prop('checked', false);
-                    $('#bulkStatusSelect').val(''); 
-                }).fail(function() {
-                    Swal.fire('Error!', 'An unexpected error occurred.', 'error');
-                });
-            }
+        $.post(routes.updateStatusPrices(orderId), formData + `&_token=${routes.csrf}`, function(response) {
+            statusModal.hide();
+            Swal.fire('Success', 'Order updated successfully', 'success');
+            fetchData();
+        }).fail(function() {
+            Swal.fire('Error', 'Failed to update order.', 'error');
         });
     });
 
-    // --- Details Modal Handler ---
+    // --- 2. DETAILS MODAL HANDLER (Removed Shipping, Paid, Due) ---
     $(document).on('click', '.btn-details', function() {
         const orderId = $(this).data('id');
         $.get(routes.getDetails(orderId), function(data) {
-            $('#detailsModalTitle').text(`Invoice`);
+            $('#detailsModalTitle').text(`Invoice #${data.invoice_no}`);
             let itemsHtml = '';
-            let hasLineItemDiscounts = false;
-            let trueOriginalSubtotal = 0;
+            let grandTotal = 0;
 
             if (data.order_details && data.order_details.length > 0) {
                 data.order_details.forEach(item => {
-                    const imageUrl = item.product && item.product.thumbnail_image && Array.isArray(item.product.thumbnail_image) && item.product.thumbnail_image.length > 0
-                        ? `{{ asset('public/uploads') }}/${item.product.thumbnail_image[0]}`
-                        : 'https://placehold.co/50x50';
-
-                    let variantDetails = '';
-                    if (item.color || item.size) {
-                        variantDetails += '<div class="mt-1" style="font-size: 0.8em;">';
-                        if (item.color && item.color !== 'null') variantDetails += `<span class="badge bg-light text-dark me-1">Color: ${item.color}</span>`;
-                        if (item.size && item.size !== 'null') variantDetails += `<span class="badge bg-light text-dark">Size: ${item.size}</span>`;
-                        variantDetails += '</div>';
-                    }
-
-                    let displayUnitPrice = '', displaySubtotal = '';
-                    if (item.discount && parseFloat(item.discount) > 0) {
-                        hasLineItemDiscounts = true;
-                        let discountedUnitPrice = (parseFloat(item.after_discount_price) || 0) / (parseFloat(item.quantity) || 1);
-                        displayUnitPrice = `<span style="text-decoration: line-through; color: #999;">${parseFloat(item.unit_price).toFixed(2)}</span><br><strong>${discountedUnitPrice.toFixed(2)}</strong>`;
-                        displaySubtotal = parseFloat(item.after_discount_price).toFixed(2);
-                    } else {
-                        displayUnitPrice = parseFloat(item.unit_price).toFixed(2);
-                        displaySubtotal = parseFloat(item.subtotal).toFixed(2);
-                    }
-                    trueOriginalSubtotal += parseFloat(item.after_discount_price) || 0;
-                    
                     const productName = item.product ? item.product.name : 'Unknown Product';
-                    itemsHtml += `<tr><td><img src="${imageUrl}" width="40" class="img-thumbnail"></td><td>${productName}${variantDetails}<div class="text-muted">${displayUnitPrice} x ${item.quantity}</div></td><td class="text-end">${displaySubtotal}</td></tr>`;
+                    // removed color/size logic
+                    
+                    const unitPrice = parseFloat(item.unit_price) || 0;
+                    const subtotal = parseFloat(item.subtotal) || 0;
+                    grandTotal = parseFloat(data.total_amount) || 0;
+
+                    itemsHtml += `
+                        <tr>
+                            <td>${productName}</td>
+                            <td class="text-center">${item.quantity}</td>
+                            <td class="text-end">${unitPrice.toFixed(2)}</td>
+                            <td class="text-end">${subtotal.toFixed(2)}</td>
+                        </tr>`;
                 });
             }
             
             const secondaryPhoneHtml = (data.customer && data.customer.secondary_phone) ? `<br> ${data.customer.secondary_phone} (secondary)` : '';
+            
+            // Simplified Summary (Removed Shipping, Paid, Due, COD)
             let summaryHtml = '';
-            if (hasLineItemDiscounts) {
-                summaryHtml += `<tr><td>Sub Total:</td><td>${trueOriginalSubtotal.toFixed(2)}</td></tr>`;
-            } else {
-                summaryHtml += `<tr><td>Sub Total:</td><td>${data.subtotal}</td></tr>`;
-                if (data.discount && parseFloat(data.discount) > 0) summaryHtml += `<tr><td>Discount:</td><td>${data.discount}</td></tr>`;
+            summaryHtml += `<tr><td>Sub Total:</td><td>${parseFloat(data.subtotal).toFixed(2)}</td></tr>`;
+            if (data.discount && parseFloat(data.discount) > 0) {
+                summaryHtml += `<tr><td>Discount:</td><td>- ${parseFloat(data.discount).toFixed(2)}</td></tr>`;
             }
-            summaryHtml += `<tr><td>Shipping:</td><td>${data.shipping_cost}</td></tr><tr><td><strong>Total:</strong></td><td><strong>${data.total_amount}</strong></td></tr><tr><td>Total Pay:</td><td>${data.total_pay}</td></tr><tr><td><strong>Cod:</strong></td><td><strong>${data.cod}</strong></td></tr>`;
+            // Only Grand Total
+            summaryHtml += `<tr style="border-top: 1px solid #ddd;"><td><strong>Grand Total:</strong></td><td><strong>${grandTotal.toFixed(2)}</strong></td></tr>`;
 
             const detailsHtml = `
                 <div class="invoice-details mb-4">
-                    <p><strong>Invoice id:</strong> <a href="#">${data.invoice_no}</a></p>
-                    <p><strong>Billing Name:</strong> ${data.customer ? data.customer.name : 'N/A'} - ${data.customer ? data.customer.phone : 'N/A'}${secondaryPhoneHtml}</p>
-                    <p><strong>Customer Type:</strong> <span class="badge bg-success">${data.customer ? data.customer.type : ''}</span></p>
-                    <p>${data.shipping_address}</p>
+                    <p><strong>Invoice:</strong> ${data.invoice_no}</p>
+                    <p><strong>Customer:</strong> ${data.customer ? data.customer.name : 'N/A'} (${data.customer ? data.customer.email : 'N/A'})${secondaryPhoneHtml}</p>
+                    <p><strong>Address:</strong> ${data.shipping_address || 'N/A'}</p>
                 </div>
-                <table class="table invoice-items-table"><thead><tr><th>Product</th><th>Product Name</th><th class="text-end">Price</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-                <div class="row justify-content-end"><div class="col-md-5"><table class="table table-sm invoice-totals"><tbody>${summaryHtml}</tbody></table></div></div>
-                <hr><p><strong>Notes:</strong> ${data.notes || 'No notes for this order.'}</p>`;
+                <div class="table-responsive">
+                    <table class="table table-bordered invoice-items-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product Name</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsHtml}</tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-5">
+                        <table class="table table-sm invoice-totals">
+                            <tbody>${summaryHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+                ${data.notes ? `<hr><p class="text-muted small"><strong>Notes:</strong> ${data.notes}</p>` : ''}`;
+                
             $('#detailsModalBody').html(detailsHtml);
             
             $('#printOrderBtnA4').attr('href', `{{ url('order-print-a4') }}/${orderId}`);
             $('#printOrderBtnA5').attr('href', `{{ url('order-print-a5') }}/${orderId}`);
             $('#printOrderBtnPOS').attr('href', `{{ url('order-print-pos') }}/${orderId}`);
             detailsModal.show();
+        });
+    });
+
+    // --- Bulk & Delete Handlers (unchanged) ---
+    function updateBulkActionUI() {
+        const selectedCount = $('.row-checkbox:checked').length;
+        $('#selectedCount').text(selectedCount);
+        $('#bulkActionContainer').toggle(selectedCount > 0);
+    }
+    $('#selectAllCheckbox').on('change', function() { $('.row-checkbox').prop('checked', $(this).is(':checked')); updateBulkActionUI(); });
+    $(document).on('change', '.row-checkbox', function() { updateBulkActionUI(); });
+    $('#deleteAllBtn').on('click', function() {
+        const selectedIds = $('.row-checkbox:checked').map((_, el) => el.value).get();
+        Swal.fire({
+            title: `Delete ${selectedIds.length} orders?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({ url: routes.destroyMultiple, method: 'get', data: { ids: selectedIds, _token: routes.csrf }, success: function(res) { Swal.fire('Deleted!', res.message, 'success'); fetchData(); updateBulkActionUI(); $('#selectAllCheckbox').prop('checked', false); }});
+            }
+        });
+    });
+    $('#applyBulkStatusBtn').on('click', function() {
+        const selectedIds = $('.row-checkbox:checked').map((_, el) => el.value).get();
+        const newStatus = $('#bulkStatusSelect').val();
+        if (!newStatus) { Swal.fire('Warning', 'Select a status.', 'warning'); return; }
+        $.post(routes.bulkUpdateStatus, { ids: selectedIds, status: newStatus, _token: routes.csrf }, function(res) { Swal.fire('Success', res.message, 'success'); fetchData(); $('#selectAllCheckbox').prop('checked', false); });
+    });
+    $(document).on('click', '.btn-delete', function () {
+        const id = $(this).data('id');
+        Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!' }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form'); form.method = 'POST'; form.action = routes.destroy(id);
+                form.innerHTML = `<input type="hidden" name="_token" value="${routes.csrf}"><input type="hidden" name="_method" value="DELETE">`;
+                document.body.appendChild(form); form.submit();
+            }
         });
     });
 

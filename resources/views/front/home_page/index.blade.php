@@ -106,14 +106,15 @@
                         <div class="cellexa_item_box">
                             <div class="cellexa_item_box_img1">
                                 {{-- ইমেজ হ্যান্ডলিং --}}
-                                @php
-                                    // JSON স্ট্রিং থেকে অ্যারেতে কনভার্ট করা
-                                    $images = json_decode($product->thumbnail_image);
-                                    // যদি ইমেজ থাকে প্রথমটা নিবে, না থাকলে ডিফল্ট
-                                    $thumb = (is_array($images) && count($images) > 0) ? $images[0] : 'default.png';
-                                @endphp
+                               @php
+    // No need for json_decode because the Model casts it automatically
+    $images = $product->thumbnail_image;
+    
+    // Check if it is an array and has items
+    $thumb = (is_array($images) && count($images) > 0) ? $images[0] : 'default.png';
+@endphp
                                 
-                                <img src="{{ asset('public/'.$thumb) }}" alt="{{ $product->name }}">
+                                <img src="{{ asset('public/uploads/'.$thumb) }}" alt="{{ $product->name }}">
                             </div>
                             
                             <div class="cellexa_item_box_text1">

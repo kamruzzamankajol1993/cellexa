@@ -397,15 +397,7 @@ class OrderController extends Controller
 
                 $order->update(['status' => $newStatus]);
 
-                OrderTracking::create([
-                    'order_id' => $order->id,
-                    'invoice_no' => $order->invoice_no,
-                    'status' => $newStatus,
-                ]);
-
-                if ($newStatus == 'delivered') { // If you ever add delivered back
-                     $order->update(['total_pay' => $order->total_amount, 'due' => 0, 'cod' => 0, 'payment_status' => 'paid']);
-                }
+              
             });
 
             return response()->json(['message' => 'Order status updated successfully.']);
@@ -439,11 +431,7 @@ class OrderController extends Controller
                     $oldStatus = strtolower($order->status);
 
                   
-                    OrderTracking::create([
-                        'order_id'   => $order->id,
-                        'invoice_no' => $order->invoice_no,
-                        'status'     => $newStatus,
-                    ]);
+                   
 
                     $order->update(['status' => $newStatus]);
                 }
@@ -773,4 +761,55 @@ public function printPOS(Order $order)
             return redirect()->back()->with('error', 'An error occurred while adding the payment.')->withInput();
         }
     }
+
+    public function updateStatusWithPrices(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|string',
+        'prices' => 'array',
+    ]);
+
+    try {
+        DB::transaction(function () use ($request, $id) {
+            $order = Order::with('orderDetails')->findOrFail($id);
+            
+            $newSubtotal = 0;
+
+            // ১. প্রাইস আপডেট লজিক
+            if($request->has('prices')) {
+                foreach ($request->prices as $detailId => $newPrice) {
+                    $detail = $order->orderDetails->where('id', $detailId)->first();
+                    
+                    if ($detail) {
+                        // প্রাইস আপডেট
+                        $detail->unit_price = $newPrice;
+                        $detail->subtotal = $newPrice * $detail->quantity;
+                        
+                        // ডিসকাউন্ট লজিক (সিম্পল রাখা হয়েছে)
+                        $detail->after_discount_price = $detail->subtotal - ($detail->discount ?? 0);
+                        
+                        $detail->save();
+
+                        $newSubtotal += $detail->after_discount_price;
+                    }
+                }
+            }
+
+            // ২. অর্ডার টোটাল আপডেট
+            $order->subtotal = $newSubtotal;
+            $order->total_amount = $newSubtotal + $order->shipping_cost - $order->discount;
+            $order->due = $order->total_amount - $order->total_pay;
+            
+            // ৩. স্ট্যাটাস আপডেট
+            $order->status = $request->status;
+            
+            $order->save();
+        });
+
+        return redirect()->back()->with('success', 'Order updated successfully!');
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+    }
+}
 }

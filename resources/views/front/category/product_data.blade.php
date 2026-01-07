@@ -5,11 +5,15 @@
         <div class="cellexa_item_box">
             <div class="cellexa_item_box_img1">
                 {{-- ইমেজ ডিকোড এবং ডিসপ্লে --}}
-                @php
-                    $images = json_decode($product->thumbnail_image);
-                    $thumb = (is_array($images) && count($images) > 0) ? $images[0] : 'default.png';
-                @endphp
-                <img src="{{ asset('public/'.$thumb) }}" alt="{{ $product->name }}">
+                               @php
+    // No need for json_decode because the Model casts it automatically
+    $images = $product->thumbnail_image;
+    
+    // Check if it is an array and has items
+    $thumb = (is_array($images) && count($images) > 0) ? $images[0] : 'default.png';
+@endphp
+                                
+                                <img src="{{ asset('public/uploads/'.$thumb) }}" alt="{{ $product->name }}">
             </div>
             
             <div class="cellexa_item_box_text1">

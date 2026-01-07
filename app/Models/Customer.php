@@ -14,7 +14,8 @@ class Customer extends Authenticatable
     protected $fillable = [
         'old_customer_id',
         'reward_points',
-        'user_id',
+        'user_id', // Add this
+        'company_name', // Add this
         'discount_in_percent',
         'slug',
         'source',

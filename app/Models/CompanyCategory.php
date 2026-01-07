@@ -48,4 +48,11 @@ class CompanyCategory extends Model
              if ($item->isDirty('name')) { $item->slug = Str::slug($item->name); }
         });
     }
+
+    public function products()
+{
+    // AssignCategory মডেলের মাধ্যমে প্রোডাক্ট রিলেশন
+    // আমরা ধরে নিচ্ছি AssignCategory টেবিলে 'category_id' দিয়ে লিংক করা আছে
+    return $this->belongsToMany(Product::class, 'assign_categories', 'category_id', 'product_id');
+}
 }

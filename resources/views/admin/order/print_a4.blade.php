@@ -5,7 +5,6 @@
     <title>Invoice - {{ $order->invoice_no }}</title>
     <style>
        body { 
-        /* Use the key defined in 'fontdata' above */
         font-family: 'nikosh', sans-serif; 
         font-size: 12px; 
         color: #333; 
@@ -36,7 +35,6 @@
                         <strong>{{ $front_ins_name ?? '' }}</strong><br>
                         {{ $front_ins_add ?? '' }}<br>
                         Phone: {{ $front_ins_phone ?? '' }}
-                        {{-- Conditionally display the secondary phone number --}}
                         @if(!empty($front_ins_phone_one))
                             / {{ $front_ins_phone_one }}
                         @endif
@@ -85,31 +83,13 @@
             <tbody>
                 @foreach($order->orderDetails as $detail)
                 <tr>
-                    <td>{{ $detail->product->name }} ({{ $detail->color }} / {{ $detail->size }})</td>
-                    <td style="text-align: center;">{{ $detail->quantity }}</td>
+                    <td>{{ $detail->product->name }}</td> <td style="text-align: center;">{{ $detail->quantity }}</td>
                     <td style="text-align: right;">
-                        @if(isset($detail->discount) && $detail->discount > 0 && isset($detail->after_discount_price))
-                <span style="text-decoration: line-through; color: #777;">
-                    {{ number_format($detail->unit_price, 2) }}
-                </span>
-                <br>
-                <strong>
-                    {{ number_format($detail->after_discount_price / $detail->quantity, 2) }}
-                </strong>
-            @elseif($detail->product && $detail->product->base_price > $detail->unit_price)
-                <span style="text-decoration: line-through; color: #777;">
-                    {{ number_format($detail->product->base_price, 2) }}
-                </span>
-                <br>
-                <strong>{{ number_format($detail->unit_price, 2) }}</strong>
-            @else
-                {{ number_format($detail->unit_price, 2) }}
-            @endif</td>
-                    <td style="text-align: right;">@if(isset($detail->discount) && $detail->discount > 0)
-                {{ number_format($detail->after_discount_price, 2) }}
-            @else
-                {{ number_format($detail->subtotal, 2) }}
-            @endif</td>
+                        {{ number_format($detail->unit_price, 2) }}
+                    </td>
+                    <td style="text-align: right;">
+                        {{ number_format($detail->subtotal, 2) }}
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
@@ -117,50 +97,20 @@
 
         <div class="summary">
             <div class="summary-right">
-
-                @php
-                    $hasLineItemDiscounts = false;
-                    $trueOriginalSubtotal = 0;
-
-                    foreach ($order->orderDetails as $detail) {
-                        // $trueOriginalSubtotal is the sum of (qty * original unit price)
-                        $trueOriginalSubtotal += $detail->after_discount_price; 
-                        
-                        if (isset($detail->discount) && $detail->discount > 0) {
-                            $hasLineItemDiscounts = true;
-                        }
-                    }
-                @endphp
-
                 <table class="summary-table">
-                    @if($hasLineItemDiscounts)
-                        {{-- If line-item discounts exist, show the *original* subtotal --}}
-                        {{-- and hide the main discount row. --}}
-                        <tr>
-                            <td>Subtotal:</td>
-                            <td style="text-align: right;">{{ number_format($trueOriginalSubtotal, 2) }}</td>
-                        </tr>
-                    @else
-                        {{-- Otherwise, use the default behavior --}}
-                        <tr>
-                            <td>Subtotal:</td>
-                            <td style="text-align: right;">{{ number_format($order->subtotal, 2) }}</td>
-                        </tr>
-                        
-                        {{-- Only show the main discount if it exists AND no line-item discounts were found --}}
-                        @if($order->discount > 0)
-                        <tr>
-                            <td>Discount:</td>
-                            <td style="text-align: right;">- {{ number_format($order->discount, 2) }}</td>
-                        </tr>
-                        @endif
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td style="text-align: right;">{{ number_format($order->subtotal, 2) }}</td>
+                    </tr>
+                    
+                    @if($order->discount > 0)
+                    <tr>
+                        <td>Discount:</td>
+                        <td style="text-align: right;">- {{ number_format($order->discount, 2) }}</td>
+                    </tr>
                     @endif
-                    <tr><td>Shipping:</td><td style="text-align: right;">{{ number_format($order->shipping_cost, 2) }}</td></tr>
+                    
                     <tr class="grand-total"><td>Grand Total:</td><td style="text-align: right;">{{ number_format($order->total_amount, 2) }}</td></tr>
-                    <tr><td>Paid:</td><td style="text-align: right;">{{ number_format($order->total_pay, 2) }}</td></tr>
-                    @if($order->cod > 0)
-                        <tr><td>COD Amount:</td><td style="text-align: right;">{{ number_format($order->cod, 2) }}</td></tr>
-                    @endif
                 </table>
             </div>
         </div>

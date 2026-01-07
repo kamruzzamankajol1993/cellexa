@@ -57,14 +57,24 @@ Route::get('/clear', function() {
 
 
 //frontend part start 
-
+Route::post('/contact-us-post', [App\Http\Controllers\Front\FrontController::class, 'contactUsPost'])->name('front.contactUsPost');
 Route::controller(FrontController::class)->group(function () {
 
+Route::get('/user/quote-details/{id}', 'getQuoteDetailsHtml')->name('front.quote.details.html');
+    Route::post('/submit-quote', 'submitQuote')->name('front.submitQuote');
+Route::get('/user/order-details/{id}', 'getOrderDetailsHtml')->name('front.order.details.html');
+Route::get('/user/order-print/{id}', 'orderPrint')->name('front.order.print');
     Route::get('/', 'index')->name('front.index');
-    Route::get('/about-us', 'aboutUs')->name('front.aboutUs');
+    Route::get('/about_us', 'aboutUs')->name('front.aboutUs');
     Route::get('/contact-us', 'contactUs')->name('front.contactUs');
     Route::post('/contact-us-post', 'contactUsPost')->name('front.contactUsPost');
     Route::get('/services', 'services')->name('front.services');
+
+    // --- Cart / Quote Request Routes ---
+    Route::post('/add-to-cart', 'addToCart')->name('front.addToCart');
+    Route::get('/get-cart-content', 'getCartContent')->name('front.getCartContent');
+    Route::post('/update-cart-qty', 'updateCartQty')->name('front.updateCartQty');
+    Route::post('/remove-from-cart', 'removeFromCart')->name('front.removeFromCart');
 
     // --- নতুন ২ টি রাউট ---
     // ১. যদি ক্যাটাগরির ব্র্যান্ড/কোম্পানি থাকে
@@ -81,6 +91,13 @@ Route::controller(FrontController::class)->group(function () {
     Route::get('/company/{slug}/products', 'companyWiseProducts')->name('front.company.products');
 
     Route::get('/product-details/{slug}', 'productDetails')->name('front.product.details');
+
+
+    // ২. যদি সাব-ক্যাটাগরি থাকে: সেই সাব-ক্যাটাগরিগুলো দেখানোর রাউট
+    Route::get('/company/category/{slug}/sub-categories', 'companyCategorySubCategories')->name('front.company.category.subcategories');
+
+    // ৩. যদি সাব-ক্যাটাগরি না থাকে: সরাসরি প্রোডাক্ট দেখানোর রাউট
+    Route::get('/company/category/{slug}/products', 'companyCategoryProducts')->name('front.company.category.products');
 
    }); 
 
@@ -122,6 +139,10 @@ Route::controller(TextController::class)->group(function () {
 });
 
 Route::controller(AuthController::class)->group(function () {
+// Forgot Password Direct Steps
+    Route::post('/check-email-for-reset', 'checkEmailForReset')->name('front.checkEmailForReset');
+    Route::post('/direct-password-reset', 'directPasswordReset')->name('front.directPasswordReset');
+
     Route::get('/login-register', 'loginregisterPage')->name('front.loginRegister');
 
     Route::post('/login-user-post', 'loginUserPost')->name('front.loginUserPost');
@@ -198,7 +219,7 @@ Route::post('orders/bulk-update-status', [OrderController::class, 'bulkUpdateSta
 Route::get('order-print-a4/{order}', [OrderController::class, 'printA4'])->name('order.print.a4');
 Route::get('order-print-pos/{order}', [OrderController::class, 'printPOS'])->name('order.print.pos');
 Route::get('order-print-a5/{order}', [OrderController::class, 'printA5'])->name('order.print.a5');
-
+Route::post('/order/update-status-prices/{id}', [OrderController::class, 'updateStatusWithPrices'])->name('order.update.status.prices');
 Route::get('order-search-customers', [OrderController::class, 'searchCustomers'])->name('order.search-customers');
 
        Route::get('ajax_orders', [OrderController::class, 'data'])->name('ajax.order.data');
