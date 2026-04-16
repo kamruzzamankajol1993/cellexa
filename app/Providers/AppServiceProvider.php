@@ -42,10 +42,11 @@ class AppServiceProvider extends ServiceProvider
             // Fetch parent categories (where parent_id is null)
             // Eager load 'brands' to check if a category has companies or not
             $header_categories = Category::whereNull('parent_id')
-                                         ->where('status', 1) // Assuming you want only active categories
-                                         ->with('brands')
-                                         ->get();
-            view()->share('header_categories', $header_categories);
+                             ->where('status', 1)
+                             ->with('brands')
+                             ->get(); // সব ক্যাটাগরি নিয়ে আসা হলো
+
+view()->share('header_categories', $header_categories);
 
 
             // --- 2. Social Links (New Logic) ---

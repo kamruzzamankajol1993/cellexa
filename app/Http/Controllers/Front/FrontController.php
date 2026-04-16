@@ -405,16 +405,49 @@ public function companyWiseProducts(Request $request, $slug)
 
     // ৪. কার্ট থেকে রিমুভ করা
     public function removeFromCart(Request $request)
-    {
-        if($request->id) {
-            $cart = session()->get('cart');
-            if(isset($cart[$request->id])) {
-                unset($cart[$request->id]);
-                session()->put('cart', $cart);
-            }
-            return response()->json(['status' => 'success']);
+{
+    if($request->id) {
+        $cart = session()->get('cart');
+        if(isset($cart[$request->id])) {
+            unset($cart[$request->id]);
+            session()->put('cart', $cart);
         }
+        
+        // বর্তমান কার্ট কাউন্টটি রিটার্ন করুন
+        $totalItems = count(session()->get('cart', []));
+        return response()->json([
+            'status' => 'success',
+            'total_items' => $totalItems
+        ]);
     }
+}
+
+// ... FrontController এর অন্যান্য মেথড ...
+
+// নতুন গ্লোবাল সার্চ মেথড (Added for Header Search Icon)
+public function globalSearchProducts(Request $request)
+{
+    $query = $request->get('query');
+
+    if (empty($query)) {
+        return response()->json(['status' => 'success', 'data' => []]);
+    }
+
+    $products = Product::where('status', 1)
+        ->where(function($q) use ($query) {
+            $q->where('name', 'LIKE', "{$query}%")
+              ->orWhere('product_code', 'LIKE', "{$query}%");
+        })
+        ->select('id', 'name', 'slug', 'main_image','thumbnail_image', 'base_price', 'discount_price', 'product_code') // নতুন কলাম যোগ করা হয়েছে
+        ->with('brand')
+        ->take(10)
+        ->get();
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $products
+    ]);
+}
 
     // 1. Submit Quote Method
 public function submitQuote(Request $request)

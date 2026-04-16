@@ -117,9 +117,18 @@
                         }
                     @endphp
 
+
+
+
                     <div class="main-image-box">
+
+                        @if (is_array($images) && count($images) > 0)
                         <img src="{{ asset('public/uploads/'.$mainImage) }}" alt="{{ $product->name }}" id="mainProductImage" class="main-image"
                              onerror="this.src='{{ asset('public/no-image.png') }}'">
+                             @else
+                              <img src="{{ asset('public/'.$mainImage) }}" alt="{{ $product->name }}" id="mainProductImage" class="main-image"
+                             onerror="this.src='{{ asset('public/no-image.png') }}'">
+                                @endif
                     </div>
 
                     @if(is_array($images) && count($images) > 1)
@@ -243,7 +252,11 @@
                                     $rThumb = 'no-image.png';
                                 }
                             @endphp
-                            <img src="{{ asset('public/uploads/'.$rThumb) }}" class="card-img-top p-3" alt="{{ $related->name }}" style="height: 200px; object-fit: contain;">
+                            @if (is_array($rImages) && count($rImages) > 0)
+                            <img src="{{ asset('public/uploads/'.$rThumb) }}"   onerror="this.src='{{ asset('public/no-image.png') }}'" class="card-img-top p-3" alt="{{ $related->name }}" style="height: 200px; object-fit: contain;">
+                            @else
+                            <img src="{{ asset('public/'.$rThumb) }}"  onerror="this.src='{{ asset('public/no-image.png') }}'" class="card-img-top p-3" alt="{{ $related->name }}" style="height: 200px; object-fit: contain;">
+                            @endif
                             <div class="card-body text-center">
                                 <h6 class="card-title text-dark">{{ Str::limit($related->name, 40) }}</h6>
                                 {{-- @if($related->base_price)

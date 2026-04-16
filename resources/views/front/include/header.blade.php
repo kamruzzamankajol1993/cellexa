@@ -54,6 +54,9 @@
                             <i class="fab fa-youtube"></i>
                         </a>
                         @endif
+                       <a href="javascript:void(0)" class="social-icon-btn btn-search ms-2" data-bs-toggle="modal" data-bs-target="#cellexaSearchModal" title="Search Products">
+    <i class="bi bi-search"></i>
+</a>
                     </div>
                 </div>
 
@@ -85,25 +88,50 @@
                                     href="{{ route('front.index') }}">HOME</a>
                             </li>
 
-                            @if(isset($header_categories))
-                                @foreach($header_categories as $category)
-                                    <li class="nav-item">
-                                        @if($category->brands->count() > 0)
-                                            {{-- Route 1: If category has companies/brands --}}
-                                            <a class="nav-link nav-link-main" 
-                                               href="{{ route('front.category.companies', $category->slug) }}">
-                                               {{ $category->name }}
-                                            </a>
-                                        @else
-                                            {{-- Route 2: If category has no companies (show products directly) --}}
-                                            <a class="nav-link nav-link-main" 
-                                               href="{{ route('front.category.products', $category->slug) }}">
-                                               {{ $category->name }}
-                                            </a>
-                                        @endif
-                                    </li>
-                                @endforeach
+                            @if(isset($header_categories) && $header_categories->count() > 0)
+        {{-- প্রথম ৩টি ক্যাটাগরি সরাসরি দেখানো হচ্ছে --}}
+        @foreach($header_categories->take(3) as $category)
+            <li class="nav-item">
+                @if($category->brands->count() > 0)
+                    <a class="nav-link nav-link-main" 
+                       href="{{ route('front.category.companies', $category->slug) }}">
+                       {{ $category->name }}
+                    </a>
+                @else
+                    <a class="nav-link nav-link-main" 
+                       href="{{ route('front.category.products', $category->slug) }}">
+                       {{ $category->name }}
+                    </a>
+                @endif
+            </li>
+        @endforeach
+
+        {{-- যদি ৩টির বেশি ক্যাটাগরি থাকে তবে "Other" ড্রপডাউন দেখানো হবে --}}
+        @if($header_categories->count() > 3)
+            <li class="nav-item dropdown">
+                <a class="nav-link nav-link-main dropdown-toggle" href="#" id="otherCats" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    OTHER
+                </a>
+                <ul class="dropdown-menu border-0 shadow" aria-labelledby="otherCats">
+                    @foreach($header_categories->slice(3) as $category)
+                        <li>
+                            @if($category->brands->count() > 0)
+                                <a class="dropdown-item py-2" 
+                                   href="{{ route('front.category.companies', $category->slug) }}">
+                                   {{ $category->name }}
+                                </a>
+                            @else
+                                <a class="dropdown-item py-2" 
+                                   href="{{ route('front.category.products', $category->slug) }}">
+                                   {{ $category->name }}
+                                </a>
                             @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </li>
+        @endif
+    @endif
 
                             <li class="nav-item">
                                 <a class="nav-link nav-link-main" href="{{ route('front.aboutUs') }}">About us</a>

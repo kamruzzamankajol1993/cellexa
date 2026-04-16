@@ -12,8 +12,13 @@
     // Check if it is an array and has items
     $thumb = (is_array($images) && count($images) > 0) ? $images[0] : 'default.png';
 @endphp
+
+@if (is_array($images) && count($images) > 0)
                                 
-                                <img src="{{ asset('public/uploads/'.$thumb) }}" alt="{{ $product->name }}">
+                                <img src="{{ asset('public/uploads/'.$thumb) }}" onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'" alt="{{ $product->name }}">
+                                @else
+                                <img src="{{ asset('public/'.$thumb) }}"  onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'"alt="{{ $product->name }}">
+                                @endif
             </div>
             
             <div class="cellexa_item_box_text1">

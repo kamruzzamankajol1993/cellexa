@@ -1,7 +1,8 @@
 @if(count($cart) > 0)
     <div class="cellexa_company_category_cart_list_container">
         @foreach($cart as $id => $details)
-        <div class="cellexa_company_category_cart_item">
+        {{-- এখানে 'cart-item-row' ক্লাসটি যোগ করা হয়েছে --}}
+        <div class="cellexa_company_category_cart_item cart-item-row">
             <img src="{{ asset('public/uploads/'.$details['image']) }}" 
                  class="cellexa_company_category_cart_img" 
                  alt="{{ $details['name'] }}"
@@ -33,7 +34,6 @@
     </div>
 
     <div class="cellexa_company_category_cart_footer">
-        {{-- ONCLICK ADDED HERE --}}
         <button type="button" onclick="initiateQuoteRequest()" class="btn btn-dark w-100">
             Request For Quote
         </button>

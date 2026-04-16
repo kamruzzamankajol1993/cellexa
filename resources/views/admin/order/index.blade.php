@@ -3,59 +3,10 @@
 @section('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-    /* --- Global Font & Layout Adjustments --- */
-    .main-content {
-        font-size: 0.9rem; /* Reduced base font size */
-    }
-    .main-content h2 { font-size: 1.6rem; }
-    .main-content h5 { font-size: 1.1rem; }
-
-    /* --- Beautiful Label Style --- */
-    .form-label {
-        font-weight: 500;
-        color: #4a5568; /* A softer, modern dark gray */
-        margin-bottom: 0.3rem;
-        font-size: 0.85rem;
-    }
-
-    /* --- Component Adjustments --- */
-    .form-control, .form-select, .btn {
-        font-size: 0.875rem;
-    }
-    .form-control-sm {
-        font-size: 0.8rem;
-    }
-    .table {
-        font-size: 0.875rem;
-    }
-    .table th, .table td {
-        padding: 0.6rem 0.5rem;
-        vertical-align: middle;
-    }
-    .pagination {
-        font-size: 0.875rem;
-    }
-    .modal {
-        font-size: 0.9rem; 
-    }
-    #entryInfo {
-        font-size: 0.85rem;
-    }
-    .table thead th {
-        background-color: #f8f9fa;
-        font-weight: 500;
-        white-space: nowrap;
-    }
+    .main-content { font-size: 0.9rem; }
     .badge { font-size: 0.8em; padding: 0.4em 0.6em; }
-    
     /* Details Modal Styling */
     #detailsModal .invoice-details p { margin-bottom: 0.5rem; }
-    #detailsModal .invoice-items-table th, #detailsModal .invoice-items-table td { padding: 0.5rem; }
-    #detailsModal .invoice-totals { text-align: right; }
-    #detailsModal .invoice-totals td { padding: 0.25rem 0.5rem; }
-    .pagination .page-link {
-        margin: 0 2px;
-    }
 </style>
 @endsection
 @section('body')
@@ -63,9 +14,6 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <h2 class="mb-0">Requested Product List</h2>
-            {{-- <a href="{{ route('order.create') }}" class="btn text-white" style="background-color: var(--primary-color); white-space: nowrap;">
-                <i data-feather="plus" class="me-1" style="width:18px; height:18px;"></i> Add New Invoice
-            </a> --}}
         </div>
         <div class="card">
             
@@ -108,16 +56,6 @@
                         <button class="btn btn-danger btn-sm" id="deleteAllBtn">
                             <i class="fa fa-trash"></i> Delete (<span id="selectedCount">0</span>)
                         </button>
-                        {{-- <div class="input-group input-group-sm" style="width: 250px;">
-                            <select class="form-select" id="bulkStatusSelect">
-                                <option value="">Change Status To...</option>
-                                <option value="pending">Pending</option>
-                                <option value="waiting">Waiting</option>
-                                <option value="accepted">Accepted</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <button class="btn btn-primary" type="button" id="applyBulkStatusBtn">Apply</button>
-                        </div> --}}
                     </div>
                 </div>
 
@@ -149,64 +87,7 @@
     </div>
 </main>
 
-{{-- Status Update Modal (Updated with Price Inputs) --}}
-<div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title">Update Order Status & Prices</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="statusUpdateForm">
-                    <input type="hidden" id="statusOrderId">
-                    
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold mb-0">Order Status:</label>
-                        </div>
-                        <div class="col-md-9">
-                            <select id="statusSelect" class="form-select">
-                                <option value="pending">Pending</option>
-                                <option value="waiting">Waiting</option>
-                                <option value="accepted">Accepted</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <small class="text-muted">Select "Accepted" to auto-fill base prices (if current price is 0).</small>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive border rounded">
-                        <table class="table table-striped align-middle mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Product Info</th>
-                                    <th width="80" class="text-center">Qty</th>
-                                    <th width="150">Unit Price</th>
-                                    <th width="120" class="text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="statusModalTableBody">
-                                </tbody>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold">Grand Total:</td>
-                                    <td class="text-end fw-bold text-primary" id="statusModalGrandTotal">0.00</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" id="saveStatusBtn" class="btn btn-primary"><i class="fa fa-save me-1"></i> Update Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Details Modal (Updated: Removed Shipping, Paid, Due) --}}
+{{-- Details Modal (Print buttons removed) --}}
 <div class="modal fade" id="detailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -215,14 +96,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailsModalBody">
-                </div>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fa fa-times me-1"></i> Close</button>
-                <div class="btn-group">
-                    <a href="#" id="printOrderBtnA4" target="_blank" class="btn btn-primary"><i class="fa fa-print me-1"></i> A4</a>
-                    <a href="#" id="printOrderBtnA5" target="_blank" class="btn btn-secondary"><i class="fa fa-print me-1"></i> A5</a>
-                    <a href="#" id="printOrderBtnPOS" target="_blank" class="btn btn-success"><i class="fa fa-receipt me-1"></i> POS</a>
-                </div>
             </div>
         </div>
     </div>
@@ -234,7 +110,6 @@
 <script>
 $(document).ready(function() {
     var currentPage = 1;
-    var statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
     var detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
     var debounceTimer;
 
@@ -244,15 +119,11 @@ $(document).ready(function() {
     var routes = {
         fetch: "{{ route('ajax.order.data') }}",
         destroy: id => `{{ url('order') }}/${id}`,
-        bulkUpdateStatus: "{{ route('order.bulk-update-status') }}",
         destroyMultiple: "{{ route('order.destroy-multiple') }}",
-        // নোট: আমরা এখন updateStatusWithPrices মেথড ব্যবহার করব যা আপনি আগের ধাপে তৈরি করেছেন
-        updateStatusPrices: id => `{{ route('order.update.status.prices', ':id') }}`.replace(':id', id),
         getDetails: id => `{{ route('order.get-details', ':id') }}`.replace(':id', id),
         csrf: "{{ csrf_token() }}"
     };
 
-    // --- Status Color Mapping ---
     const statusColors = {
         'pending': 'secondary',
         'waiting': 'info',
@@ -279,7 +150,6 @@ $(document).ready(function() {
                 rows = '<tr><td colspan="8" class="text-center">No orders found.</td></tr>';
             } else {
                 res.data.forEach((order, i) => {
-                    // Show URL for full page view
                     const showUrl = `{{ url('order') }}/${order.id}`;
                     
                     const billingName = order.customer ? `${order.customer.name} <br> <small class="text-muted">${order.customer.phone}</small>` : '<span class="text-danger">Customer Deleted</span>';
@@ -289,7 +159,9 @@ $(document).ready(function() {
                     const badgeColor = statusColors[statusKey] || 'secondary';
                     const displayStatus = order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1)) : 'Pending';
                     
-                    const deliveryStatusButton = `<button class="btn btn-sm btn-${badgeColor} btn-update-status" data-id="${order.id}" data-status="${statusKey}">${displayStatus}</button>`;
+                    // UPDATED: Just a badge, no button logic
+                    const statusBadge = `<span class="badge bg-${badgeColor}">${displayStatus}</span>`;
+                    
                     const detailsButton = `<button class="btn btn-sm btn-primary btn-details" data-id="${order.id}"><i class="fa fa-eye me-1"></i> View</button>`;
                     const orderFromBadge = order.order_from ? (order.order_from === 'web' ? `<span class="badge bg-info">Web</span>` : `<span class="badge bg-secondary">Admin</span>`) : '';
 
@@ -299,14 +171,13 @@ $(document).ready(function() {
                         <td>${billingName}</td>
                         <td>${date}</td>
                         <td>${orderFromBadge}</td>
-                        <td>${deliveryStatusButton}</td>
+                        <td>${statusBadge}</td>
                         <td>${detailsButton}</td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
                                 <ul class="dropdown-menu">
-                                    {{-- এই বাটনটি অ্যাড করা হয়েছে --}}
-                                    <li><a class="dropdown-item" href="${showUrl}"><i class="fa fa-external-link-alt me-2"></i>Show Details</a></li>
+                                    <li><a class="dropdown-item" href="${showUrl}"><i class="fa fa-external-link-alt me-2"></i>Show Details & Edit</a></li>
                                     <li><button class="dropdown-item btn-delete" data-id="${order.id}"><i class="fa fa-trash me-2"></i>Delete</button></li>
                                 </ul>
                             </div>
@@ -323,9 +194,7 @@ $(document).ready(function() {
             let paginationHtml = '';
             if (res.last_page > 1) {
                 paginationHtml += `<li class="page-item ${res.current_page === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${res.current_page - 1}">&laquo;</a></li>`;
-                const startPage = Math.max(1, res.current_page - 2);
-                const endPage = Math.min(res.last_page, res.current_page + 2);
-                for (let i = startPage; i <= endPage; i++) {
+                for (let i = Math.max(1, res.current_page - 2); i <= Math.min(res.last_page, res.current_page + 2); i++) {
                     paginationHtml += `<li class="page-item ${i === res.current_page ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
                 }
                 paginationHtml += `<li class="page-item ${res.current_page === res.last_page ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${res.current_page + 1}">&raquo;</a></li>`;
@@ -343,128 +212,20 @@ $(document).ready(function() {
     $('#filterBtn').on('click', function() { clearTimeout(debounceTimer); currentPage = 1; fetchData(); });
     $('#resetBtn').on('click', function() { $('#filterForm')[0].reset(); flatpickr("#filterStartDate").clear(); flatpickr("#filterEndDate").clear(); currentPage = 1; fetchData(); });
     $(document).on('click', '.page-link', function (e) { e.preventDefault(); if(!$(this).parent().hasClass('disabled')) { currentPage = $(this).data('page'); fetchData(); } });
-    
-    // --- 1. NEW STATUS UPDATE HANDLER (Populates Table) ---
-    $(document).on('click', '.btn-update-status', function() {
-        const orderId = $(this).data('id');
-        const currentStatus = $(this).data('status');
-        
-        $('#statusOrderId').val(orderId);
-        $('#statusSelect').val(currentStatus);
-        $('#statusModalTableBody').html('<tr><td colspan="4" class="text-center">Loading details...</td></tr>');
-        
-        // Fetch Order Details to populate table
-        $.get(routes.getDetails(orderId), function(data) {
-            let rows = '';
-            let grandTotal = 0;
-            
-            if (data.order_details && data.order_details.length > 0) {
-                data.order_details.forEach(item => {
-                    const productName = item.product ? item.product.name : 'Unknown';
-                    const productCode = item.product ? item.product.product_code : '';
-                    // Get base price from product if unit price is 0
-                    const basePrice = item.product ? (item.product.base_price || 0) : 0;
-                    const currentPrice = parseFloat(item.unit_price) || 0;
-                    
-                    // Logic: If price is > 0 show it, otherwise if user switches to accepted we might use basePrice
-                    // We store basePrice in data attribute
-                    
-                    const rowTotal = currentPrice * item.quantity;
-                    grandTotal += rowTotal;
 
-                    rows += `
-                        <tr>
-                            <td>
-                                <div><strong>${productName}</strong></div>
-                                <div class="small text-muted">${productCode}</div>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-light text-dark border">${item.quantity}</span>
-                                <input type="hidden" class="status-qty" value="${item.quantity}">
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" class="form-control form-control-sm status-price-input" 
-                                       name="prices[${item.id}]" 
-                                       value="${currentPrice}" 
-                                       data-base-price="${basePrice}">
-                            </td>
-                            <td class="text-end fw-bold status-row-total">${rowTotal.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-            }
-            $('#statusModalTableBody').html(rows);
-            $('#statusModalGrandTotal').text(grandTotal.toFixed(2));
-            statusModal.show();
-        });
-    });
-
-    // --- Status Modal: Auto-fill Price logic ---
-    $('#statusSelect').change(function() {
-        if($(this).val() === 'accepted') {
-            $('.status-price-input').each(function() {
-                var currentVal = parseFloat($(this).val()) || 0;
-                var basePrice = parseFloat($(this).data('base-price')) || 0;
-                
-                // If current price is 0, auto-fill with base price
-                if(currentVal === 0) {
-                    $(this).val(basePrice);
-                    updateStatusRowTotal($(this));
-                }
-            });
-        }
-    });
-
-    // --- Status Modal: Live Calculation ---
-    $(document).on('input', '.status-price-input', function() {
-        updateStatusRowTotal($(this));
-    });
-
-    function updateStatusRowTotal(inputObj) {
-        let price = parseFloat(inputObj.val()) || 0;
-        let qty = parseFloat(inputObj.closest('tr').find('.status-qty').val()) || 0;
-        let total = price * qty;
-        inputObj.closest('tr').find('.status-row-total').text(total.toFixed(2));
-        
-        // Recalc Grand Total
-        let grandTotal = 0;
-        $('.status-row-total').each(function() {
-            grandTotal += parseFloat($(this).text()) || 0;
-        });
-        $('#statusModalGrandTotal').text(grandTotal.toFixed(2));
-    }
-
-    // --- Status Modal: Save ---
-    $('#saveStatusBtn').on('click', function() {
-        const orderId = $('#statusOrderId').val();
-        const formData = $('#statusUpdateForm').serialize(); // Includes status and prices[]
-        
-        $.post(routes.updateStatusPrices(orderId), formData + `&_token=${routes.csrf}`, function(response) {
-            statusModal.hide();
-            Swal.fire('Success', 'Order updated successfully', 'success');
-            fetchData();
-        }).fail(function() {
-            Swal.fire('Error', 'Failed to update order.', 'error');
-        });
-    });
-
-    // --- 2. DETAILS MODAL HANDLER (Removed Shipping, Paid, Due) ---
+    // Details Modal Handler
     $(document).on('click', '.btn-details', function() {
         const orderId = $(this).data('id');
         $.get(routes.getDetails(orderId), function(data) {
             $('#detailsModalTitle').text(`Invoice #${data.invoice_no}`);
             let itemsHtml = '';
-            let grandTotal = 0;
-
+            
             if (data.order_details && data.order_details.length > 0) {
                 data.order_details.forEach(item => {
                     const productName = item.product ? item.product.name : 'Unknown Product';
-                    // removed color/size logic
-                    
                     const unitPrice = parseFloat(item.unit_price) || 0;
                     const subtotal = parseFloat(item.subtotal) || 0;
-                    grandTotal = parseFloat(data.total_amount) || 0;
-
+                    
                     itemsHtml += `
                         <tr>
                             <td>${productName}</td>
@@ -477,14 +238,12 @@ $(document).ready(function() {
             
             const secondaryPhoneHtml = (data.customer && data.customer.secondary_phone) ? `<br> ${data.customer.secondary_phone} (secondary)` : '';
             
-            // Simplified Summary (Removed Shipping, Paid, Due, COD)
             let summaryHtml = '';
             summaryHtml += `<tr><td>Sub Total:</td><td>${parseFloat(data.subtotal).toFixed(2)}</td></tr>`;
             if (data.discount && parseFloat(data.discount) > 0) {
                 summaryHtml += `<tr><td>Discount:</td><td>- ${parseFloat(data.discount).toFixed(2)}</td></tr>`;
             }
-            // Only Grand Total
-            summaryHtml += `<tr style="border-top: 1px solid #ddd;"><td><strong>Grand Total:</strong></td><td><strong>${grandTotal.toFixed(2)}</strong></td></tr>`;
+            summaryHtml += `<tr style="border-top: 1px solid #ddd;"><td><strong>Grand Total:</strong></td><td><strong>${parseFloat(data.total_amount).toFixed(2)}</strong></td></tr>`;
 
             const detailsHtml = `
                 <div class="invoice-details mb-4">
@@ -515,15 +274,11 @@ $(document).ready(function() {
                 ${data.notes ? `<hr><p class="text-muted small"><strong>Notes:</strong> ${data.notes}</p>` : ''}`;
                 
             $('#detailsModalBody').html(detailsHtml);
-            
-            $('#printOrderBtnA4').attr('href', `{{ url('order-print-a4') }}/${orderId}`);
-            $('#printOrderBtnA5').attr('href', `{{ url('order-print-a5') }}/${orderId}`);
-            $('#printOrderBtnPOS').attr('href', `{{ url('order-print-pos') }}/${orderId}`);
             detailsModal.show();
         });
     });
 
-    // --- Bulk & Delete Handlers (unchanged) ---
+    // Bulk Delete Logic
     function updateBulkActionUI() {
         const selectedCount = $('.row-checkbox:checked').length;
         $('#selectedCount').text(selectedCount);
@@ -541,12 +296,7 @@ $(document).ready(function() {
             }
         });
     });
-    $('#applyBulkStatusBtn').on('click', function() {
-        const selectedIds = $('.row-checkbox:checked').map((_, el) => el.value).get();
-        const newStatus = $('#bulkStatusSelect').val();
-        if (!newStatus) { Swal.fire('Warning', 'Select a status.', 'warning'); return; }
-        $.post(routes.bulkUpdateStatus, { ids: selectedIds, status: newStatus, _token: routes.csrf }, function(res) { Swal.fire('Success', res.message, 'success'); fetchData(); $('#selectAllCheckbox').prop('checked', false); });
-    });
+    
     $(document).on('click', '.btn-delete', function () {
         const id = $(this).data('id');
         Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!' }).then((result) => {

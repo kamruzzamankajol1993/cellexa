@@ -762,11 +762,12 @@ public function printPOS(Order $order)
         }
     }
 
-    public function updateStatusWithPrices(Request $request, $id)
+   public function updateStatusWithPrices(Request $request, $id)
 {
+    // ১. ভ্যালিডেশন
     $request->validate([
         'status' => 'required|string',
-        'prices' => 'array',
+        'prices' => 'array', // প্রাইস অ্যারে চেক করা হচ্ছে
     ]);
 
     try {
@@ -775,17 +776,20 @@ public function printPOS(Order $order)
             
             $newSubtotal = 0;
 
-            // ১. প্রাইস আপডেট লজিক
+            // ২. প্রাইস আপডেট লজিক (যদি প্রাইস পাঠানো হয়)
             if($request->has('prices')) {
                 foreach ($request->prices as $detailId => $newPrice) {
+                    // নির্দিষ্ট ডিটেইল খুঁজে বের করা
                     $detail = $order->orderDetails->where('id', $detailId)->first();
                     
                     if ($detail) {
-                        // প্রাইস আপডেট
-                        $detail->unit_price = $newPrice;
-                        $detail->subtotal = $newPrice * $detail->quantity;
+                        // ভ্যালু ফ্লোট বা নাম্বারে কনভার্ট করা এবং নেগেটিভ ভ্যালু আটকানো
+                        $price = max(0, floatval($newPrice)); 
                         
-                        // ডিসকাউন্ট লজিক (সিম্পল রাখা হয়েছে)
+                        $detail->unit_price = $price;
+                        $detail->subtotal = $price * $detail->quantity;
+                        
+                        // ডিসকাউন্ট বাদ দিয়ে আফটার ডিসকাউন্ট প্রাইস আপডেট
                         $detail->after_discount_price = $detail->subtotal - ($detail->discount ?? 0);
                         
                         $detail->save();
@@ -793,22 +797,34 @@ public function printPOS(Order $order)
                         $newSubtotal += $detail->after_discount_price;
                     }
                 }
+            } else {
+                // যদি কোনো কারণে প্রাইস না আসে, আগের সাবটোটালই থাকবে (সেফটি)
+                $newSubtotal = $order->subtotal;
             }
 
-            // ২. অর্ডার টোটাল আপডেট
+            // ৩. অর্ডারের মেইন ক্যালকুলেশন আপডেট
             $order->subtotal = $newSubtotal;
-            $order->total_amount = $newSubtotal + $order->shipping_cost - $order->discount;
+            // টোটাল অ্যামাউন্ট = সাবটোটাল + শিপিং - ডিসকাউন্ট
+            $order->total_amount = $newSubtotal + ($order->shipping_cost ?? 0) - ($order->discount ?? 0);
+            
+            // ডিউ ক্যালকুলেশন (রাউন্ড আপ করা ভালো, তবে এখানে সাধারণ বিয়োগ রাখা হলো)
             $order->due = $order->total_amount - $order->total_pay;
             
-            // ৩. স্ট্যাটাস আপডেট
+            // ৪. স্ট্যাটাস আপডেট (স্টক ম্যানেজমেন্ট লজিক থাকলে এখানে অ্যাড করতে হবে)
+            /* নোট: আপনার যদি StockManagementTrait থাকে এবং স্ট্যাটাস চেঞ্জের সাথে স্টক 
+               কাটা/ফেরত দেওয়ার লজিক থাকে, তবে সেটি এখানে কল করতে হবে। 
+               বর্তমানে শুধু স্ট্যাটাস টেক্সট আপডেট করা হচ্ছে।
+            */
             $order->status = $request->status;
             
             $order->save();
         });
 
-        return redirect()->back()->with('success', 'Order updated successfully!');
+        return redirect()->back()->with('success', 'Order status and prices updated successfully!');
 
     } catch (\Exception $e) {
+        // এরর লগ করা এবং ইউজারকে জানানো
+        Log::error('Order Update Error: ' . $e->getMessage());
         return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
     }
 }

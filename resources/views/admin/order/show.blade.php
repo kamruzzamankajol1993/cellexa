@@ -15,17 +15,22 @@
         .summary-card .list-group-item { display: flex; justify-content: space-between; border: none; padding: 0.75rem 0; }
         .summary-card .grand-total { font-size: 1.2rem; font-weight: bold; color: #0d6efd; border-top: 1px solid #e9ecef; margin-top: 0.5rem; padding-top: 0.75rem; }
         
-        /* Modal Input Styles */
-        .price-input { text-align: right; font-weight: bold; }
+        /* Input Styles for Inline Editing */
+        .price-input { text-align: right; font-weight: bold; max-width: 120px; float: right; }
         .qty-badge { background: #f8f9fa; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; }
+        .status-select { font-weight: 600; }
     </style>
 @endsection
 
 @section('body')
 <main class="main-content">
     <div class="container-fluid">
+        <form action="{{ route('order.update.status.prices', $order->id) }}" method="POST" id="orderUpdateForm">
+        @csrf
+        
         <div class="row">
             <div class="col-lg-8">
+                {{-- (.... আগের কোড সেইম থাকবে ....) --}}
                 <div class="card">
                     <div class="card-body">
                         <div class="invoice-header">
@@ -77,7 +82,7 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">Order Items</div>
+                    <div class="card-header">Order Items (Update Prices Here)</div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
@@ -92,13 +97,24 @@
                                 <tbody>
                                     @foreach($order->orderDetails as $detail)
                                     <tr>
-                                        <td class="ps-4">{{ $detail->product->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $detail->quantity }}</td>
-                                        <td class="text-end">
-                                            {{ number_format($detail->unit_price, 2) }}
+                                        <td class="ps-4">
+                                            {{ $detail->product->name ?? 'N/A' }}
+                                            <div class="small text-muted">{{ $detail->product->product_code ?? '' }}</div>
                                         </td>
-                                        <td class="text-end pe-4">
-                                            {{ number_format($detail->subtotal, 2) }}
+                                        <td class="text-center align-middle">
+                                            <span class="qty-badge">{{ $detail->quantity }}</span>
+                                            <input type="hidden" class="qty-hidden" value="{{ $detail->quantity }}">
+                                            <input type="hidden" class="discount-hidden" value="{{ $detail->discount ?? 0 }}">
+                                        </td>
+                                        <td class="text-end">
+                                            <input type="number" step="0.01" 
+                                               name="prices[{{ $detail->id }}]" 
+                                               class="form-control form-control-sm price-input" 
+                                               value="{{ $detail->unit_price > 0 ? $detail->unit_price : ($detail->product->base_price ?? 0) }}" 
+                                               min="0">
+                                        </td>
+                                        <td class="text-end pe-4 align-middle">
+                                            <span class="row-total">{{ number_format($detail->subtotal, 2) }}</span>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -107,137 +123,77 @@
                         </div>
                     </div>
                 </div>
-                
             </div>
 
             <div class="col-lg-4">
                 <div class="card summary-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        Order Summary
-                        <span class="badge bg-{{ 
-                            $order->status == 'accepted' ? 'success' : 
-                            ($order->status == 'cancelled' ? 'danger' : 'warning') 
-                        }} text-uppercase">{{ $order->status }}</span>
+                    <div class="card-header">
+                        Order Status & Summary
                     </div>
 
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Subtotal <span>{{ number_format($order->subtotal, 2) }}</span></li>
-                            
-                            @if($order->discount > 0)
-                                <li class="list-group-item">Discount <span>- {{ number_format($order->discount, 2) }}</span></li>
-                            @endif
-                            
-                            <li class="list-group-item grand-total">Total <span>{{ number_format($order->total_amount, 2) }}</span></li>
-                        </ul>
-                    </div>
-                    
-                    <div class="card-footer bg-white p-3">
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                                <i class="fa fa-refresh me-1"></i> Update Status & Price
-                            </button>
-
-                            <div class="btn-group">
-                                <a href="{{ route('order.print.a4', $order->id) }}" target="_blank" class="btn btn-outline-secondary"><i class="fa fa-print me-1"></i> A4</a>
-                                <a href="{{ route('order.print.a5', $order->id) }}" target="_blank" class="btn btn-outline-secondary"><i class="fa fa-print me-1"></i> A5</a>
-                                <a href="{{ route('order.print.pos', $order->id) }}" target="_blank" class="btn btn-outline-secondary"><i class="fa fa-receipt me-1"></i> POS</a>
-                            </div>
-
-                            <form id="delete-form" action="{{ route('order.destroy', $order->id) }}" method="POST" class="d-grid">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger"><i class="fa fa-trash me-1"></i> Delete Invoice</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
-
-<div class="modal fade" id="updateStatusModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title">Update Order Status & Prices</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('order.update.status.prices', $order->id) }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    
-                    <div class="row mb-4 align-items-center">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold mb-0">Order Status:</label>
-                        </div>
-                        <div class="col-md-9">
-                            <select name="status" id="modalStatusSelect" class="form-select form-select-lg">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Update Status</label>
+                            <select name="status" class="form-select status-select">
                                 <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="waiting" {{ $order->status == 'waiting' ? 'selected' : '' }}>Waiting</option>
                                 <option value="accepted" {{ $order->status == 'accepted' ? 'selected' : '' }}>Accepted</option>
                                 <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="table-responsive border rounded">
-                        <table class="table table-striped align-middle mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Product Info</th>
-                                    <th width="100" class="text-center">Qty</th>
-                                    <th width="180">Unit Price</th>
-                                    <th width="150" class="text-end">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($order->orderDetails as $detail)
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold">{{ $detail->product->name ?? 'Unknown' }}</div>
-                                        <div class="text-muted small">{{ $detail->product->product_code ?? '' }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="qty-badge">{{ $detail->quantity }}</span>
-                                        <input type="hidden" class="qty-hidden" value="{{ $detail->quantity }}">
-                                    </td>
-                                    <td>
-                                        <div class="input-group">
-                                            {{-- লজিক: যদি আগে থেকে প্রাইস থাকে সেটা দেখাবে, না থাকলে প্রোডাক্টের বেস প্রাইস দেখাবে --}}
-                                            <input type="number" step="0.01" 
-                                               name="prices[{{ $detail->id }}]" 
-                                               class="form-control price-input" 
-                                               value="{{ $detail->unit_price > 0 ? $detail->unit_price : ($detail->product->base_price ?? 0) }}" 
-                                               min="0">
-                                        </div>
-                                    </td>
-                                    <td class="text-end fw-bold row-total">
-                                        {{ number_format(($detail->unit_price > 0 ? $detail->unit_price : ($detail->product->base_price ?? 0)) * $detail->quantity, 2) }}
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold">Grand Total:</td>
-                                    <td class="text-end fw-bold text-primary" id="modalGrandTotal">0.00</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                        <ul class="list-group list-group-flush border-top pt-2">
+                            <li class="list-group-item">
+                                Subtotal <span id="displaySubtotal">{{ number_format($order->subtotal, 2) }}</span>
+                            </li>
+                            
+                            {{-- REMOVED DELIVERY CHARGE UI BUT KEPT HIDDEN INPUT FOR CALCULATION --}}
+                            {{-- This ensures the JS math stays correct based on DB values --}}
+                            <input type="hidden" id="shippingCost" value="{{ $order->shipping_cost }}">
 
+                            @if($order->discount > 0)
+                                <li class="list-group-item text-success">
+                                    Discount <span>- {{ number_format($order->discount, 2) }}</span>
+                                    <input type="hidden" id="orderDiscount" value="{{ $order->discount }}">
+                                </li>
+                            @else
+                                <input type="hidden" id="orderDiscount" value="0">
+                            @endif
+                            
+                            <li class="list-group-item grand-total">
+                                Total <span id="displayGrandTotal">{{ number_format($order->total_amount, 2) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-footer bg-white p-3">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fa fa-save me-1"></i> Update Status & Prices
+                            </button>
+
+                            <hr class="my-2">
+
+                            <div class="btn-group">
+                                <a href="{{ route('order.print.a4', $order->id) }}" target="_blank" class="btn btn-outline-secondary"><i class="fa fa-print me-1"></i> A4</a>
+                                <a href="{{ route('order.print.a5', $order->id) }}" target="_blank" class="btn btn-outline-secondary"><i class="fa fa-print me-1"></i> A5</a>
+                          
+                            </div>
+
+                            <button type="button" id="delete-btn" class="btn btn-outline-danger"><i class="fa fa-trash me-1"></i> Delete Invoice</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success"><i class="fa fa-save me-1"></i> Update Changes</button>
-                </div>
-            </form>
+            </div>
         </div>
+        </form>
+        
+        <form id="delete-form" action="{{ route('order.destroy', $order->id) }}" method="POST" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
     </div>
-</div>
-
+</main>
 @endsection
 
 @section('script')
@@ -245,9 +201,29 @@
 <script>
 $(document).ready(function() {
     
-    // 1. Calculate Totals on Page Load & Input Change
+    // --- SWEET ALERT NOTIFICATION LOGIC ---
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '{{ session('success') }}',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+        });
+    @endif
+    // --------------------------------------
+
+    // 1. Live Calculation Logic
     function calculateTotals() {
-        let grandTotal = 0;
+        let subtotal = 0;
         
         $('.price-input').each(function() {
             let price = parseFloat($(this).val()) || 0;
@@ -255,13 +231,19 @@ $(document).ready(function() {
             let rowTotal = price * qty;
             
             $(this).closest('tr').find('.row-total').text(rowTotal.toFixed(2));
-            grandTotal += rowTotal;
+            subtotal += rowTotal;
         });
 
-        $('#modalGrandTotal').text(grandTotal.toFixed(2));
+        // Hidden input value is used for calculation but not shown in UI
+        let shipping = parseFloat($('#shippingCost').val()) || 0;
+        let discount = parseFloat($('#orderDiscount').val()) || 0;
+        let grandTotal = subtotal + shipping - discount;
+
+        $('#displaySubtotal').text(subtotal.toFixed(2));
+        $('#displayGrandTotal').text(grandTotal.toFixed(2));
     }
 
-    // Run on load to show initial totals
+    // Run on load
     calculateTotals();
 
     // Run on input change
@@ -270,9 +252,7 @@ $(document).ready(function() {
     });
 
     // 2. Delete Confirmation
-    $('#delete-form').on('submit', function(e){
-        e.preventDefault();
-        var form = this;
+    $('#delete-btn').on('click', function(e){
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -282,7 +262,7 @@ $(document).ready(function() {
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                form.submit();
+                $('#delete-form').submit();
             }
         })
     });

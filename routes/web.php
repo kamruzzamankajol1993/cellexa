@@ -113,7 +113,8 @@ Route::get('/user/order-print/{id}', 'orderPrint')->name('front.order.print');
     Route::post('homepage-section', [App\Http\Controllers\Admin\HomepageSectionController::class, 'update'])->name('homepage-section.update');
 
 Auth::routes();
-
+// -- Global Product Search Route (AJAX) --
+Route::get('/global-search', [FrontController::class, 'globalSearchProducts'])->name('front.globalSearchProducts');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::post('/payment/success', [FrontController::class, 'paymentSuccess'])->name('payment.success');
 Route::post('/payment/fail', [FrontController::class, 'paymentFail'])->name('payment.fail');

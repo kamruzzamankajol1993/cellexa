@@ -1,8 +1,17 @@
 <div class="cellexa_company_category_floating_nav">
-     <button class="cellexa_company_category_nav_btn" data-bs-toggle="offcanvas" data-bs-target="#cellexaCartCanvas">
-         <i class="bi bi-cart3 fs-4"></i>
-         <span>Cart</span>
-     </button>
+     <button class="cellexa_company_category_nav_btn position-relative" data-bs-toggle="offcanvas" data-bs-target="#cellexaCartCanvas">
+    <i class="bi bi-cart3 fs-4"></i>
+    <span>Cart</span>
+    
+    @php
+        $cartCount = session()->get('cart') ? count(session()->get('cart')) : 0;
+    @endphp
+
+    <span id="cart-count-badge" class="badge rounded-pill bg-danger" 
+          style="position: absolute; top: 5px; right: 5px; font-size: 10px; {{ $cartCount > 0 ? '' : 'display: none;' }}">
+        {{ $cartCount }}
+    </span>
+</button>
      <div style="width: 24px; background: #ddd; height: 1px;"></div>
      <button class="cellexa_company_category_nav_btn" data-bs-toggle="offcanvas"
          data-bs-target="#cellexaProfileCanvas">
@@ -90,20 +99,21 @@
              </div>
 
              {{-- 3. Register Form --}}
+             {{-- 3. Register Form --}}
              <div id="cellexaRegisterForm" class="cellexa_company_category_auth_form">
                  <form id="register_form_submit">
                      @csrf
                      <div class="mb-3">
-                         <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                         <input type="text" name="name" class="form-control" placeholder="John Doe" required>
+                         <label class="form-label">Full Name <span class="text-muted small">(Optional)</span></label>
+                         <input type="text" name="name" class="form-control" placeholder="John Doe">
                      </div>
                      <div class="mb-3">
-                         <label class="form-label">Company Name</label>
+                         <label class="form-label">Company Name <span class="text-muted small">(Optional)</span></label>
                          <input type="text" name="company_name" class="form-control" placeholder="Your Company Ltd.">
                      </div>
                      <div class="mb-3">
-                         <label class="form-label">Company Address <span class="text-danger">*</span></label>
-                         <input type="text" name="address" class="form-control" placeholder="123 Street, City" required>
+                         <label class="form-label">Company Address <span class="text-muted small">(Optional)</span></label>
+                         <input type="text" name="address" class="form-control" placeholder="123 Street, City">
                      </div>
                      <div class="mb-3">
                          <label class="form-label">Email address <span class="text-danger">*</span></label>

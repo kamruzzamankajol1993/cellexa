@@ -38,9 +38,13 @@
                             $thumb = 'No_Image_Available.jpg'; 
                         }
                     @endphp
-                    
+                    @if (is_array($productImages) && count($productImages) > 0)
                     <img class="company_listing_image" src="{{ asset('public/uploads/'.$thumb) }}" alt="{{ $product->name }}" 
                          onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'">
+                    @else
+                    <img class="company_listing_image" src="{{ asset('public/'.$thumb) }}" alt="{{ $product->name }}" 
+                         onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'">
+                    @endif
                 </td>
                 <td>
                     {{-- @if($product->discount_price>0)

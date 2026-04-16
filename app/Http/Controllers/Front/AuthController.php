@@ -24,15 +24,16 @@ class AuthController extends Controller
     }
 
     // ১. কাস্টমার রেজিস্ট্রেশন
+    // ১. কাস্টমার রেজিস্ট্রেশন (Updated for Partial/Full registration)
     public function registerUserPost(Request $request)
     {
-        // ভ্যালিডেশন
+        // ভ্যালিডেশন আপডেট: name এবং address এখন nullable
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
-            'address' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
             'email' => 'required|email|unique:users,email|unique:customers,email',
-            'password' => 'required|min:6|confirmed', // password_confirmation ফিল্ড লাগবে
+            'password' => 'required|min:6|confirmed',
         ]);
 
         if ($validator->fails()) {
@@ -44,9 +45,13 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try {
-            // ১. ইউজার টেবিলে ডাটা ইনসার্ট (user_type = 1 for Customer)
+            // যদি নাম না দেওয়া থাকে, ইমেইলের প্রথম অংশকে নাম হিসেবে ব্যবহার করা হবে
+            $userName = $request->name ?? explode('@', $request->email)[0];
+            $userAddress = $request->address ?? 'N/A';
+
+            // ১. ইউজার টেবিলে ডাটা ইনসার্ট
             $user = new User();
-            $user->name = $request->name;
+            $user->name = $userName;
             $user->email = $request->email;
             $user->password = Hash::make($request->password);
             $user->user_type = 1; // 1 = Customer
@@ -55,29 +60,28 @@ class AuthController extends Controller
 
             // ২. কাস্টমার টেবিলে ডাটা ইনসার্ট
             $customer = new Customer();
-            $customer->user_id = $user->id; // রিলেশন
-            $customer->name = $request->name;
+            $customer->user_id = $user->id;
+            $customer->name = $userName;
             $customer->company_name = $request->company_name;
             $customer->email = $request->email;
-            $customer->phone = $request->phone ?? null; // ফোন যদি থাকে
-            $customer->address = $request->address;
-            $customer->password = Hash::make($request->password); // ব্যাকআপ বা লেগাসি সাপোর্টের জন্য
+            $customer->phone = $request->phone ?? null;
+            $customer->address = $userAddress;
+            $customer->password = Hash::make($request->password);
             $customer->status = 1;
             $customer->save();
 
-            // ৩. ইউজারের মধ্যে কাস্টমার আইডি আপডেট করা (Optional, but good for linking)
+            // ৩. ইউজারের মধ্যে কাস্টমার আইডি আপডেট করা
             $user->customer_id = $customer->id;
             $user->save();
 
             DB::commit();
 
-            // অটো লগইন করিয়ে দেওয়া (অপশনাল)
             Auth::login($user);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Registration successful! Redirecting...',
-                'redirect_url' => route('front.userDashboard') // বা হোমপেজ
+                'redirect_url' => route('front.userDashboard')
             ]);
 
         } catch (\Exception $e) {
