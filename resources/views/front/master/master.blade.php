@@ -153,7 +153,7 @@
 
     {{-- Cellexa Global Search Modal --}}
 <div class="modal fade" id="cellexaSearchModal" tabindex="-1" aria-labelledby="cellexaSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title fs-5" id="cellexaSearchModalLabel">Search Our Catalog</h5>
@@ -285,11 +285,11 @@
         // ডিসকাউন্ট প্রাইস থাকলে
         priceHtml = '<div class="cellexa_search_result_price">' +
                         '<span class="text-danger text-decoration-line-through small me-2" style="font-size: 11px;">৳' + product.base_price + '</span>' +
-                        '<span>৳' + product.discount_price + '</span>' +
+                        '<span>' + 'asked for price' + '</span>' +
                     '</div>';
     } else if (product.base_price && product.base_price > 0) {
         // শুধু বেস প্রাইস থাকলে
-        priceHtml = '<div class="cellexa_search_result_price">৳' + product.base_price + '</div>';
+        priceHtml = '<div class="cellexa_search_result_price">' + 'asked for price' + '</div>';
     } else {
         // কোনো প্রাইস না থাকলে
         priceHtml = '<div class="cellexa_search_result_price"><span class="badge bg-primary px-2 py-1" style="font-size: 10px;">Asked For Price</span></div>';

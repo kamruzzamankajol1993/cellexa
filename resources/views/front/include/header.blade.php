@@ -81,57 +81,49 @@
                             aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
-                        <ul class="navbar-nav justify-content-between flex-grow-1 pe-3">
+                        <ul class="navbar-nav justify-content-center flex-grow-1 pe-3 gap-4">
                             
                             <li class="nav-item">
                                 <a class="nav-link nav-link-main active" aria-current="page"
                                     href="{{ route('front.index') }}">HOME</a>
                             </li>
 
-                            @if(isset($header_categories) && $header_categories->count() > 0)
-        {{-- প্রথম ৩টি ক্যাটাগরি সরাসরি দেখানো হচ্ছে --}}
-        @foreach($header_categories->take(3) as $category)
-            <li class="nav-item">
-                @if($category->brands->count() > 0)
-                    <a class="nav-link nav-link-main" 
-                       href="{{ route('front.category.companies', $category->slug) }}">
-                       {{ $category->name }}
-                    </a>
-                @else
-                    <a class="nav-link nav-link-main" 
-                       href="{{ route('front.category.products', $category->slug) }}">
-                       {{ $category->name }}
-                    </a>
-                @endif
-            </li>
-        @endforeach
-
-        {{-- যদি ৩টির বেশি ক্যাটাগরি থাকে তবে "Other" ড্রপডাউন দেখানো হবে --}}
-        @if($header_categories->count() > 3)
-            <li class="nav-item dropdown">
-                <a class="nav-link nav-link-main dropdown-toggle" href="#" id="otherCats" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    OTHER
+                       @if(isset($header_categories) && $header_categories->count() > 0)
+    <li class="nav-item dropdown">
+        <a class="nav-link nav-link-main dropdown-toggle" href="#" id="productCats" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            PRODUCTS
+        </a>
+        <ul class="dropdown-menu border-0 shadow" aria-labelledby="productCats">
+            
+            {{-- All Products Item (রাউট ফাঁকা রাখা হয়েছে) --}}
+            <li>
+                <a class="dropdown-item py-2 fw-bold" href="{{ route('front.allProducts') }}">
+                    All Products
                 </a>
-                <ul class="dropdown-menu border-0 shadow" aria-labelledby="otherCats">
-                    @foreach($header_categories->slice(3) as $category)
-                        <li>
-                            @if($category->brands->count() > 0)
-                                <a class="dropdown-item py-2" 
-                                   href="{{ route('front.category.companies', $category->slug) }}">
-                                   {{ $category->name }}
-                                </a>
-                            @else
-                                <a class="dropdown-item py-2" 
-                                   href="{{ route('front.category.products', $category->slug) }}">
-                                   {{ $category->name }}
-                                </a>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
             </li>
-        @endif
-    @endif
+            
+            {{-- একটি ডিভাইডার বা বর্ডার (ঐচ্ছিক, সুন্দর দেখানোর জন্য) --}}
+            <li><hr class="dropdown-divider"></li>
+
+            {{-- সকল ক্যাটাগরি শো করানো হচ্ছে --}}
+            @foreach($header_categories as $category)
+                <li>
+                    @if($category->brands->count() > 0)
+                        <a class="dropdown-item py-2" 
+                           href="{{ route('front.category.companies', $category->slug) }}">
+                           {{ $category->name }}
+                        </a>
+                    @else
+                        <a class="dropdown-item py-2" 
+                           href="{{ route('front.category.products', $category->slug) }}">
+                           {{ $category->name }}
+                        </a>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </li>
+@endif
 
                             <li class="nav-item">
                                 <a class="nav-link nav-link-main" href="{{ route('front.aboutUs') }}">About us</a>

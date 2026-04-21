@@ -1,85 +1,75 @@
-<div class="table-responsive custom-table-container">
-    <table class="table table-bordered table-hover mb-0 align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th width="5%" class="text-center">SL</th>
-                <th width="40%">Product Name</th>
-                <th width="10%">Image</th>
-                <th width="15%">Price</th>
-                <th width="15%">Code</th>
-                <th width="15%" class="text-center">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($products as $key => $product)
-            <tr>
-                <td class="text-center fw-bold">
-                    {{ ($products->currentPage() - 1) * $products->perPage() + $loop->iteration }}
-                </td>
-                <td>
-                    <a href="{{ route('front.product.details', $product->slug) }}" class="text-decoration-none text-dark fw-bold product-name-link">
-                        {{ $product->name }}
-                    </a>
-                </td>
-                <td>
-                    @php
-                        // ১. প্রথমে প্রোডাক্ট ইমেজ আছে কিনা চেক
-                        $productImages = $product->thumbnail_image; 
-                        
-                        if (is_array($productImages) && count($productImages) > 0) {
-                            $thumb = $productImages[0];
-                        } 
-                        // ২. প্রোডাক্ট ইমেজ না থাকলে, ব্র্যান্ড লোগো আছে কিনা চেক
-                        elseif ($product->brand && $product->brand->logo) {
-                            $thumb = $product->brand->logo;
-                        } 
-                        // ৩. কিছুই না থাকলে ডিফল্ট ইমেজ
-                        else {
-                            $thumb = 'No_Image_Available.jpg'; 
-                        }
-                    @endphp
-                    @if (is_array($productImages) && count($productImages) > 0)
-                    <img class="company_listing_image" src="{{ asset('public/uploads/'.$thumb) }}" alt="{{ $product->name }}" 
+@forelse($products as $product)
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="row g-0 align-items-center">
+            
+            {{-- বাম পাশে ইমেজ --}}
+            <div class="col-md-3 col-4">
+                @php
+                    // ১. প্রথমে প্রোডাক্ট ইমেজ আছে কিনা চেক
+                    $productImages = $product->thumbnail_image; 
+                    
+                    if (is_array($productImages) && count($productImages) > 0) {
+                        $thumb = 'uploads/' . $productImages[0];
+                    } 
+                    // ২. প্রোডাক্ট ইমেজ না থাকলে, ব্র্যান্ড লোগো আছে কিনা চেক
+                    elseif ($product->brand && $product->brand->logo) {
+                        $thumb = $product->brand->logo;
+                    } 
+                    // ৩. কিছুই না থাকলে ডিফল্ট ইমেজ
+                    else {
+                        $thumb = 'No_Image_Available.jpg'; 
+                    }
+                @endphp
+                <div class="product-list-img-container rounded-start">
+                    <img src="{{ asset('public/'.$thumb) }}" 
+                         class="product-list-img" 
+                         alt="{{ $product->name }}"
                          onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'">
-                    @else
-                    <img class="company_listing_image" src="{{ asset('public/'.$thumb) }}" alt="{{ $product->name }}" 
-                         onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'">
-                    @endif
-                </td>
-                <td>
-                    {{-- @if($product->discount_price>0)
-                        <del class="text-danger small">{{ $product->base_price }}</del> <br>
-                        <span class="badge bg-success">{{ $product->discount_price }}</span>
-                    @elseif($product->base_price)
-                        <span class="badge bg-secondary">{{ $product->base_price }}</span>
-                    @else --}}
-                        <span class="badge bg-primary">Asked For Price</span>
-                    {{-- @endif --}}
-                </td>
-                <td>
-                    <span class="text-muted small">{{ $product->product_code ?? 'N/A' }}</span>
-                </td>
-                <td class="text-center">
-    {{-- onclick ইভেন্ট যুক্ত করা হয়েছে --}}
-    <button class="btn cellexa_custom_btn btn-sm text-nowrap" onclick="addToCart({{ $product->id }}, 1)"> 
-        <i class="bi bi-cart-plus"></i> Add To Cart
-    </button>
-</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="6" class="text-center py-5">
-                    <div class="empty-state">
-                        <i class="bi bi-box-seam display-4 text-muted"></i>
-                        <h5 class="text-muted mt-3">No products found matching your criteria.</h5>
-                    </div>
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                </div>
+            </div>
 
+            {{-- ডান পাশে ইনফরমেশন --}}
+            <div class="col-md-9 col-8">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="card-title fw-bold mb-1">
+                                <a href="{{ route('front.product.details', $product->slug) }}" class="text-dark text-decoration-none">
+                                    {{ $product->name }}
+                                </a>
+                            </h4>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-upc-scan"></i> Code: {{ $product->product_code ?? 'N/A' }} | 
+                                <span class="text-primary fw-bold"><i class="bi bi-building"></i> {{ $product->brand->name ?? 'No Company' }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="card-text text-muted mt-2 d-none d-md-block">
+                        {!! Str::limit(strip_tags($product->description), 180) !!}
+                    </p>
+
+                    <div class="mt-3">
+                        <a href="{{ route('front.product.details', $product->slug) }}" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                        <button class="btn btn-primary btn-sm" onclick="addToCart({{ $product->id }}, 1)">
+                            <i class="bi bi-cart-plus"></i> Add To Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@empty
+    <div class="text-center py-5 bg-white shadow-sm rounded">
+        <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
+        <h4 class="text-muted">No products found matching your criteria.</h4>
+        <p class="text-muted">Try adjusting your filters or search term.</p>
+    </div>
+@endforelse
+
+{{-- Pagination Block --}}
 <div class="row mt-4 align-items-center">
     <div class="col-md-5 col-12 text-center text-md-start mb-3 mb-md-0">
         <p class="text-muted mb-0">

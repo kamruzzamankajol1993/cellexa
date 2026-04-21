@@ -34,10 +34,14 @@
                             </h4>
                             <p class="text-muted small mb-2">
                                 <i class="bi bi-upc-scan"></i> Code: {{ $product->product_code ?? 'N/A' }} | 
-                                {{-- কোম্পানির নাম বাদ দেওয়া হয়েছে, ক্যাটাগরি নাম দেখানো হচ্ছে --}}
-                                <span class="badge bg-secondary"><i class="bi bi-tags"></i> {{ $product->category->name ?? 'Uncategorized' }}</span>
+                                <span class="badge bg-secondary"><i class="bi bi-tags"></i> {{ $product->category->name ?? 'Uncategorized' }}</span> | 
+                                <span class="text-primary fw-bold"><i class="bi bi-building"></i> {{ $product->brand->name ?? 'No Company' }}</span>
                             </p>
                         </div>
+                        {{-- প্রাইস (যদি দেখাতে চান) --}}
+                        {{-- <div class="text-end">
+                            <span class="fs-5 fw-bold text-success">৳{{ $product->base_price }}</span>
+                        </div> --}}
                     </div>
 
                     <p class="card-text text-muted mt-2 d-none d-md-block">
@@ -58,27 +62,26 @@
     </div>
 @empty
     <div class="text-center py-5 bg-white shadow-sm rounded">
-        <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
-        <h4 class="text-muted">No products found.</h4>
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h4 class="text-muted">No products found</h4>
         <p class="text-muted">Try adjusting your filters or search term.</p>
     </div>
 @endforelse
 
-{{-- Pagination Block --}}
-<div class="row mt-4 align-items-center">
-    <div class="col-md-5 col-12 text-center text-md-start mb-3 mb-md-0">
-        <p class="text-muted mb-0">
-            Showing <span class="fw-bold">{{ $products->firstItem() ?? 0 }}</span> to <span class="fw-bold">{{ $products->lastItem() ?? 0 }}</span> of <span class="fw-bold">{{ $products->total() }}</span> results
-        </p>
-    </div>
-    <div class="col-md-7 col-12">
+{{-- Pagination --}}
+<div class="row mt-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div class="text-muted small">
+            Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} results
+        </div>
+        
         @if ($products->hasPages())
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center justify-content-md-end mb-0 custom-pagination">
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
                 @if ($products->onFirstPage())
-                    <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i> Prev</span></li>
+                    <li class="page-item disabled"><span class="page-link">Prev</span></li>
                 @else
-                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() - 1 }}"><i class="bi bi-chevron-left"></i> Prev</a></li>
+                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() - 1 }}">Prev</a></li>
                 @endif
 
                 @foreach ($products->links()->elements as $element)
@@ -97,9 +100,9 @@
                 @endforeach
 
                 @if ($products->hasMorePages())
-                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() + 1 }}">Next <i class="bi bi-chevron-right"></i></a></li>
+                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() + 1 }}">Next</a></li>
                 @else
-                    <li class="page-item disabled"><span class="page-link">Next <i class="bi bi-chevron-right"></i></span></li>
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
                 @endif
             </ul>
         </nav>

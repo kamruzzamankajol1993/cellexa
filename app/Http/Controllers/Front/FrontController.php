@@ -23,6 +23,50 @@ use Illuminate\Support\Facades\Validator;
 class FrontController extends Controller
 {
 
+public function allProducts(Request $request)
+{
+    // ১. ইনপুট ভেরিয়েবল
+    $search = $request->input('search');
+    $perPage = $request->input('per_page', 10);
+    $filterCategories = $request->input('categories', []);
+    $filterBrands = $request->input('brands', []);
+
+    // ২. বেস কুয়েরি তৈরি
+    $query = Product::where('status', 1)->with(['brand', 'category']);
+
+    // ৩. ক্যাটাগরি এবং ব্র্যান্ড ফিল্টার অ্যাপ্লাই
+    $query->when(!empty($filterCategories), function ($q) use ($filterCategories) {
+        $q->whereIn('category_id', $filterCategories);
+    });
+
+    $query->when(!empty($filterBrands), function ($q) use ($filterBrands) {
+        $q->whereIn('brand_id', $filterBrands);
+    });
+
+    // ৪. সার্চ ফিল্টার অ্যাপ্লাই (নাম বা কোড দিয়ে)
+    $query->when($search, function ($q) use ($search) {
+        $q->where(function ($subQ) use ($search) {
+            $subQ->where('name', 'like', '%' . $search . '%')
+                 ->orWhere('product_code', 'like', '%' . $search . '%');
+        });
+    });
+
+    // ৫. ডাটা ফেচ (Pagination)
+    $products = $query->latest()->paginate($perPage);
+
+    // ৬. AJAX রিকোয়েস্ট হ্যান্ডলিং
+    if ($request->ajax()) {
+        return view('front.product.all_products_data', compact('products'))->render();
+    }
+
+    // ৭. সাইডবার ফিল্টারের জন্য সব ক্যাটাগরি ও ব্র্যান্ড
+    $allCategories = Category::where('status', 1)->orderBy('name', 'asc')->get();
+    $allBrands = Brand::where('status', 1)->orderBy('name', 'asc')->get();
+
+    // ৮. নরমাল ভিউ রিটার্ন
+    return view('front.product.all_products', compact('products', 'allCategories', 'allBrands'));
+}
+
     // Handle Contact Form Submission via AJAX
     public function contactUsPost(Request $request)
     {

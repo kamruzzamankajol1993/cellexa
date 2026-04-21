@@ -11,13 +11,8 @@
         background: #f8f9fa;
         padding: 15px;
         border: 1px solid #dee2e6;
-        border-radius: 5px 5px 0 0;
-        border-bottom: none;
-    }
-    .custom-table-container {
-        border: 1px solid #dee2e6;
-        border-radius: 0 0 5px 5px;
-        background: #fff;
+        border-radius: 5px;
+        margin-bottom: 20px;
     }
     .loading-overlay {
         position: relative;
@@ -45,12 +40,20 @@
         margin-bottom: 10px;
         color: #444;
     }
-    .company_listing_image {
-        width: 50px; 
-        height: 50px; 
-        object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid #eee;
+    /* Horizontal Card Image Styling */
+    .product-list-img-container {
+        width: 100%;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f9f9f9;
+        border-right: 1px solid #eee;
+    }
+    .product-list-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
     }
     .custom-pagination .page-link {
         color: #333;

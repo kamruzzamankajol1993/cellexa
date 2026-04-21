@@ -14,12 +14,24 @@
         text-align: center;
         display: none; /* শুরুতে হাইড */
     }
-    /* লিংক থেকে আন্ডারলাইন রিমুভ */
-    .cellexa_item_box a {
-        text-decoration: none;
-        color: inherit;
+    
+    /* Horizontal Card Image Styling */
+    .product-list-img-container {
+        width: 100%;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f9f9f9;
+        border-right: 1px solid #eee;
+    }
+    .product-list-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
     }
 </style>
+
 @endsection
 
 @section('body')

@@ -59,7 +59,8 @@ Route::get('/clear', function() {
 //frontend part start 
 Route::post('/contact-us-post', [App\Http\Controllers\Front\FrontController::class, 'contactUsPost'])->name('front.contactUsPost');
 Route::controller(FrontController::class)->group(function () {
-
+// All Products Route
+Route::get('/all-products', 'allProducts')->name('front.allProducts');
 Route::get('/user/quote-details/{id}', 'getQuoteDetailsHtml')->name('front.quote.details.html');
     Route::post('/submit-quote', 'submitQuote')->name('front.submitQuote');
 Route::get('/user/order-details/{id}', 'getOrderDetailsHtml')->name('front.order.details.html');
