@@ -65,9 +65,32 @@
         max-height: 100%;
         object-fit: contain;
     }
-    /* Pagination Styling */
+
+    /* Custom Button Colors */
+    .custom-btn-solid {
+        background-color: #a1573c !important;
+        border-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+    .custom-btn-solid:hover {
+        background-color: #874932 !important;
+        border-color: #874932 !important;
+        color: #ffffff !important;
+    }
+
+    .custom-btn-outline {
+        color: #a1573c !important;
+        border-color: #a1573c !important;
+        background-color: transparent !important;
+    }
+    .custom-btn-outline:hover {
+        background-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+
+    /* Pagination Styling (Updated to #a1573c) */
     .custom-pagination .page-link {
-        color: #333;
+        color: #a1573c;
         border: 1px solid #dee2e6;
         margin: 0 3px;
         border-radius: 4px;
@@ -75,9 +98,37 @@
         font-weight: 500;
     }
     .custom-pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+        background-color: #a1573c;
+        border-color: #a1573c;
         color: #fff;
+    }
+    .custom-pagination {
+        flex-wrap: wrap !important;
+        gap: 4px;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 767px) {
+        .product-title-text {
+            font-size: 14px !important;
+            line-height: 1.3;
+            display: block;
+            word-wrap: break-word;
+        }
+        .product-meta-item {
+            font-size: 12px !important;
+            display: inline-block;
+            margin-top: 3px;
+            white-space: normal !important;
+        }
+        .btn-mobile-text {
+            font-size: 11px !important;
+            padding: 5px 2px !important;
+        }
+        .pagination-container {
+            flex-direction: column !important;
+            text-align: center;
+        }
     }
 </style>
 @endsection
@@ -94,27 +145,26 @@
             </div>
 
             <div class="row g-4">
-                
+
                 <div class="col-lg-3">
                     <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filterCanvas">
                         <div class="offcanvas-header">
                             <h5 class="offcanvas-title">Filters</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterCanvas"></button>
                         </div>
-                        
+
                         <div class="offcanvas-body d-block filter-sidebar shadow-sm">
                             <h3 class="filter-title">Filter Products</h3>
 
                             @if($sidebarChildCategories->count() > 0)
                                 <div class="filter-group">
                                     <h5 class="filter-group-title">{{ $category->name }} Categories</h5>
-                                    
+
                                     @foreach($sidebarChildCategories as $childCat)
                                         <div class="form-check custom-checkbox mb-2">
-                                            {{-- name="child_categories[]" ব্যবহার করা হয়েছে --}}
-                                            <input class="form-check-input filter-checkbox" type="checkbox" 
-                                                   value="{{ $childCat->id }}" 
-                                                   id="child_{{ $childCat->id }}" 
+                                            <input class="form-check-input filter-checkbox" type="checkbox"
+                                                   value="{{ $childCat->id }}"
+                                                   id="child_{{ $childCat->id }}"
                                                    name="child_categories[]">
                                             <label class="form-check-label" for="child_{{ $childCat->id }}">
                                                 {{ $childCat->name }}
@@ -131,7 +181,7 @@
                 </div>
 
                 <div class="col-lg-9 col-12">
-                    
+
                     <button class="btn btn-primary w-100 mb-3 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterCanvas">
                         <i class="bi bi-funnel"></i> Show Filters
                     </button>
@@ -172,13 +222,12 @@
 @section('scripts')
 <script>
     $(document).ready(function () {
-        
+
         function fetch_data(page) {
             var search = $('#search').val();
             var per_page = $('#per_page').val();
             var url = $('#ajax_url').val();
-            
-            // Child Categories ফিল্টার অ্যারে তৈরি
+
             var child_categories = [];
             $('.filter-checkbox:checked').each(function() {
                 child_categories.push($(this).val());
@@ -193,7 +242,7 @@
                     page: page,
                     search: search,
                     per_page: per_page,
-                    child_categories: child_categories // আপডেটেড প্যারামিটার নেম
+                    child_categories: child_categories
                 },
                 success: function (data) {
                     $('#product-table-container').html(data);

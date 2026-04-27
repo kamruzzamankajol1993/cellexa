@@ -55,8 +55,32 @@
         max-height: 100%;
         object-fit: contain;
     }
+
+    /* Custom Button Colors */
+    .custom-btn-solid {
+        background-color: #a1573c !important;
+        border-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+    .custom-btn-solid:hover {
+        background-color: #874932 !important;
+        border-color: #874932 !important;
+        color: #ffffff !important;
+    }
+
+    .custom-btn-outline {
+        color: #a1573c !important;
+        border-color: #a1573c !important;
+        background-color: transparent !important;
+    }
+    .custom-btn-outline:hover {
+        background-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+
+    /* Pagination Styling */
     .custom-pagination .page-link {
-        color: #333;
+        color: #a1573c;
         border: 1px solid #dee2e6;
         margin: 0 3px;
         border-radius: 4px;
@@ -64,9 +88,37 @@
         font-weight: 500;
     }
     .custom-pagination .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+        background-color: #a1573c;
+        border-color: #a1573c;
         color: #fff;
+    }
+    .custom-pagination {
+        flex-wrap: wrap !important;
+        gap: 4px;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 767px) {
+        .product-title-text {
+            font-size: 14px !important;
+            line-height: 1.3;
+            display: block;
+            word-wrap: break-word;
+        }
+        .product-meta-item {
+            font-size: 12px !important;
+            display: inline-block;
+            margin-top: 3px;
+            white-space: normal !important;
+        }
+        .btn-mobile-text {
+            font-size: 11px !important;
+            padding: 5px 2px !important;
+        }
+        .pagination-container {
+            flex-direction: column !important;
+            text-align: center;
+        }
     }
 </style>
 @endsection
@@ -83,14 +135,14 @@
             </div>
 
             <div class="row g-4">
-                
+
                 <div class="col-lg-3">
                     <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filterCanvas">
                         <div class="offcanvas-header">
                             <h5 class="offcanvas-title">Filters</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterCanvas"></button>
                         </div>
-                        
+
                         <div class="offcanvas-body d-block filter-sidebar shadow-sm">
                             <h3 class="filter-title">Filter Products</h3>
 
@@ -99,9 +151,9 @@
                                     <h5 class="filter-group-title">Categories</h5>
                                     @foreach($sidebarCategories as $cat)
                                         <div class="form-check custom-checkbox mb-2">
-                                            <input class="form-check-input filter-checkbox" type="checkbox" 
-                                                   value="{{ $cat->id }}" 
-                                                   id="cat_{{ $cat->id }}" 
+                                            <input class="form-check-input filter-checkbox" type="checkbox"
+                                                   value="{{ $cat->id }}"
+                                                   id="cat_{{ $cat->id }}"
                                                    name="categories[]">
                                             <label class="form-check-label" for="cat_{{ $cat->id }}">
                                                 {{ $cat->name }}
@@ -118,7 +170,7 @@
                 </div>
 
                 <div class="col-lg-9 col-12">
-                    
+
                     <button class="btn btn-primary w-100 mb-3 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterCanvas">
                         <i class="bi bi-funnel"></i> Show Filters
                     </button>
@@ -159,13 +211,12 @@
 @section('scripts')
 <script>
     $(document).ready(function () {
-        
+
         function fetch_data(page) {
             var search = $('#search').val();
             var per_page = $('#per_page').val();
             var url = $('#ajax_url').val();
-            
-            // ক্যাটাগরি ফিল্টার অ্যারে
+
             var categories = [];
             $('.filter-checkbox:checked').each(function() {
                 categories.push($(this).val());

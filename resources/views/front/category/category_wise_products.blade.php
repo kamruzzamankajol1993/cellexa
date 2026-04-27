@@ -14,7 +14,7 @@
         text-align: center;
         display: none; /* শুরুতে হাইড */
     }
-    
+
     /* Horizontal Card Image Styling */
     .product-list-img-container {
         width: 100%;
@@ -30,8 +30,49 @@
         max-height: 100%;
         object-fit: contain;
     }
-</style>
 
+    /* Custom Button Colors */
+    .custom-btn-solid {
+        background-color: #a1573c !important;
+        border-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+    .custom-btn-solid:hover {
+        background-color: #874932 !important;
+        border-color: #874932 !important;
+        color: #ffffff !important;
+    }
+
+    .custom-btn-outline {
+        color: #a1573c !important;
+        border-color: #a1573c !important;
+        background-color: transparent !important;
+    }
+    .custom-btn-outline:hover {
+        background-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 767px) {
+        .product-title-text {
+            font-size: 14px !important;
+            line-height: 1.3;
+            display: block;
+            word-wrap: break-word;
+        }
+        .product-meta-item {
+            font-size: 12px !important;
+            display: inline-block;
+            margin-top: 3px;
+            white-space: normal !important;
+        }
+        .btn-mobile-text {
+            font-size: 11px !important;
+            padding: 5px 2px !important;
+        }
+    }
+</style>
 @endsection
 
 @section('body')
@@ -41,7 +82,7 @@
             <div class="mt-5 mb-5">
                 {{-- ডাইনামিক টাইটেল --}}
                 <h2 class="home_category_title">{{ $category->name }}</h2>
-                
+
                 {{-- ডেসক্রিপশন --}}
                 <p>
                     @if($category->description)
@@ -77,9 +118,9 @@
 @section('scripts')
 <script>
     // স্ক্রল প্যাজিনেশন স্ক্রিপ্ট
-    var page = 1; 
-    var isLoading = false; 
-    var hasMoreData = true; 
+    var page = 1;
+    var isLoading = false;
+    var hasMoreData = true;
 
     $(window).scroll(function() {
         // পেজের নিচে আসার ৫০০px আগে লোড শুরু হবে

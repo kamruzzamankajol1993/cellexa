@@ -6,6 +6,73 @@
 
 @section('css')
 <style>
+    /* Custom Button Colors */
+    .custom-btn-solid {
+        background-color: #a1573c !important;
+        border-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+    .custom-btn-solid:hover {
+        background-color: #874932 !important; /* Hover-এ হালকা ডার্ক */
+        border-color: #874932 !important;
+        color: #ffffff !important;
+    }
+
+    .custom-btn-outline {
+        color: #a1573c !important;
+        border-color: #a1573c !important;
+        background-color: transparent !important;
+    }
+    .custom-btn-outline:hover {
+        background-color: #a1573c !important;
+        color: #ffffff !important;
+    }
+
+    /* Pagination Custom Design for Mobile Fix */
+    .custom-pagination {
+        flex-wrap: wrap !important;
+        justify-content: center;
+        gap: 4px;
+    }
+    .custom-pagination .page-item .page-link {
+        color: #a1573c;
+        border-radius: 4px;
+    }
+    .custom-pagination .page-item.active .page-link {
+        background-color: #a1573c;
+        border-color: #a1573c;
+        color: white;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 767px) {
+        /* Title and Meta */
+        .product-title-text {
+            font-size: 14px !important; /* মোবাইলে টাইটেল ছোট */
+            line-height: 1.3;
+            display: block;
+            word-wrap: break-word;
+        }
+        .product-meta-item {
+            font-size: 12px !important; /* মোবাইলে ক্যাটাগরি/ব্র্যান্ড বড় */
+            display: inline-block;
+            margin-top: 3px;
+            white-space: normal !important;
+        }
+        /* Buttons Text adjustment for mobile */
+        .btn-mobile-text {
+            font-size: 11px !important;
+            padding: 5px 2px !important;
+        }
+        /* Pagination Container adjustment */
+        .pagination-container {
+            flex-direction: column !important;
+            text-align: center;
+        }
+        .pagination-container .text-muted {
+            margin-bottom: 12px;
+        }
+    }
     .custom-toolbar {
         background: #f8f9fa;
         padding: 15px;
@@ -70,7 +137,7 @@
             </div>
 
             <div class="row g-4">
-                
+
                 {{-- Left Sidebar: Filters --}}
                 <div class="col-lg-3">
                     <button class="btn btn-primary w-100 mb-3 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterCanvas">
@@ -82,7 +149,7 @@
                             <h5 class="offcanvas-title">Filters</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterCanvas"></button>
                         </div>
-                        
+
                         <div class="offcanvas-body d-block filter-sidebar shadow-sm">
                             <h3 class="filter-title">Filter Products</h3>
 
@@ -117,7 +184,7 @@
 
                 {{-- Right Side: Products & Search --}}
                 <div class="col-lg-9 col-12">
-                    
+
                     {{-- Global Search Bar & Toolbar --}}
                     <div class="row custom-toolbar align-items-center g-3 mx-0 shadow-sm">
                         <div class="col-md-5 col-12 d-flex align-items-center">
@@ -154,12 +221,12 @@
 @section('scripts')
 <script>
     $(document).ready(function () {
-        
+
         function fetch_data(page) {
             var search = $('#search').val();
             var per_page = $('#per_page').val();
             var url = $('#ajax_url').val();
-            
+
             var categories = [];
             $('input[name="categories[]"]:checked').each(function() {
                 categories.push($(this).val());

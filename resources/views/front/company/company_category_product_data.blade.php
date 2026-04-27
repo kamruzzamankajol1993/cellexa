@@ -1,28 +1,25 @@
 @forelse($products as $product)
     <div class="card mb-3 shadow-sm border-0">
         <div class="row g-0 align-items-center">
-            
+
             {{-- বাম পাশে ইমেজ --}}
             <div class="col-md-3 col-4">
                 @php
-                    // ১. প্রথমে প্রোডাক্ট ইমেজ আছে কিনা চেক
-                    $productImages = $product->thumbnail_image; 
-                    
+                    $productImages = $product->thumbnail_image;
+
                     if (is_array($productImages) && count($productImages) > 0) {
                         $thumb = 'uploads/' . $productImages[0];
-                    } 
-                    // ২. প্রোডাক্ট ইমেজ না থাকলে, ব্র্যান্ড লোগো আছে কিনা চেক
+                    }
                     elseif ($product->brand && $product->brand->logo) {
                         $thumb = $product->brand->logo;
-                    } 
-                    // ৩. কিছুই না থাকলে ডিফল্ট ইমেজ
+                    }
                     else {
-                        $thumb = 'No_Image_Available.jpg'; 
+                        $thumb = 'No_Image_Available.jpg';
                     }
                 @endphp
                 <div class="product-list-img-container rounded-start">
-                    <img src="{{ asset('public/'.$thumb) }}" 
-                         class="product-list-img" 
+                    <img src="{{ asset('public/'.$thumb) }}"
+                         class="product-list-img"
                          alt="{{ $product->name }}"
                          onerror="this.src='{{ asset('public/No_Image_Available.jpg') }}'">
                 </div>
@@ -30,17 +27,17 @@
 
             {{-- ডান পাশে ইনফরমেশন --}}
             <div class="col-md-9 col-8">
-                <div class="card-body">
+                <div class="card-body p-2 p-md-3">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
+                        <div class="w-100 overflow-hidden">
                             <h4 class="card-title fw-bold mb-1">
-                                <a href="{{ route('front.product.details', $product->slug) }}" class="text-dark text-decoration-none">
+                                <a href="{{ route('front.product.details', $product->slug) }}" class="text-dark text-decoration-none product-title-text">
                                     {{ $product->name }}
                                 </a>
                             </h4>
                             <p class="text-muted small mb-2">
-                                <i class="bi bi-upc-scan"></i> Code: {{ $product->product_code ?? 'N/A' }} | 
-                                <span class="text-primary fw-bold"><i class="bi bi-building"></i> {{ $product->brand->name ?? 'No Company' }}</span>
+                                <span class="product-meta-item"><i class="bi bi-upc-scan"></i> Code: {{ $product->product_code ?? 'N/A' }}</span> |
+                                <span class="text-primary fw-bold product-meta-item" style="color: #a1573c !important;"><i class="bi bi-building"></i> {{ $product->brand->name ?? 'No Company' }}</span>
                             </p>
                         </div>
                     </div>
@@ -49,13 +46,18 @@
                         {!! Str::limit(strip_tags($product->description), 180) !!}
                     </p>
 
-                    <div class="mt-3">
-                        <a href="{{ route('front.product.details', $product->slug) }}" class="btn btn-outline-primary btn-sm me-2">
-                            <i class="bi bi-eye"></i> View Details
-                        </a>
-                        <button class="btn btn-primary btn-sm" onclick="addToCart({{ $product->id }}, 1)">
-                            <i class="bi bi-cart-plus"></i> Add To Cart
-                        </button>
+                    {{-- 50-50 Buttons Grid --}}
+                    <div class="mt-2 mt-md-3 row g-2">
+                        <div class="col-6">
+                            <a href="{{ route('front.product.details', $product->slug) }}" class="btn custom-btn-outline btn-sm w-100 btn-mobile-text">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn custom-btn-solid btn-sm w-100 btn-mobile-text" onclick="addToCart({{ $product->id }}, 1)">
+                                <i class="bi bi-cart-plus"></i> Add To Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,20 +72,19 @@
 @endforelse
 
 {{-- Pagination Block --}}
-<div class="row mt-4 align-items-center">
-    <div class="col-md-5 col-12 text-center text-md-start mb-3 mb-md-0">
-        <p class="text-muted mb-0">
+<div class="row mt-4 align-items-center pagination-container">
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div class="text-muted small mb-3 mb-md-0 text-center text-md-start">
             Showing <span class="fw-bold">{{ $products->firstItem() ?? 0 }}</span> to <span class="fw-bold">{{ $products->lastItem() ?? 0 }}</span> of <span class="fw-bold">{{ $products->total() }}</span> results
-        </p>
-    </div>
-    <div class="col-md-7 col-12">
+        </div>
+
         @if ($products->hasPages())
         <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center justify-content-md-end mb-0 custom-pagination">
+            <ul class="pagination custom-pagination pagination-sm mb-0">
                 @if ($products->onFirstPage())
-                    <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i> Prev</span></li>
+                    <li class="page-item disabled"><span class="page-link">Prev</span></li>
                 @else
-                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() - 1 }}"><i class="bi bi-chevron-left"></i> Prev</a></li>
+                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() - 1 }}">Prev</a></li>
                 @endif
 
                 @foreach ($products->links()->elements as $element)
@@ -102,9 +103,9 @@
                 @endforeach
 
                 @if ($products->hasMorePages())
-                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() + 1 }}">Next <i class="bi bi-chevron-right"></i></a></li>
+                    <li class="page-item"><a class="page-link ajax-page-link" href="#" data-page="{{ $products->currentPage() + 1 }}">Next</a></li>
                 @else
-                    <li class="page-item disabled"><span class="page-link">Next <i class="bi bi-chevron-right"></i></span></li>
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
                 @endif
             </ul>
         </nav>
