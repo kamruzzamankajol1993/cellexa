@@ -8,7 +8,14 @@ User Management | {{ $ins_name }}
 
 
 @section('css')
-
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Select2 কে বুটস্ট্র্যাপের সাথে সামঞ্জস্যপূর্ণ করার জন্য */
+    .select2-container .select2-selection--multiple {
+        min-height: 38px;
+        border: 1px solid #dee2e6;
+    }
+</style>
 @endsection
 
 
@@ -22,7 +29,7 @@ User Management | {{ $ins_name }}
                         <div class="card-body">
                      @include('flash_message')
 
-                         
+
         <form method="post" action="{{ route('users.update',$user->id ) }}" enctype="multipart/form-data" id="form" data-parsley-validate="">
 
             @csrf
@@ -56,8 +63,17 @@ User Management | {{ $ins_name }}
                 </select>
             </div> --}}
 
-           
 
+<div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
+    <label class="form-label">Role<span class="text-red font-w900">*</span></label>
+    <select name="roles[]" class="form-control select2" multiple="multiple" required>
+        @foreach ($roles as $value => $label)
+            <option value="{{ $value }}" {{ isset($userRole[$value]) ? 'selected' : '' }}>
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
             <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
                 <label class="form-label">Phone Number<span class="text-red font-w900">*</span>  </label>
@@ -68,7 +84,7 @@ User Management | {{ $ins_name }}
                 <label class="form-label">Email<span class="text-red font-w900">*</span>  </label>
                 <input type="email" value="{{ $user->email }}" class="form-control" name="email" id="" placeholder="Email" required>
             </div>
-            {{-- 
+            {{--
             <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3">
     <label class="form-label">Is Shareholder?<span class="text-red font-w900">*</span></label>
     <div>
@@ -89,10 +105,10 @@ User Management | {{ $ins_name }}
 
                 @if(empty($user->image))
 
-                
+
 
                 @else
-                
+
                 <img src="{{ asset('/') }}{{ $user->image }}" style="height:20px;"/>
 
                 @endif
@@ -102,7 +118,7 @@ User Management | {{ $ins_name }}
                 <label class="form-label">Address<span class="text-red font-w900">*</span>  </label>
                 <textarea class="form-control" name="address" id="" placeholder="Address" required>{{ $user->address }}</textarea>
             </div>
-            
+
             <h4>Password</h4>
             <hr>
             <div class="col-xl-12 col-xxl-12 col-sm-12 mb-3">
@@ -113,20 +129,20 @@ User Management | {{ $ins_name }}
                 <label class="form-label">Confirm Password</label>
                 <input type="password" name="confirm-password" placeholder="Confirm Password" class="form-control" >
             </div>
-            
-            
+
+
             <div class="col-xl-4 col-xxl-6 col-sm-6 mb-3">
                 <button class="btn btn-primary" title="Update Partner Info" type="submit"><i
                         class="fa-sharp fa-solid fa-add me-1"></i>Update Partner Info
                 </button>
-              
+
             </div>
         </div>
     </form>
                         </div>
                     </div>
                 </div>
-               
+
             </main>
 
 
@@ -134,7 +150,17 @@ User Management | {{ $ins_name }}
 
 
 @section('script')
-
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Select2 ইনিশিয়ালাইজেশন
+        $('.select2').select2({
+            placeholder: "-- Select Roles --",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
 @endsection
 
 

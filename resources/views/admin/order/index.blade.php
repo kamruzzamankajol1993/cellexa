@@ -16,7 +16,7 @@
             <h2 class="mb-0">Requested Product List</h2>
         </div>
         <div class="card">
-            
+
             <div class="card-body">
                 {{-- Filter Section --}}
                 <div class="p-3 mb-3 bg-light rounded border">
@@ -49,7 +49,7 @@
                         </div>
                     </form>
                 </div>
-                
+
                 {{-- Bulk Action & Table Tools --}}
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div id="bulkActionContainer" style="display: none;" class="d-flex align-items-center gap-2">
@@ -133,7 +133,7 @@ $(document).ready(function() {
 
     function fetchData() {
         $('#tableBody').html('<tr><td colspan="8" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div></td></tr>');
-        
+
         const filterData = {
             page: currentPage,
             status: 'all',
@@ -151,17 +151,17 @@ $(document).ready(function() {
             } else {
                 res.data.forEach((order, i) => {
                     const showUrl = `{{ url('order') }}/${order.id}`;
-                    
+
                     const billingName = order.customer ? `${order.customer.name} <br> <small class="text-muted">${order.customer.phone}</small>` : '<span class="text-danger">Customer Deleted</span>';
                     const date = new Date(order.created_at).toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-                    
+
                     const statusKey = order.status ? order.status.toLowerCase() : 'pending';
                     const badgeColor = statusColors[statusKey] || 'secondary';
                     const displayStatus = order.status ? (order.status.charAt(0).toUpperCase() + order.status.slice(1)) : 'Pending';
-                    
+
                     // UPDATED: Just a badge, no button logic
                     const statusBadge = `<span class="badge bg-${badgeColor}">${displayStatus}</span>`;
-                    
+
                     const detailsButton = `<button class="btn btn-sm btn-primary btn-details" data-id="${order.id}"><i class="fa fa-eye me-1"></i> View</button>`;
                     const orderFromBadge = order.order_from ? (order.order_from === 'web' ? `<span class="badge bg-info">Web</span>` : `<span class="badge bg-secondary">Admin</span>`) : '';
 
@@ -186,7 +186,7 @@ $(document).ready(function() {
                 });
             }
             $('#tableBody').html(rows);
-            
+
             const startEntry = (res.current_page - 1) * 10 + 1;
             const endEntry = startEntry + res.data.length - 1;
             $('#entryInfo').text(res.data.length > 0 ? `Showing ${startEntry} to ${endEntry} of ${res.total} entries` : 'No entries');
@@ -207,7 +207,7 @@ $(document).ready(function() {
     const searchInputs = '#filterOrderId, #filterCustomerName, #filterProduct';
     $(document).on('keyup', searchInputs, function() {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function() { currentPage = 1; fetchData(); }, 500); 
+        debounceTimer = setTimeout(function() { currentPage = 1; fetchData(); }, 500);
     });
     $('#filterBtn').on('click', function() { clearTimeout(debounceTimer); currentPage = 1; fetchData(); });
     $('#resetBtn').on('click', function() { $('#filterForm')[0].reset(); flatpickr("#filterStartDate").clear(); flatpickr("#filterEndDate").clear(); currentPage = 1; fetchData(); });
@@ -219,13 +219,13 @@ $(document).ready(function() {
         $.get(routes.getDetails(orderId), function(data) {
             $('#detailsModalTitle').text(`Invoice #${data.invoice_no}`);
             let itemsHtml = '';
-            
+
             if (data.order_details && data.order_details.length > 0) {
                 data.order_details.forEach(item => {
                     const productName = item.product ? item.product.name : 'Unknown Product';
                     const unitPrice = parseFloat(item.unit_price) || 0;
                     const subtotal = parseFloat(item.subtotal) || 0;
-                    
+
                     itemsHtml += `
                         <tr>
                             <td>${productName}</td>
@@ -235,9 +235,9 @@ $(document).ready(function() {
                         </tr>`;
                 });
             }
-            
+
             const secondaryPhoneHtml = (data.customer && data.customer.secondary_phone) ? `<br> ${data.customer.secondary_phone} (secondary)` : '';
-            
+
             let summaryHtml = '';
             summaryHtml += `<tr><td>Sub Total:</td><td>${parseFloat(data.subtotal).toFixed(2)}</td></tr>`;
             if (data.discount && parseFloat(data.discount) > 0) {
@@ -245,34 +245,47 @@ $(document).ready(function() {
             }
             summaryHtml += `<tr style="border-top: 1px solid #ddd;"><td><strong>Grand Total:</strong></td><td><strong>${parseFloat(data.total_amount).toFixed(2)}</strong></td></tr>`;
 
+            const customerPhone = data.customer ? data.customer.phone : 'N/A';
+const companyName = data.customer ? (data.customer.company_name || 'N/A') : 'N/A';
+const customerEmail = data.customer ? data.customer.email : 'N/A';
+
             const detailsHtml = `
-                <div class="invoice-details mb-4">
-                    <p><strong>Invoice:</strong> ${data.invoice_no}</p>
-                    <p><strong>Customer:</strong> ${data.customer ? data.customer.name : 'N/A'} (${data.customer ? data.customer.email : 'N/A'})${secondaryPhoneHtml}</p>
-                    <p><strong>Address:</strong> ${data.shipping_address || 'N/A'}</p>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered invoice-items-table">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product Name</th>
-                                <th class="text-center">Qty</th>
-                                <th class="text-end">Unit Price</th>
-                                <th class="text-end">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>${itemsHtml}</tbody>
-                    </table>
-                </div>
-                <div class="row justify-content-end">
-                    <div class="col-md-5">
-                        <table class="table table-sm invoice-totals">
-                            <tbody>${summaryHtml}</tbody>
-                        </table>
-                    </div>
-                </div>
-                ${data.notes ? `<hr><p class="text-muted small"><strong>Notes:</strong> ${data.notes}</p>` : ''}`;
-                
+    <div class="invoice-details mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Invoice:</strong> ${data.invoice_no}</p>
+                <p><strong>Customer Name:</strong> ${data.customer ? data.customer.name : 'N/A'}</p>
+                <p><strong>Company:</strong> ${companyName}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Phone:</strong> ${customerPhone}</p>
+                <p><strong>Email:</strong> ${customerEmail}</p>
+                <p><strong>Address:</strong> ${data.shipping_address || 'N/A'}</p>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered invoice-items-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Product Name</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>${itemsHtml}</tbody>
+        </table>
+    </div>
+    <div class="row justify-content-end">
+        <div class="col-md-5">
+            <table class="table table-sm invoice-totals">
+                <tbody>${summaryHtml}</tbody>
+            </table>
+        </div>
+    </div>
+    ${data.notes ? `<hr><p class="text-muted small"><strong>Notes:</strong> ${data.notes}</p>` : ''}`;
+
             $('#detailsModalBody').html(detailsHtml);
             detailsModal.show();
         });
@@ -296,7 +309,7 @@ $(document).ready(function() {
             }
         });
     });
-    
+
     $(document).on('click', '.btn-delete', function () {
         const id = $(this).data('id');
         Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!' }).then((result) => {

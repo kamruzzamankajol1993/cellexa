@@ -54,9 +54,12 @@ Route::get('/clear', function() {
     \Illuminate\Support\Facades\Artisan::call('route:clear');
     return redirect()->back();
 });
-
-
-//frontend part start 
+Route::post('/set-redirect-cart', function () {
+    session(['redirect_to_cart' => true]);
+    return response()->json(['status' => 'success']);
+});
+Route::get('/cart-details', [FrontController::class, 'cartDetailsPage'])->name('front.cartDetails');
+//frontend part start
 Route::post('/contact-us-post', [App\Http\Controllers\Front\FrontController::class, 'contactUsPost'])->name('front.contactUsPost');
 Route::controller(FrontController::class)->group(function () {
 // All Products Route
@@ -100,7 +103,7 @@ Route::get('/user/order-print/{id}', 'orderPrint')->name('front.order.print');
     // ৩. যদি সাব-ক্যাটাগরি না থাকে: সরাসরি প্রোডাক্ট দেখানোর রাউট
     Route::get('/company/category/{slug}/products', 'companyCategoryProducts')->name('front.company.category.products');
 
-   }); 
+   });
 
 
 //frontend part end
@@ -158,17 +161,17 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 
-    
+
 
 
 
 Route::group(['middleware' => ['auth']], function() {
-
-
+Route::post('permissions-destroy-multiple', [PermissionController::class, 'destroyMultiple'])->name('permissions.destroy-multiple');
+Route::post('/submit-quote-with-customer-update', [FrontController::class, 'submitQuoteWithCustomerUpdate'])->name('front.submitQuoteUpdate');
 
     Route::controller(App\Http\Controllers\Admin\ProductController::class)->group(function () {
     // আগের রাউটগুলো...
-    
+
     // NEW AJAX ROUTES
     Route::get('/get-brands-by-category/{categoryId}', 'getBrandsByCategory')->name('get.brands.by.category');
     Route::get('/get-company-categories-by-brand/{brandId}', 'getCompanyCategoriesByBrand')->name('get.company.categories.by.brand');
@@ -198,13 +201,13 @@ Route::get('products/import/sample', [App\Http\Controllers\Admin\ProductControll
 Route::post('products-import', [App\Http\Controllers\Admin\ProductController::class, 'import'])->name('product.import');
 
 
-   
+
 
     // Shareholder List Routes
     Route::get('/shareholders', [UserController::class, 'shareholderIndex'])->name('shareholders.index');
     Route::get('/ajax-shareholders-data', [UserController::class, 'shareholdersData'])->name('ajax.shareholders.data');
 
-    
+
 
     Route::prefix('reward-points')->name('reward.')->group(function () {
         Route::get('data', [RewardPointController::class, 'data'])->name('data');
@@ -237,10 +240,10 @@ Route::get('order-search-customers', [OrderController::class, 'searchCustomers']
     Route::post('slider-control', [SliderControlController::class, 'update'])->name('slider.control.update');
     Route::get('slider-control/search', [SliderControlController::class, 'searchProducts'])->name('slider.control.search');
 
-    
-   
 
-    
+
+
+
 Route::get('ajax_brands', [BrandController::class, 'data'])->name('ajax.brand.data');
 Route::resource('brand', BrandController::class);
 
@@ -258,7 +261,7 @@ Route::resource('subcategory', SubCategoryController::class);
     Route::resource('sub-subcategory', SubSubcategoryController::class);
 
 
-  
+
 
 Route::get('products/export-variants-stock', [App\Http\Controllers\Admin\ProductController::class, 'exportVariantsStock'])->name('product.export.variants');
 // Product Routes
@@ -329,13 +332,11 @@ Route::resource('defaultLocation', DefaultLocationController::class);
 
 
     Route::controller(ServiceController::class)->group(function () {
-    
+
         Route::get('/service/export','exportServices')->name('service.export');
     });
 
-   
 
-    
 
 
     Route::controller(CustomerController::class)->group(function () {
@@ -362,7 +363,7 @@ Route::get('/customers/export','exportCustomers')->name('customer.export');
 
     });
 
-    
+
 
 
 
@@ -398,7 +399,7 @@ Route::get('/customers/export','exportCustomers')->name('customer.export');
     });
 
 
-   
+
 
     Route::controller(UserController::class)->group(function () {
 

@@ -1,7 +1,7 @@
 <?php
-    
+
     namespace App\Http\Controllers\Admin;
-    
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -77,7 +77,7 @@ class UserController extends Controller
             'status' => $user->status,
             'viewpassword' => $user->viewpassword,
             'image' => $user->image,
-            'is_shareholder' => $user->is_shareholder, 
+            'is_shareholder' => $user->is_shareholder,
             'branch_name' => \App\Models\Branch::where('id', $user->branch_id)->value('name'),
             'designation_name' => \App\Models\Designation::where('id', $user->designation_id)->value('name'),
             'roles' => '', // from Spatie
@@ -110,7 +110,7 @@ class UserController extends Controller
         return view('admin.users.index',compact('data'));
     }
 
-    
+
 
     public function activeOrInActiveUser($status,$id): RedirectResponse
     {
@@ -122,11 +122,11 @@ class UserController extends Controller
         $user = User::find($id);
         $user->status = $status;
         $user->save();
-    
+
         return redirect()->route('users.index')
                         ->with('success','User Updated successfully');
     }
-    
+
     /**
      * Show the form for creating a new resource.
      *
@@ -138,17 +138,17 @@ class UserController extends Controller
 
         $roles = Role::pluck('name','name')->all();
         $designationList = Designation::latest()->get();
-       
+
 
             $branchList = Branch::latest()->get();
 
-       
 
-        
-        
+
+
+
         return view('admin.users.create',compact('roles','designationList','branchList'));
     }
-    
+
     /**
      * Store a newly created resource in storage.
      *
@@ -163,17 +163,17 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|same:confirm-password',
-           
+
         ]);
 
         CommonController::addToLog('user store');
 
         $time_dy = time().date("Ymd");
-    
+
         $input = $request->all();
         $input['viewpassword'] = $input['password'];
         $input['password'] = Hash::make($input['password']);
-        
+
 
         if ($request->hasfile('image')) {
 
@@ -199,14 +199,14 @@ class UserController extends Controller
          $input['is_shareholder'] = $request->boolean('is_shareholder');
         $input['status'] = 1;
         $input['user_type'] = 2;
-    
+
         $user = User::create($input);
-        // $user->assignRole($request->input('roles'));
-    
+        $user->assignRole($request->input('roles'));
+
         return redirect()->route('users.index')
                         ->with('success','User created successfully');
     }
-    
+
     /**
      * Display the specified resource.
      *
@@ -219,29 +219,30 @@ class UserController extends Controller
 
         return view('admin.users.show',compact('user'));
     }
-    
+
     /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id): View
-    {
+   public function edit($id): View
+{
+    CommonController::addToLog('user edit');
 
-        CommonController::addToLog('user edit');
+    $user = User::find($id);
+    $roles = Role::pluck('name','name')->all();
 
-        $user = User::find($id);
-        $roles = Role::pluck('name','name')->all();
-        $designationList = Designation::latest()->get();
-    
+    // এই লাইনটি যোগ করুন: ইউজারের বর্তমান রোলগুলো খুঁজে বের করার জন্য
+    $userRole = $user->roles->pluck('name','name')->all();
 
-            $branchList = Branch::latest()->get();
+    $designationList = Designation::latest()->get();
+    $branchList = Branch::latest()->get();
 
-       
-        return view('admin.users.edit',compact('user','roles','designationList','branchList'));
-    }
-    
+    // compact-এ 'userRole' পাস করুন
+    return view('admin.users.edit', compact('user', 'roles', 'userRole', 'designationList', 'branchList'));
+}
+
     /**
      * Update the specified resource in storage.
      *
@@ -255,22 +256,22 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$id,
             'password' => 'same:confirm-password',
-          
+
         ]);
 
         CommonController::addToLog('user update');
-    
+
         $input = $request->all();
 
         //dd($input);
 $time_dy = time().date("Ymd");
 
 
-        if(!empty($input['password'])){ 
+        if(!empty($input['password'])){
             $input['password'] = Hash::make($input['password']);
              $input['viewpassword'] = $request->password;
         }else{
-            $input = Arr::except($input,array('password'));    
+            $input = Arr::except($input,array('password'));
              $input['viewpassword'] = null;
         }
 
@@ -299,17 +300,17 @@ $time_dy = time().date("Ymd");
          $input['is_shareholder'] = $request->boolean('is_shareholder');
         $input['status'] = 1;
          $input['user_type'] = 2;
-    
+
         $user = User::find($id);
         $user->update($input);
-        // DB::table('model_has_roles')->where('model_id',$id)->delete();
-    
-        // $user->assignRole($request->input('roles'));
-    
+         DB::table('model_has_roles')->where('model_id',$id)->delete();
+
+         $user->assignRole($request->input('roles'));
+
         return redirect()->route('users.index')
                         ->with('success','User updated successfully');
     }
-    
+
     /**
      * Remove the specified resource from storage.
      *

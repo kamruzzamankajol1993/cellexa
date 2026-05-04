@@ -1,6 +1,6 @@
 <script>
-  
-  
+
+
     var routes = {
         fetch: "{{ route('ajax.permissiontable.data') }}",
         edit: id => `{{ route('permissions.edit', ':id') }}`.replace(':id', id),
@@ -29,13 +29,14 @@
     var permissions = group.permissions.map(p => `<span class="badge bg-success">${p.name}</span>`).join(' ');
     rows += `
         <tr>
+            <td><input type="checkbox" class="row-checkbox" value="${group.first_permission_id}"></td>
             <td>${(res.current_page - 1) * 10 + index + 1}</td>
             <td>${group.group_name}</td>
             <td>${permissions}</td>
             <td>
 
 
-                
+
 
             ${res.can_edit ? `<a href="${routes.edit(group.first_permission_id)}" class="btn btn-sm btn-light"><i class="fa fa-edit"></i></a>` : ''}
 
@@ -79,6 +80,53 @@
         });
     }
 
+    // ২. সিলেক্ট অল এবং বাটন শো/হাইড লজিক
+$(document).on('click', '#selectAll', function() {
+    $('.row-checkbox').prop('checked', this.checked);
+    toggleBulkButton();
+});
+
+$(document).on('change', '.row-checkbox', function() {
+    toggleBulkButton();
+});
+
+function toggleBulkButton() {
+    const selectedCount = $('.row-checkbox:checked').length;
+    $('#bulkActionContainer').toggle(selectedCount > 0);
+}
+
+// ৩. মাল্টিপল ডিলিট AJAX কল
+$(document).on('click', '#btnDeleteSelected', function() {
+    const selectedIds = $('.row-checkbox:checked').map(function() {
+        return $(this).val();
+    }).get();
+
+    Swal.fire({
+        title: 'Delete selected items?',
+        text: "This will delete all permissions under these groups!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete them!',
+        preConfirm: () => {
+            return $.ajax({
+                url: "{{ route('permissions.destroy-multiple') }}",
+                method: 'POST',
+                data: {
+                    _token: routes.csrf,
+                    ids: selectedIds
+                }
+            });
+        }
+    }).then(result => {
+        if (result.isConfirmed) {
+            Swal.fire({ toast: true, icon: 'success', title: result.value.message, showConfirmButton: false, timer: 3000 });
+            $('#selectAll').prop('checked', false);
+            toggleBulkButton();
+            fetchData();
+        }
+    });
+});
+
     $(document).on('keyup', '#searchInput', function () {
         searchTerm = $(this).val();
         currentPage = 1;
@@ -100,7 +148,7 @@
             fetchData();
         }
     });
-   
+
 
     $(document).on('click', '.btn-delete', function () {
     const id = $(this).data('id');
@@ -136,7 +184,7 @@
     });
 });
 
- 
+
     fetchData();
 </script>
 

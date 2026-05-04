@@ -471,31 +471,23 @@
         // ==========================================
         var pendingQuoteRequest = false;
 
-        function initiateQuoteRequest() {
-            var isLoggedIn = "{{ Auth::check() ? 'true' : 'false' }}";
+      function initiateQuoteRequest() {
+    var isLoggedIn = "{{ Auth::check() ? 'true' : 'false' }}";
 
-            if (isLoggedIn === 'true') {
-                submitQuoteToAdmin();
-            } else {
-                pendingQuoteRequest = true;
-                var cartCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('cellexaCartCanvas'));
-                if (cartCanvas) cartCanvas.hide();
+    if (isLoggedIn === 'true') {
+        window.location.href = "{{ route('front.cartDetails') }}";
+    } else {
+        // সেশনে সেভ করে রাখছি যে ইউজার কার্ট থেকে আসছে
+        $.post("{{ url('set-redirect-cart') }}", function() {
+            var cartCanvas = bootstrap.Offcanvas.getInstance(document.getElementById('cellexaCartCanvas'));
+            if (cartCanvas) cartCanvas.hide();
 
-                var profileCanvas = new bootstrap.Offcanvas(document.getElementById('cellexaProfileCanvas'));
-                profileCanvas.show();
-
-                switchCellexaAuth('login');
-
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'info',
-                    title: 'Please Login or Register to submit quote.',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            }
-        }
+            var profileCanvas = new bootstrap.Offcanvas(document.getElementById('cellexaProfileCanvas'));
+            profileCanvas.show();
+            switchCellexaAuth('login');
+        });
+    }
+}
 
         function submitQuoteToAdmin() {
             Swal.fire({

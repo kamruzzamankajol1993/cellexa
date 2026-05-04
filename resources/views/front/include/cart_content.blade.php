@@ -3,21 +3,21 @@
         @foreach($cart as $id => $details)
         {{-- এখানে 'cart-item-row' ক্লাসটি যোগ করা হয়েছে --}}
         <div class="cellexa_company_category_cart_item cart-item-row">
-            <img src="{{ asset('public/uploads/'.$details['image']) }}" 
-                 class="cellexa_company_category_cart_img" 
-                 alt="{{ $details['name'] }}"
-                 onerror="this.src='{{ asset('public/no-image.png') }}'">
-            
+            <img src="{{ asset('public/'.$details['image']) }}"
+     class="cellexa_company_category_cart_img"
+     alt="{{ $details['name'] }}"
+     onerror="this.src='{{ asset('public/no-image.png') }}'">
+
             <div class="cellexa_company_category_cart_details">
                 <h6 class="mb-1">{{ Str::limit($details['name'], 30) }}</h6>
                 <small class="text-muted d-block mb-1">{{ $details['code'] ?? '' }}</small>
-                
+
                 <div class="cellexa_company_category_qty_controls">
                     <div class="input-group input-group-sm" style="width: 110px;">
                         <button class="btn btn-outline-secondary cart-qty-minus" type="button" data-id="{{ $id }}">
                             <i class="bi bi-dash"></i>
                         </button>
-                        <input type="text" class="form-control text-center cart-qty-input" 
+                        <input type="text" class="form-control text-center cart-qty-input"
                                value="{{ $details['quantity'] }}" readonly>
                         <button class="btn btn-outline-secondary cart-qty-plus" type="button" data-id="{{ $id }}">
                             <i class="bi bi-plus"></i>
@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <button class="cellexa_company_category_delete_btn remove-from-cart" data-id="{{ $id }}" aria-label="Delete">
                 <i class="bi bi-trash"></i>
             </button>

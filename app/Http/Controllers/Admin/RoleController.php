@@ -1,5 +1,5 @@
 <?php
-    
+
 namespace App\Http\Controllers\Admin;
 
 
@@ -13,8 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Admin\CommonController;
 use App\Exports\RoleExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Mpdf\Mpdf; 
-use Auth;  
+use Mpdf\Mpdf;
+use Auth;
 class RoleController extends Controller
 {
     /**
@@ -54,7 +54,7 @@ class RoleController extends Controller
 
 public function data(Request $request)
     {
-        $query = Role::query();
+        $query = Role::query()->where('id', '!=', 2); // Super Admin role কে বাদ দেওয়া হচ্ছে
 
         // Search
         if ($request->filled('search')) {
@@ -84,7 +84,7 @@ public function data(Request $request)
     }
 
 
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -95,10 +95,12 @@ public function data(Request $request)
 
         CommonController::addToLog('role-list');
 
+       // dd($request->all());
+
         $roles = Role::orderBy('id','DESC')->get();
         return view('admin.roles.index',compact('roles'));
     }
-    
+
     /**
      * Show the form for creating a new resource.
      *
@@ -112,7 +114,7 @@ public function data(Request $request)
         $permission = Permission::get();
         return view('admin.roles.create',compact('permission'));
     }
-    
+
     /**
      * Store a newly created resource in storage.
      *
@@ -132,10 +134,10 @@ public function data(Request $request)
             function($value) { return (int)$value; },
             $request->input('permission')
         );
-    
+
         $role = Role::create(['name' => $request->input('name')]);
         $role->syncPermissions($permissionsID);
-    
+
         return redirect()->route('roles.index')
                         ->with('success','Role created successfully');
     }
@@ -154,10 +156,10 @@ public function data(Request $request)
         $rolePermissions = Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
             ->where("role_has_permissions.role_id",$id)
             ->get();
-    
+
         return view('admin.roles.show',compact('role','rolePermissions'));
     }
-    
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -174,10 +176,10 @@ public function data(Request $request)
 
 
             CommonController::addToLog('role-edit');
-    
+
         return view('admin.roles.edit',compact('role','permission','rolePermissions'));
     }
-    
+
     /**
      * Update the specified resource in storage.
      *
@@ -191,7 +193,7 @@ public function data(Request $request)
             'name' => 'required',
             'permission' => 'required',
         ]);
-    
+
 
         CommonController::addToLog('role-update');
 
@@ -203,9 +205,9 @@ public function data(Request $request)
             function($value) { return (int)$value; },
             $request->input('permission')
         );
-    
+
         $role->syncPermissions($permissionsID);
-    
+
         return redirect()->route('roles.index')
                         ->with('success','Role updated successfully');
     }
@@ -218,7 +220,7 @@ public function data(Request $request)
     public function destroy($id)
     {
         DB::table("roles")->where('id',$id)->delete();
-      
+
 
         return response()->json(['message' => 'role deleted successfully']);
     }

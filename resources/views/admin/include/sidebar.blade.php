@@ -1,9 +1,13 @@
+
+@php
+     $usr = Auth::user();
+ @endphp
 <nav id="sidebar">
     <div class="sidebar-header">
         <img src="{{ asset('/') }}{{ $front_logo_name }}" alt="{{ $ins_name }} Logo" height="50px !important;" >
     </div>
     <ul class="nav flex-column" id="sidebar-menu">
- 
+
         {{-- Dashboard --}}
         <li class="nav-item">
             <a class="nav-link {{ Route::is('home')  ? 'active' : '' }}" href="{{route('home')}}">
@@ -12,7 +16,7 @@
             </a>
         </li>
 
-        
+
       <li class="sidebar-title">
             <span>Requested Product</span>
         </li>
@@ -20,14 +24,14 @@
         <li class="nav-item">
              <a class="nav-link {{Route::is('order.edit') || Route::is('order.index') || Route::is('order.show') ? 'active' : ''}}" href="{{route('order.index')}}">
                 <i data-feather="shopping-bag"></i>
-                <span> Product List</span>
+                <span> Order List</span>
             </a>
         </li>
 
         <li class="sidebar-title">
             <span>Product</span>
         </li>
-     
+
         {{-- Product List --}}
         <li class="nav-item">
             <a class="nav-link {{ Route::is('product.index') || Route::is('product.edit') || Route::is('product.show') ? 'active' : '' }}" href="{{route('product.index')}}">
@@ -35,7 +39,7 @@
                 <span>Product List</span>
             </a>
         </li>
-        
+
         {{-- Add Product --}}
         <li class="nav-item">
             <a class="nav-link {{Route::is('product.create') ? 'active' : ''}}" href="{{route('product.create')}}">
@@ -43,7 +47,7 @@
                 <span>Add Product</span>
             </a>
         </li>
-    
+
         {{-- Category --}}
         <li class="nav-item">
             <a class="nav-link {{ Route::is('category.index') || Route::is('category.edit') || Route::is('category.create') ? 'active' : '' }}" href="{{ route('category.index') }}">
@@ -67,7 +71,7 @@
                 <span>Company Category</span>
             </a>
         </li>
-        
+
         {{-- Customers --}}
         <li class="nav-item">
             <a class="nav-link {{ Route::is('customer.index') || Route::is('customer.edit') || Route::is('customer.create') ? 'active' : '' }}" href="{{ route('customer.index') }}">
@@ -80,16 +84,16 @@
             <span>Settings</span>
         </li>
 
-          
+
         <li class="nav-item">
             <a class="nav-link {{ Route::is('socialLink.index') || Route::is('socialLink.edit') || Route::is('socialLink.create') ? 'active' : '' }}" href="{{ route('socialLink.index') }}"> <i data-feather="link"></i><span>Social Link</span></a>
         </li>
-                
+
 
         <li class="nav-item">
             <a class="nav-link {{ Route::is('message.index') || Route::is('message.edit') || Route::is('message.create') ? 'active' : '' }}" href="{{ route('message.index') }}"> <i data-feather="mail"></i><span>Message</span></a>
         </li>
-                  
+
 
         {{-- Panel Settings --}}
         <li class="nav-item">
@@ -98,14 +102,41 @@
                 <span>Panel Settings</span>
             </a>
         </li>
-    
+
         {{-- User --}}
-        <li class="nav-item mb-5">
+        <li class="nav-item mb-1">
             <a class="nav-link {{ Route::is('users.show') || Route::is('users.index') || Route::is('users.edit') || Route::is('users.create') ? 'active' : '' }}" href="{{ route('users.index') }}">
                 <i data-feather="user"></i>
                 <span>User</span>
             </a>
         </li>
-       
+
+         @if ($usr->can('permissionAdd') || $usr->can('permissionView') ||  $usr->can('permissionDelete') ||  $usr->can('permissionUpdate') || $usr->can('roleAdd') || $usr->can('roleView') ||  $usr->can('roleUpdate') ||  $usr->can('roleDelete') || $usr->can('panelSettingAdd') || $usr->can('panelSettingView') ||  $usr->can('panelSettingDelete') ||  $usr->can('panelSettingUpdate'))
+                 <li class="nav-item mb-5">
+                    <a class="nav-link" href="#generalSettingsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="generalSettingsSubmenu">
+                        <i data-feather="settings"></i>
+                        <span>General</span>
+                        <i data-feather="chevron-down" class="ms-auto"></i>
+                    </a>
+                    <ul class="collapse list-unstyled {{Route::is('roles.show') || Route::is('permissions.index') || Route::is('permissions.edit') || Route::is('permissions.create') || Route::is('roles.index') || Route::is('roles.edit') || Route::is('roles.create')  ? 'show' : '' }}" id="generalSettingsSubmenu" data-bs-parent="#sidebar-menu">
+
+
+
+                    @if ($usr->can('roleAdd') || $usr->can('roleView') ||  $usr->can('roleEdit') ||  $usr->can('roleDelete'))
+
+                        <a class="nav-link {{Route::is('roles.show') || Route::is('roles.index') || Route::is('roles.edit') || Route::is('roles.create') ? 'active' : '' }}" href="{{ route('roles.index') }}">Role Management</a>
+
+                    @endif
+
+                    @if ($usr->can('permissionAdd') || $usr->can('permissionView') ||  $usr->can('permissionDelete') ||  $usr->can('permissionUpdate'))
+
+                        <a class="nav-link {{ Route::is('permissions.index') || Route::is('permissions.edit') || Route::is('permissions.create') ? 'active' : '' }}" href="{{ route('permissions.index') }}">Permission Management</a>
+
+                    @endif
+
+                    </ul>
+                </li>
+                @endif
+
     </ul>
 </nav>

@@ -58,6 +58,8 @@ class AuthController extends Controller
             $user->status = 1; // Active
             $user->save();
 
+            $user->assignRole('customer');
+
             // ২. কাস্টমার টেবিলে ডাটা ইনসার্ট
             $customer = new Customer();
             $customer->user_id = $user->id;
@@ -113,26 +115,29 @@ class AuthController extends Controller
         ];
 
         if (Auth::attempt($credentials, $request->remember)) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Login successful!',
-                'redirect_url' => route('front.userDashboard') // বা কাস্টমার ড্যাশবোর্ড
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid credentials or access denied.'
-            ]);
-        }
+    // চেক করছি ইউজার কি কার্ট থেকে এসেছে?
+    if (session()->has('redirect_to_cart')) {
+        session()->forget('redirect_to_cart'); // কাজ শেষ হলে মুছে ফেলুন
+        $redirectUrl = route('front.cartDetails');
+    } else {
+        $redirectUrl = route('front.userDashboard');
     }
-    
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Login successful!',
+        'redirect_url' => $redirectUrl
+    ]);
+}
+    }
+
     // 1. User Dashboard (Updated to pass data)
     public function userDashboard() {
     $user = Auth::user();
     $customer = Customer::where('user_id', $user->id)->first();
     // Fetch orders
-    $orders = Order::where('customer_id', $customer->id ?? 0)->latest()->get(); 
-    
+    $orders = Order::where('customer_id', $customer->id ?? 0)->latest()->get();
+
     return view('front.customer.customer_profile', compact('user', 'customer', 'orders'));
 }
 
@@ -171,7 +176,7 @@ class AuthController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => 'Profile updated successfully!',
                 'new_name' => $request->name // Return name to update header dynamically
             ]);
@@ -199,7 +204,7 @@ class AuthController extends Controller
         // Check Current Password
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
-                'status' => 'error', 
+                'status' => 'error',
                 'errors' => ['current_password' => ['Current password does not match.']]
             ]);
         }
@@ -226,7 +231,7 @@ class AuthController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Something went wrong!']);
         }
     }
-    
+
     // Logout
     public function logout() {
         Auth::logout();
@@ -270,7 +275,7 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 'error', 
+                'status' => 'error',
                 'errors' => $validator->errors()
             ], 422);
         }

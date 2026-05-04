@@ -24,6 +24,25 @@ class PermissionController extends Controller
          $this->middleware('permission:permissionDelete', ['only' => ['destroy']]);
     }
 
+    public function destroyMultiple(Request $request)
+{
+    $ids = $request->ids;
+
+    if (!empty($ids)) {
+        // প্রতিটি ID-র বিপরীতে থাকা গ্রুপ নেম খুঁজে বের করে সেই গ্রুপের সব পারমিশন ডিলিট করা
+        $groupNames = DB::table('permissions')
+            ->whereIn('id', $ids)
+            ->pluck('group_name');
+
+        Permission::whereIn('group_name', $groupNames)->delete();
+
+        CommonController::addToLog('permissionMultipleDelete');
+        return response()->json(['status' => 'success', 'message' => 'Selected permissions deleted successfully']);
+    }
+
+    return response()->json(['status' => 'error', 'message' => 'No items selected'], 400);
+}
+
      public function downloadPermissionExcel()
     {
         return Excel::download(new PermissionExport, 'permission.xlsx');
@@ -144,7 +163,7 @@ class PermissionController extends Controller
         public function update(Request $request,$id)
         {
 
-          
+
             Permission::where('group_name', $request->group_name)->delete();
 
             $number=count($request->name);

@@ -90,7 +90,7 @@ public function allProducts(Request $request)
             // Note: Your Message model has 'msg', but form has 'subject' & 'message'.
             // We combine subject and message for storage since model doesn't have 'subject'.
             // Your Message model has 'phone', but the form doesn't. We set it to null.
-            
+
             $fullMessage = "Subject: " . $request->subject . "\n\n" . $request->message;
 
             Message::create([
@@ -127,7 +127,7 @@ public function allProducts(Request $request)
     }
 
 
-    
+
    public function index()
 {
     // ১. আগের কোড (Category with Brands)
@@ -145,7 +145,7 @@ public function allProducts(Request $request)
     // doesntHave('brands') = যার কোনো কোম্পানি নেই
     // whereHas('products') = যার প্রোডাক্ট আছে
     $home_second_category = Category::where('status', 1)
-        ->doesntHave('brands') 
+        ->doesntHave('brands')
         ->whereHas('products')
         ->with(['products' => function($q) {
             $q->where('status', 1)
@@ -299,7 +299,7 @@ public function productDetails($slug)
         $query = Product::where('status', 1)
         ->with('brand')
             ->whereHas('assigns', function($q) use ($category, $filterChildCats) {
-                
+
                 if (!empty($filterChildCats)) {
                     // যদি ফিল্টার সিলেক্ট করা থাকে, শুধু সেই চাইল্ড ক্যাটাগরির প্রোডাক্ট দেখাবে
                     $q->whereIn('category_id', $filterChildCats);
@@ -387,43 +387,42 @@ public function companyWiseProducts(Request $request, $slug)
     public function addToCart(Request $request)
     {
         $id = $request->product_id;
-        $qty = $request->quantity ?? 1;
-        $product = Product::with('brand')->find($id);
+    $qty = $request->quantity ?? 1;
+    $product = Product::with('brand')->find($id); // ব্র্যান্ড রিলেশনসহ প্রোডাক্ট লোড[cite: 3]
 
-        if(!$product) {
-            return response()->json(['status' => 'error', 'message' => 'Product not found']);
-        }
+    if(!$product) {
+        return response()->json(['status' => 'error', 'message' => 'Product not found']);
+    }
 
-        $cart = session()->get('cart', []);
+    $cart = session()->get('cart', []);
 
-        // যদি প্রোডাক্ট অলরেডি থাকে, তাহলে কোয়ান্টিটি বাড়বে
-        if(isset($cart[$id])) {
-            $cart[$id]['quantity'] += $qty;
+    if(isset($cart[$id])) {
+        $cart[$id]['quantity'] += $qty;
+    } else {
+        // ইমেজ লজিক: প্রথমে প্রোডাক্ট ইমেজ চেক, না থাকলে ব্র্যান্ড লোগো[cite: 3, 26]
+        $images = $product->thumbnail_image;
+        if (!empty($images) && is_array($images) && count($images) > 0) {
+            $image = 'uploads/' . $images[0]; // প্রোডাক্ট ইমেজ পাথ
+        } elseif ($product->brand && !empty($product->brand->logo)) {
+            $image = $product->brand->logo; // ব্র্যান্ড (কোম্পানি) লোগো পাথ
         } else {
-            // ইমেজ লজিক
-            $images = $product->thumbnail_image; 
-            if (is_array($images) && count($images) > 0) {
-                $image = $images[0];
-            } elseif ($product->brand && $product->brand->logo) {
-                $image = $product->brand->logo;
-            } else {
-                $image = 'no-image.png'; 
-            }
-
-            $cart[$id] = [
-                "id" => $product->id,
-                "name" => $product->name,
-                "quantity" => $qty,
-                "image" => $image,
-                "code" => $product->product_code
-            ];
+            $image = 'no-image.png'; // কোনোটিই না থাকলে ডিফল্ট ইমেজ
         }
+
+        $cart[$id] = [
+            "id" => $product->id,
+            "name" => $product->name,
+            "quantity" => $qty,
+            "image" => $image,
+            "code" => $product->product_code
+        ];
+    }
 
         session()->put('cart', $cart);
-        
+
         return response()->json([
-            'status' => 'success', 
-            'message' => 'Added to quote list!', 
+            'status' => 'success',
+            'message' => 'Added to quote list!',
             'total_items' => count($cart)
         ]);
     }
@@ -456,7 +455,7 @@ public function companyWiseProducts(Request $request, $slug)
             unset($cart[$request->id]);
             session()->put('cart', $cart);
         }
-        
+
         // বর্তমান কার্ট কাউন্টটি রিটার্ন করুন
         $totalItems = count(session()->get('cart', []));
         return response()->json([
@@ -509,7 +508,7 @@ public function submitQuote(Request $request)
     DB::beginTransaction();
     try {
         $user = Auth::user();
-        
+
         // Calculate initial subtotal (Admin can change this later)
         $subtotal = 0;
         foreach($cart as $item) {
@@ -520,7 +519,7 @@ public function submitQuote(Request $request)
         $order = new Order();
         $order->customer_id = $user->customer ? $user->customer->id : null; // Ensure User has customer relation
         // If no customer relation exists, create one or handle null
-        
+
         $order->invoice_no = 'INV-' . strtoupper(uniqid()); // Generate Invoice No
         $order->delivery_type = 'regular'; // Default
         $order->subtotal = $subtotal;
@@ -551,7 +550,7 @@ public function submitQuote(Request $request)
         DB::commit();
 
         return response()->json([
-            'status' => 'success', 
+            'status' => 'success',
             'message' => 'Quote request sent successfully! Please wait for Admin approval.'
         ]);
 
@@ -570,7 +569,7 @@ public function getOrderDetailsHtml($id)
                   ->where('id', $id)
                   ->where('customer_id', Auth::user()->customer->id ?? 0)
                   ->firstOrFail();
-    
+
     // ২. মোডালের টেবিল ডিজাইন তৈরি
     $html = '<div class="table-responsive">
                 <table class="table table-bordered align-middle">
@@ -582,16 +581,16 @@ public function getOrderDetailsHtml($id)
                         </tr>
                     </thead>
                     <tbody>';
-    
+
     foreach($order->orderDetails as $detail) {
         $product = $detail->product;
-        
+
         // কোম্পানি নাম (ব্র্যান্ড মডেল থেকে)
         $companyName = $product && $product->brand ? $product->brand->name : 'N/A';
-        
+
         // ক্যাটাগরি নাম
         $categoryName = $product && $product->category ? $product->category->name : 'N/A';
-        
+
         // প্রোডাক্ট নাম
         $productName = $product ? $product->name : 'Unknown Product';
 
@@ -633,19 +632,19 @@ public function getQuoteDetailsHtml($id)
                             <th>Company Name</th>
                             <th>Product Category</th>
                             <th>Product Name</th>
-                            <th>Price</th> 
+                            <th>Price</th>
                         </tr>
                     </thead>
                     <tbody>';
-    
+
     foreach($order->orderDetails as $detail) {
         $product = $detail->product;
         $companyName = $product && $product->brand ? $product->brand->name : 'N/A';
         $categoryName = $product && $product->category ? $product->category->name : 'N/A';
         $productName = $product ? $product->name : 'Unknown Product';
-        
+
         // প্রাইস ফরম্যাটিং (Accepted অর্ডারের জন্য)
-        $price = number_format($detail->unit_price, 2); 
+        $price = number_format($detail->unit_price, 2);
 
         $html .= '<tr>
                     <td class="fw-bold">'. $companyName .'</td>
@@ -689,9 +688,69 @@ public function getQuoteDetailsHtml($id)
                       ->firstOrFail();
 
         // 4. Fetch Company Info (This fixes the Undefined variable error)
-        $companyInfo = SystemInformation::first(); 
+        $companyInfo = SystemInformation::first();
 
         // 5. Return view with both variables
         return view('admin.order.print_a4', compact('order', 'companyInfo'));
     }
+
+
+    public function cartDetailsPage() {
+    $cart = session()->get('cart', []);
+    if (empty($cart)) {
+        return redirect()->route('front.index')->with('error', 'Your cart is empty!');
+    }
+
+    $user = Auth::user();
+    $customer = \App\Models\Customer::where('user_id', $user->id)->first();
+
+    return view('front.product.product_cart_details', compact('cart', 'user', 'customer'));
+}
+
+public function submitQuoteWithCustomerUpdate(Request $request) {
+    $cart = session()->get('cart', []);
+    if (!$cart) return response()->json(['status' => 'error', 'message' => 'Cart is empty!']);
+
+    DB::beginTransaction();
+    try {
+        $user = Auth::user();
+
+        // ১. কাস্টমার টেবিল আপডেট[cite: 3, 4]
+        $customer = \App\Models\Customer::where('user_id', $user->id)->first();
+        if ($customer) {
+            $customer->update([
+                'name' => $request->name,
+                'company_name' => $request->company,
+                'phone' => $request->phone,
+                'address' => $request->address,
+            ]);
+        }
+
+        // ২. অর্ডার সেভ করা[cite: 3, 6]
+        $order = new \App\Models\Order();
+        $order->customer_id = $customer->id;
+        $order->invoice_no = 'QT-' . strtoupper(uniqid());
+        $order->status = 'pending';
+        $order->shipping_address = $request->address;
+        $order->save();
+
+        // ৩. অর্ডার ডিটেইলস সেভ করা[cite: 3, 7]
+        foreach ($cart as $id => $details) {
+            \App\Models\OrderDetail::create([
+                'order_id' => $order->id,
+                'product_id' => $id,
+                'quantity' => $details['quantity'],
+                'unit_price' => 0,
+            ]);
+        }
+
+        session()->forget('cart');
+        DB::commit();
+
+        return response()->json(['status' => 'success']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+}
 }

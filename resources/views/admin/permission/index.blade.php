@@ -34,10 +34,16 @@ Permission Management | {{ $ins_name }}
                     <div class="card">
                         <div class="card-body">
                             @include('flash_message')
+                            <div class="mb-3" id="bulkActionContainer" style="display: none;">
+    <button id="btnDeleteSelected" class="btn btn-danger">
+        <i class="fa fa-trash"></i> Delete Selected
+    </button>
+</div>
                             <div class="table-responsive">
                                 <table class="table table-hover  table-bordered">
                                     <thead>
                                         <tr>
+                                            <th scope="col"><input type="checkbox" id="selectAll"></th>
                                            <th scope="col" >Sl</th>
                                                 <th scope="col">Group Name</th>
                                                 <th scope="col">Permission Name</th>
